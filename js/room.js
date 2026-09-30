@@ -24,7 +24,7 @@ const hEvery = (fn, ms) => (H.timers ||= []).push(setInterval(fn, ms));
 const face = (p, s) => avatar(p.av || me.av, s);
 const hostOnly = (html, wait = "بانتظار المضيف…") => (isHost() ? html : `<p class="muted" style="text-align:center">${wait}</p>`);
 const shuffled = (a) => a.map((x) => [Math.random(), x]).sort((p, q) => p[0] - q[0]).map((p) => p[1]);
-const THEME_COLOR = { khallast: "#fbf8ef", khat: "#22402f" };
+const THEME_COLOR = { khallast: "#fbf8ef", khat: "#22402f", fold: "#151c2d" };
 
 function leaveRoom(tell = true) {
   clearKL(); hClear(); clearInterval(KL.alive);
@@ -32,7 +32,7 @@ function leaveRoom(tell = true) {
     if (tell) isHost() ? KL.net.send({ t: "state", s: { phase: "closed" } }) : KL.net.send({ t: "bye", id: PID });
     const n = KL.net; setTimeout(() => n.close(), 300);
   }
-  Object.assign(KL, { role: null, code: "", net: null, S: null, view: "", my: {} });
+  Object.assign(KL, { role: null, code: "", net: null, S: null, view: "", my: {}, fv: null });
 }
 
 // ---------------- hosting ----------------
