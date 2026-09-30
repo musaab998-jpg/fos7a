@@ -10,7 +10,7 @@ ROOM_GAMES.khallast = {
   name: "خلّصت!", theme: "khallast", min: 2, need: "ينتظر لاعب واحد على الأقل", who: "٢ إلى ٣٠ · كتابة",
   rules: ["يطلع حرف، وكل واحد يكتب في جواله كلمة تبدأ فيه لكل خانة.", "أول واحد يعبّي كل الخانات يضغط «خلّصت!»، والباقين عندهم ٥ ثواني.", "الإجابات المعروفة تنقبل تلقائياً، والغريبة تنعرض للتصويت بدون أسماء.", "الإجابة اللي ما كتبها غيرك ١٠ نقاط، المكررة ٥، وأضحك إجابة تاخذ ٥ زيادة.", "بعد آخر جولة كل لاعب ياخذ شهادة بلقب."],
   setup(S) {
-    Object.assign(S, { mode: "classic", rounds: 2, picks: CATS.map((c) => c.id), letter: "", cats: [], done: [], stop: null, groups: [], score: {}, gain: {}, funniest: null, awards: {}, voted: [] });
+    Object.assign(S, { mode: "classic", rounds: 2, picks: CATS.slice(0, 8).map((c) => c.id), letter: "", cats: [], done: [], stop: null, groups: [], score: {}, gain: {}, funniest: null, awards: {}, voted: [] });
     Object.assign(H, { answers: {}, votes: {}, stats: {}, score: {}, gain: {}, used: [], deadline: 0, stopAt: 0, voteEnds: 0 });
   },
   joined(id) { H.score[id] ||= 0; },

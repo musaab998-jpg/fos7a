@@ -54,7 +54,7 @@
           <details><summary>كم تكلف؟</summary><p>مجانية وقت التجربة.</p></details>
         </div>
       </section>
-      <footer class="foot"><span>فسحة · اسم مبدئي</span><span>ألعاب جماعية من جوالاتكم</span></footer>
+      <footer class="foot"><span>فسحة</span><span>ألعاب جماعية من جوالاتكم</span></footer>
     </div>`;
     $("joinForm").onsubmit = (e) => { e.preventDefault(); const c = cleanCode($("joinCode").value); if (c.length === 4) { beep(700, 0.05); openJoin(c); } else $("joinCode").focus(); };
     $("ringBell").onclick = $("heroBell").onclick = () => { if (!soundOn) setSound(true); recess(); const b = $("hub"); b.classList.remove("ring"); void b.offsetWidth; b.classList.add("ring"); };

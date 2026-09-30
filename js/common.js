@@ -52,7 +52,9 @@
   const CATS = [
     { id: "name", n: "اسم" }, { id: "animal", n: "حيوان" }, { id: "plant", n: "نبات" },
     { id: "thing", n: "جماد" }, { id: "country", n: "بلاد" }, { id: "food", n: "أكلة شعبية" },
-    { id: "brand", n: "ماركة" }, { id: "job", n: "مهنة" },
+    { id: "brand", n: "ماركة" }, { id: "job", n: "مهنة" }, { id: "city", n: "مدينة" },
+    { id: "kitchen", n: "شي في المطبخ" }, { id: "show", n: "مسلسل أو فيلم" }, { id: "player", n: "لاعب كورة" },
+    { id: "excuse", n: "عذر للتأخير" }, { id: "gift", n: "هدية" },
   ];
   // answers the other players might write; "?" marks an answer people argue about, "!" a joke
   const DATA = {
