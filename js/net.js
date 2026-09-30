@@ -39,7 +39,11 @@ function openRoom(code, onMsg, onStatus) {
 }
 
 const ROOM_CHARS = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-const newRoomCode = () => Array.from({ length: 4 }, () => ROOM_CHARS[Math.floor(Math.random() * ROOM_CHARS.length)]).join("");
+function newRoomCode() { // four letters, never a rude word
+  let c;
+  do c = Array.from({ length: 4 }, () => ROOM_CHARS[Math.floor(Math.random() * ROOM_CHARS.length)]).join(""); while (typeof isRude === "function" && isRude(c));
+  return c;
+}
 const cleanCode = (s) => String(s || "").toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 4);
 const joinUrl = (code) => `${PUBLIC_URL}?r=${code}`;
 

@@ -141,7 +141,7 @@ function hostOn(m, local) {
   switch (m.t) {
     case "join": {
       if (!m.p || !m.p.id) return;
-      const name = String(m.p.name || "؟").slice(0, 12), p = H.players.find((x) => x.id === m.p.id);
+      const p = H.players.find((x) => x.id === m.p.id), name = cleanName(String(m.p.name || "؟").slice(0, 12), p ? H.players.indexOf(p) + 1 : H.players.length + 1);
       if (p) Object.assign(p, { name, av: m.p.av, away: false });
       else if (H.players.length < MAX_PLAYERS) { H.players.push({ id: m.p.id, name, av: m.p.av }); beep(620, 0.06); ROOM_GAMES[S.game].joined?.(m.p.id); }
       return hostSendSoon();

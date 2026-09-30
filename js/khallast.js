@@ -115,10 +115,12 @@ function hostGroups() {
     g.kind = listed;
     g.auto = right && (listed === "good" || g.who.length > 1 || c.id === "name"); // known, shared, or a name on the letter: no vote needed
     g.wrong = !right; // wrong letter: out without a vote
+    if (isRude(g.text)) { g.bad = true; g.wrong = true; g.auto = false; g.text = "•••"; } // a rude word: out, and nobody sees it
     g.doubt = right && !g.auto;
   });
   H.groups = groups;
-  S.groups = groups.map((g) => ({ key: g.key, ci: g.ci, text: g.text, n: g.who.length, doubt: g.doubt, auto: g.auto, wrong: g.wrong }));
+  groups.forEach((g) => { if (g.bad) g.doubt = false; });
+  S.groups = groups.map((g) => ({ key: g.key, ci: g.ci, text: g.text, n: g.who.length, doubt: g.doubt, auto: g.auto, wrong: g.wrong, bad: !!g.bad }));
   if (!groups.some((g) => g.doubt)) return hostReveal();
   S.phase = "vote"; S.voted = []; H.votes = {};
   H.voteEnds = now() + (S.cats.length === 1 ? 12000 : 25000);
@@ -144,7 +146,7 @@ function hostReveal() {
     if (lol >= 2 && (!funny || lol > funny.lol)) funny = { round: S.round, text: g.text, who: g.who.slice(), lol, cat: S.cats[g.ci].n };
   });
   S.funniest = funny;
-  S.groups = H.groups.map((g) => ({ key: g.key, ci: g.ci, text: g.text, who: g.who, ok: g.ok, pts: g.pts, lol: g.lol, auto: g.auto, wrong: g.wrong }));
+  S.groups = H.groups.map((g) => ({ key: g.key, ci: g.ci, text: g.text, who: g.who, ok: g.ok, pts: g.pts, lol: g.lol, auto: g.auto, wrong: g.wrong, bad: !!g.bad }));
   S.phase = "reveal";
   hostSend();
 }
@@ -190,7 +192,7 @@ function hostPeek(id) {
   H.players.forEach((p) => {
     if (p.id === id) return;
     const row = H.answers[p.id] || [];
-    row.forEach((w, ci) => { if (w) cands.push({ name: p.name, cat: S.cats[ci].n, text: w }); });
+    row.forEach((w, ci) => { if (w && !isRude(w)) cands.push({ name: p.name, cat: S.cats[ci].n, text: w }); });
   });
   const res = cands.length ? pickOne(cands) : { name: "", cat: "", text: "" };
   const m = { t: "peekRes", to: id, ...res };
@@ -318,7 +320,7 @@ function vReveal(S, fresh) {
     ${S.cats.map((c, ci) => { const gs = S.groups.filter((g) => g.ci === ci); return `
       <h3 style="font-size:24px">${c.n} · «${S.letter}»</h3>
       ${gs.map((g) => `<div class="ans pop">
-        <div class="ans-top"><span class="ans-text">${esc(g.text)}</span><span class="stamp ${g.ok ? "yes" : "no"}">${g.ok ? "مقبولة" : g.wrong ? "حرف غلط" : "مرفوضة"}</span></div>
+        <div class="ans-top"><span class="ans-text">${esc(g.text)}</span><span class="stamp ${g.ok ? "yes" : "no"}">${g.ok ? "مقبولة" : g.bad ? "كلمة ممنوعة" : g.wrong ? "حرف غلط" : "مرفوضة"}</span></div>
         <div class="ans-top"><div class="who">${g.who.map((id) => `<span class="p">${face(who(id), 24)}${esc(who(id).name)}</span>`).join("")}</div><span class="pts ${g.pts ? "" : "zero"}">+${AR(g.pts)}</span></div>
         ${g.lol ? `<p class="mine">ضحّك ${AR(g.lol)}</p>` : ""}
       </div>`).join("") || '<p class="muted">محد كتب شي.</p>'}`; }).join("")}
