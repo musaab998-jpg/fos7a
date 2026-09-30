@@ -74,26 +74,27 @@
   $("modal").addEventListener("click", (e) => { if (e.target === $("modal")) $("modal").hidden = true; });
 
   // ================= your character =================
-  let tab = "c", afterProfile = null;
+  let tab = "k", afterProfile = null;
   function openProfile(done) { afterProfile = done; view("profile"); drawProfile(); }
   function drawProfile() {
-    const list = tab === "c" ? NOTES.map((_, i) => ({ i, a: { ...me.av, c: i }, n: "" })) :
+    const list = tab === "k" ? PEOPLE.map((x, i) => ({ i, a: { ...me.av, k: i }, n: x.land, t: `${x.name}: ${x.wear}` })) :
+      tab === "c" ? NOTES.map((_, i) => ({ i, a: { ...me.av, c: i }, n: "" })) :
       tab === "e" ? EYES.map((x, i) => ({ i, a: { ...me.av, e: i, h: me.av.h === 4 ? 0 : me.av.h }, n: x.n })) :
       tab === "m" ? MOUTHS.map((x, i) => ({ i, a: { ...me.av, m: i }, n: x.n })) :
-      HATS.map((x, i) => ({ i, a: { ...me.av, h: i }, n: x.n }));
+      [];
     $("profile").innerHTML = `<div class="prof">
       <div class="hdr" style="padding-block:4px"><span class="logo" style="font-size:28px">${BELL}فسحة</span></div>
       <div class="pcard">
         <h2 style="font-size:30px">شخصيتك</h2>
-        <p style="font-size:14px;color:#3c4a6b">وجه ترسمه بالقلم على ورقة لاصقة. يطلع جنب اسمك في كل ألعاب فسحة.</p>
+        <p style="font-size:14px;color:#3c4a6b">اختر شخصيتك من ٢٢ دولة عربية، وغيّر لون الورقة والوجه على كيفك. تطلع جنب اسمك في كل ألعاب فسحة.</p>
         <div class="builder" style="margin-top:12px">
           <div>${avatar(me.av, 110)}</div>
-          <div class="field"><label for="nm">اسمك</label><input id="nm" value="${esc(me.name)}" maxlength="12" placeholder="مثلاً: مصعب" autocomplete="off"></div>
+          <div class="field"><label for="nm">اسمك</label><input id="nm" value="${esc(me.name)}" maxlength="12" placeholder="مثلاً: ${PEOPLE[me.av.k]?.name || "مصعب"}" autocomplete="off"></div>
         </div>
       </div>
       <div>
-        <div class="ptabs" role="tablist">${[["c", "لون الورقة"], ["e", "العيون"], ["m", "الفم"], ["h", "على الراس"]].map(([k, n]) => `<button type="button" class="ptab" role="tab" data-tab="${k}" aria-selected="${tab === k}">${n}</button>`).join("")}</div>
-        <div class="popts">${list.map((o) => `<button type="button" class="popt" data-set="${o.i}" aria-pressed="${me.av[tab] === o.i}" aria-label="${o.n || "لون " + (o.i + 1)}">${avatar(o.a, 52)}${o.n ? `<small>${o.n}</small>` : ""}</button>`).join("")}</div>
+        <div class="ptabs" role="tablist">${[["k", "الشخصية"], ["c", "لون الورقة"], ["e", "العيون"], ["m", "الفم"]].map(([k, n]) => `<button type="button" class="ptab" role="tab" data-tab="${k}" aria-selected="${tab === k}">${n}</button>`).join("")}</div>
+        <div class="popts">${list.map((o) => `<button type="button" class="popt" data-set="${o.i}" aria-pressed="${me.av[tab] === o.i}" aria-label="${o.t || o.n || "لون " + (o.i + 1)}"${o.t ? ` title="${o.t}"` : ""}>${avatar(o.a, 52)}${o.n ? `<small>${o.n}</small>` : ""}</button>`).join("")}</div>
       </div>
       <button type="button" class="pbtn alt" id="shuffle">شخصية عشوائية</button>
       <button type="button" class="pbtn" id="saveMe">حفظ</button>
@@ -101,8 +102,8 @@
     const nm = $("nm");
     nm.addEventListener("input", () => { me.name = nm.value.trim(); });
     $("profile").querySelectorAll(".ptab").forEach((b) => (b.onclick = () => { tab = b.dataset.tab; drawProfile(); }));
-    $("profile").querySelectorAll(".popt").forEach((b) => (b.onclick = () => { me.av[tab] = +b.dataset.set; if (tab === "e" && me.av.h === 4) me.av.h = 0; beep(700, 0.04); drawProfile(); }));
-    $("shuffle").onclick = () => { me.av = { c: Math.floor(rnd(0, NOTES.length)), e: Math.floor(rnd(0, EYES.length)), m: Math.floor(rnd(0, MOUTHS.length)), h: Math.floor(rnd(0, HATS.length)), r: -3 }; beep(600, 0.05); drawProfile(); };
+    $("profile").querySelectorAll(".popt").forEach((b) => (b.onclick = () => { me.av[tab] = +b.dataset.set; if (tab === "e" && me.av.h === 4) me.av.h = 0; if (tab === "k") me.av.h = 0; beep(700, 0.04); drawProfile(); }));
+    $("shuffle").onclick = () => { me.av = { c: Math.floor(rnd(0, NOTES.length)), e: Math.floor(rnd(0, EYES.length)), m: Math.floor(rnd(0, MOUTHS.length)), h: 0, k: Math.floor(rnd(0, PEOPLE.length)), r: -3 }; beep(600, 0.05); drawProfile(); };
     $("saveMe").onclick = () => { me.name = nm.value.trim() || "أنا"; saveProfile(); beep(880, 0.08); (afterProfile || (() => { renderHub(); view("hub"); }))(); };
   }
 

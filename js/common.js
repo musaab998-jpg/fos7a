@@ -36,11 +36,16 @@
     { n: "قبعة تخرّج", s: '<path d="M16 21l34-13 34 13-34 13z" fill="#1c2433"/><path d="M31 25v8q19 9 38 0v-8" fill="#1c2433"/><path d="M82 21v15" stroke="#f4d64a" stroke-width="3" stroke-linecap="round"/><circle cx="82" cy="37" r="3" fill="#f4d64a"/>' },
     { n: "فيونكة", s: '<path d="M66 16l15-9v18zM66 16l-15-9v18z" fill="#e0457b" stroke="#1c2433" stroke-width="2"/><circle cx="66" cy="16" r="4.5" fill="#b8325f" stroke="#1c2433" stroke-width="2"/>' },
   ];
+  // `a` can come from another phone, so every part is checked before it goes into the SVG
+  const pick = (list, i) => list[Number.isInteger(i) && i >= 0 && i < list.length ? i : 0];
   function avatar(a, size) {
-    const hat = HATS[a.h].s, glasses = a.h === 4;
-    return `<svg class="av" viewBox="0 0 100 100" width="${size}" height="${size}" aria-hidden="true"><g transform="rotate(${a.r || -3} 50 50)">` +
-      `<path d="M12 12h76v64L74 90H12z" fill="${NOTES[a.c]}"/><path d="M88 76L74 90V76z" fill="rgba(0,0,0,.2)"/><path d="M12 12h76v7H12z" fill="rgba(0,0,0,.07)"/>` +
-      (glasses ? "" : EYES[a.e].s) + MOUTHS[a.m].s + hat + "</g></svg>";
+    a = a || {};
+    const who = Number.isInteger(a.k) && a.k >= 0 && a.k < PEOPLE.length ? PEOPLE[a.k] : null;
+    const hat = who ? "" : pick(HATS, a.h).s, glasses = !who && a.h === 4;
+    const tilt = Math.max(-8, Math.min(8, Number(a.r) || -3));
+    return `<svg class="av" viewBox="0 0 100 100" width="${size}" height="${size}" aria-hidden="true"><g transform="rotate(${tilt} 50 50)">` +
+      `<path d="M12 12h76v64L74 90H12z" fill="${pick(NOTES, a.c)}"/><path d="M88 76L74 90V76z" fill="rgba(0,0,0,.2)"/><path d="M12 12h76v7H12z" fill="rgba(0,0,0,.07)"/>` +
+      (glasses ? "" : pick(EYES, a.e).s) + pick(MOUTHS, a.m).s + hat + (who ? who.s : "") + "</g></svg>";
   }
 
   // ---------------- tonight's sheet ----------------
@@ -66,12 +71,12 @@
 
 
   // ---------------- players ----------------
-  const me = { id: "me", name: "", av: { c: 0, e: 0, m: 0, h: 1, r: -3 }, bot: false };
+  const me = { id: "me", name: "", av: { c: 0, e: 0, m: 0, h: 0, k: Math.floor(Math.random() * PEOPLE.length), r: -3 }, bot: false };
   const BOTS = [
-    { id: "b1", name: "سعود", av: { c: 3, e: 3, m: 4, h: 1, r: 3 }, bot: true, skill: 0.92 },
-    { id: "b2", name: "نورة", av: { c: 1, e: 1, m: 0, h: 6, r: -4 }, bot: true, skill: 0.8 },
-    { id: "b3", name: "فهد", av: { c: 2, e: 0, m: 1, h: 4, r: 2 }, bot: true, skill: 0.7 },
-    { id: "b4", name: "ريم", av: { c: 5, e: 4, m: 5, h: 0, r: -2 }, bot: true, skill: 0.85 },
+    { id: "b1", name: "محمود", av: { c: 3, e: 3, m: 4, h: 0, k: 24, r: 3 }, bot: true, skill: 0.92 },
+    { id: "b2", name: "سكينة", av: { c: 1, e: 1, m: 0, h: 0, k: 35, r: -4 }, bot: true, skill: 0.8 },
+    { id: "b3", name: "علي", av: { c: 2, e: 0, m: 1, h: 0, k: 14, r: 2 }, bot: true, skill: 0.7 },
+    { id: "b4", name: "لينا", av: { c: 5, e: 4, m: 5, h: 0, k: 17, r: -2 }, bot: true, skill: 0.85 },
   ];
   let players = [me];
   const P = (id) => players.find((p) => p.id === id);
