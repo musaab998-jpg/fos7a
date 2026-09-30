@@ -27,7 +27,7 @@ const shuffled = (a) => a.map((x) => [Math.random(), x]).sort((p, q) => p[0] - q
 const THEME_COLOR = { khallast: "#fbf8ef", khat: "#22402f", fold: "#151c2d" };
 
 function leaveRoom(tell = true) {
-  clearKL(); hClear(); clearInterval(KL.alive);
+  clearKL(); hClear(); clearInterval(KL.alive); yardQuiet(0.5); KL.rang = false;
   if (KL.net) {
     if (tell) isHost() ? KL.net.send({ t: "state", s: { phase: "closed" } }) : KL.net.send({ t: "bye", id: PID });
     const n = KL.net; setTimeout(() => n.close(), 300);
@@ -135,7 +135,16 @@ function apply(S) {
   if (document.body.dataset.theme !== theme) { document.body.dataset.theme = theme; try { window.Fos7aApp?.setTheme(THEME_COLOR[theme]); } catch (e) {} }
   if (!isHost() && prev && !S.players.some((p) => p.id === PID)) KL.net.send({ t: "join", p: { id: PID, name: me.name, av: me.av } });
   const viewKey = S.game + ":" + (g.key ? g.key(S) : S.phase + ":" + S.round);
-  if (viewKey !== KL.view) { KL.view = viewKey; renderPhase(S, true); } else renderPhase(S, false);
+  if (viewKey !== KL.view) { KL.view = viewKey; renderPhase(S, true); yardMoment(S, prev); } else renderPhase(S, false);
+}
+// recess in «وينكم!», the bell when a game starts, and a cheer at the end
+const END_PHASE = { khallast: "cert", khat: "end", foldit: "over" };
+function yardMoment(S, prev) {
+  if (S.phase === "lobby") {
+    if (!KL.rang) { KL.rang = true; recess(); setTimeout(() => { if (KL.S && KL.S.phase === "lobby") yardAmbient(); }, 3800); }
+    else yardAmbient();
+  } else if (prev && prev.phase === "lobby") classStarts();
+  else if (S.phase === END_PHASE[S.game] && (S.game !== "khat" || S.over)) yardCheer();
 }
 function renderPhase(S, fresh) {
   if (S.phase === "lobby") return vLobby(S, fresh);

@@ -291,6 +291,15 @@ body[data-theme="fold"] .muted { color: var(--muted); }
 .fink { flex: 1; border: 2px solid var(--line); background: var(--desk-2); color: var(--chalk); border-radius: 14px; padding: 8px 4px; font-weight: 700; font-size: 13.5px; }
 .fink[aria-pressed="true"] { border-color: var(--marker); color: var(--marker); background: rgba(255,201,51,.12); }
 .fink:disabled { opacity: .4; }
+/* the bell */
+.sndbtn { width: 38px; height: 38px; border-radius: 50%; border: 2px solid var(--navy); background: var(--white); color: var(--navy); display: grid; place-items: center; box-shadow: 0 3px 0 var(--navy); }
+.sndbtn[aria-pressed="false"] { opacity: .6; }
+button.logo { background: none; border: 0; padding: 0; cursor: pointer; }
+.bellbtn { display: inline-flex; align-items: center; gap: 6px; }
+.bellbtn svg { width: 22px; height: 22px; }
+.bellbtn svg path, .bellbtn svg circle { fill: currentColor; }
+.hub.ring .logo svg, .hub.ring .bellbtn svg, .hub.ring .crew .av { animation: ring .12s linear 12; }
+@keyframes ring { 0%, 100% { transform: rotate(0); } 25% { transform: rotate(-9deg); } 75% { transform: rotate(9deg); } }
 /* one room for every game */
 .modes.three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 .modes.three .mode { padding: 8px; }
@@ -325,7 +334,7 @@ button.pl { border: 1px solid var(--line); background: var(--desk-2); width: 100
   <div id="profile" hidden></div>
   <div id="game" hidden>
     <div class="gshell">
-      <div class="gtop"><button type="button" class="x" id="quit" aria-label="رجوع لفسحة"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button><span class="gt" id="gTitle"></span><span id="topLeft"></span><span class="code" id="roomCode"></span></div>
+      <div class="gtop"><button type="button" class="x" id="quit" aria-label="رجوع لفسحة"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button><span class="gt" id="gTitle"></span><span id="topLeft"></span><span class="row" style="gap:8px"><span class="code" id="roomCode"></span><button type="button" class="x" data-sound aria-label="اكتم الصوت"></button></span></div>
       <div id="screen"></div>
     </div>
   </div>
@@ -336,6 +345,7 @@ button.pl { border: 1px solid var(--line); background: var(--desk-2); width: 100
 <script src="vendor/qrcode.js"></script>
 <script src="js/people.js"></script>
 <script src="js/common.js"></script>
+<script src="js/yard.js"></script>
 <script src="js/net.js"></script>
 <script src="js/hub.js"></script>
 <script src="js/room.js"></script>

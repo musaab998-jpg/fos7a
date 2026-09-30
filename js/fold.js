@@ -176,6 +176,7 @@ const FSFX = {
   lose: [0.8, (t, p) => { const f = [392, 349, 294, 262][Math.min(3, Math.floor(p * 4))]; return Math.sin(2 * Math.PI * f * t) * 0.35; }],
 };
 function fPlay(name) {
+  if (!soundOn) return;
   try {
     fAC ||= new (window.AudioContext || window.webkitAudioContext)();
     if (fAC.state === "suspended") fAC.resume();

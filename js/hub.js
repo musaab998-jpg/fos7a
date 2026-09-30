@@ -16,16 +16,16 @@
     const crew = [me, ...[24, 35, 1, 17, 30].map((k, i) => ({ av: { c: (i * 3 + 1) % NOTES.length, e: i % EYES.length, m: (i + 1) % MOUTHS.length, h: 0, k, r: i % 2 ? 3 : -3 } }))];
     $("hub").innerHTML = `<div class="hub-in">
       <header class="hdr">
-        <a class="logo" href="#top" aria-label="فسحة">${BELL}فسحة</a>
+        <button type="button" class="logo" id="ringBell" aria-label="دق جرس الفسحة">${BELL}فسحة</button>
         <nav class="nav"><a href="#games">الألعاب</a><a href="#faq">الأسئلة</a></nav>
-        <button type="button" class="me-chip" id="meChip">${avatar(me.av, 30)}<span>${me.name ? esc(me.name) : "سوّ شخصيتك"}</span></button>
+        <span class="row" style="gap:8px"><button type="button" class="sndbtn" data-sound aria-pressed="${soundOn}" aria-label="${soundOn ? "اكتم الصوت" : "شغّل الصوت"}">${speakerIcon(soundOn)}</button><button type="button" class="me-chip" id="meChip">${avatar(me.av, 30)}<span>${me.name ? esc(me.name) : "سوّ شخصيتك"}</span></button></span>
       </header>
       <section class="hero" id="top">
         <div>
           <p class="kick">ألعاب جماعية للجمعات</p>
           <h1>فسحة</h1>
           <p class="lead">دق الجرس! المضيف يفتح غرفة، والكل يدخل من جواله برمز. بدون تحميل ولا تسجيل، والتلفزيون اختياري.</p>
-          <div class="hero-btns"><a class="hbtn" href="#games">اختاروا لعبة</a><button type="button" class="hbtn alt" id="heroMe">شخصيتك</button></div>
+          <div class="hero-btns"><button type="button" class="hbtn bellbtn" id="heroBell">${BELL}دق الجرس</button><a class="hbtn" href="#games">اختاروا لعبة</a><button type="button" class="hbtn alt" id="heroMe">شخصيتك</button></div>
           <form class="joinbox" id="joinForm"><input id="joinCode" maxlength="4" placeholder="رمز الغرفة" aria-label="رمز الغرفة" autocomplete="off" autocapitalize="characters"><button type="submit" class="hbtn">ادخل</button></form>
         </div>
         <div class="crew" aria-hidden="true">${crew.map((p) => avatar(p.av, 74)).join("")}</div>
@@ -57,6 +57,8 @@
       <footer class="foot"><span>فسحة · اسم مبدئي</span><span>ألعاب جماعية من جوالاتكم</span></footer>
     </div>`;
     $("joinForm").onsubmit = (e) => { e.preventDefault(); const c = cleanCode($("joinCode").value); if (c.length === 4) { beep(700, 0.05); openJoin(c); } else $("joinCode").focus(); };
+    $("ringBell").onclick = $("heroBell").onclick = () => { if (!soundOn) setSound(true); recess(); const b = $("hub"); b.classList.remove("ring"); void b.offsetWidth; b.classList.add("ring"); };
+    document.querySelectorAll("[data-sound]").forEach((b) => (b.onclick = () => setSound(!soundOn)));
     $("meChip").onclick = $("heroMe").onclick = () => openProfile(() => { renderHub(); view("hub"); });
     document.querySelectorAll("[data-play]").forEach((b) => (b.onclick = () => { beep(700, 0.05); openGame(b.dataset.play); }));
     document.querySelectorAll("[data-info]").forEach((b) => (b.onclick = () => { const g = ROOM_GAMES[b.dataset.info]; $("modalCard").innerHTML = `<h3>${g.name}</h3><ol>${g.rules.map((r) => `<li>${r}</li>`).join("")}</ol><button type="button" class="pbtn" id="mClose">فهمت</button>`; $("modal").hidden = false; $("mClose").onclick = () => ($("modal").hidden = true); }));

@@ -30,6 +30,8 @@ window.fos7aBack = () => {
   return false;
 };
 
+document.querySelectorAll(".gtop [data-sound]").forEach((b) => (b.onclick = () => setSound(!soundOn)));
+setSound(soundOn);
 renderHub(); view("hub");
 const startCode = cleanCode(new URLSearchParams(location.search).get("r"));
 if (startCode.length === 4) openJoin(startCode);
