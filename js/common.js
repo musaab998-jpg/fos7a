@@ -72,12 +72,6 @@
 
   // ---------------- players ----------------
   const me = { id: "me", name: "", av: { c: 0, e: 0, m: 0, h: 0, k: Math.floor(Math.random() * PEOPLE.length), r: -3 }, bot: false };
-  const BOTS = [
-    { id: "b1", name: "محمود", av: { c: 3, e: 3, m: 4, h: 0, k: 24, r: 3 }, bot: true, skill: 0.92 },
-    { id: "b2", name: "سكينة", av: { c: 1, e: 1, m: 0, h: 0, k: 35, r: -4 }, bot: true, skill: 0.8 },
-    { id: "b3", name: "علي", av: { c: 2, e: 0, m: 1, h: 0, k: 14, r: 2 }, bot: true, skill: 0.7 },
-    { id: "b4", name: "لينا", av: { c: 5, e: 4, m: 5, h: 0, k: 17, r: -2 }, bot: true, skill: 0.85 },
-  ];
   let players = [me];
   const P = (id) => players.find((p) => p.id === id);
   const G = { mode: "classic", round: 0, rounds: 2, used: [], letter: "", ans: {}, timers: [], score: {}, stats: {} };

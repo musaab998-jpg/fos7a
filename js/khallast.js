@@ -1,92 +1,65 @@
 "use strict";
-// ================= خلّصت! for real: one phone hosts the room, everyone else plays from any browser =================
-// The host keeps the whole game and sends everyone a snapshot whenever something changes.
-// Players only send what they did: joined, typed, pressed «خلّصت!», voted, peeked.
+// ================= خلّصت!: a letter, a few boxes, and the first one done stops everyone =================
+// Runs inside a room (room.js). The host keeps the answers and the votes; every phone writes and votes.
 
 const LETTERS = "أبتجحخدرزسشصطعفقكلمنهوي".split("");
-const MAX_PLAYERS = 12;
-
-const KL = { role: null, code: "", net: null, S: null, gotAt: 0, view: "", my: {}, typing: 0, alive: 0 };
-const H = {};
-
-const now = () => Date.now();
-const who = (id) => (KL.S ? KL.S.players.find((p) => p.id === id) : null) || { name: "؟", av: me.av };
-const isHost = () => KL.role === "host";
-const act = (m) => (isHost() ? hostOn(m) : KL.net && KL.net.send(m));
-const leftOf = (ms) => Math.max(0, ms - (now() - KL.gotAt)); // counts down locally from the host's snapshot
-const clearKL = () => { (KL.timers || []).forEach((t) => { clearTimeout(t); clearInterval(t); }); KL.timers = []; };
-const klLater = (fn, ms) => (KL.timers ||= []).push(setTimeout(fn, ms));
-const klEvery = (fn, ms) => (KL.timers ||= []).push(setInterval(fn, ms));
-const hClear = () => { (H.timers || []).forEach((t) => { clearTimeout(t); clearInterval(t); }); H.timers = []; };
-const hLater = (fn, ms) => (H.timers ||= []).push(setTimeout(fn, ms));
-const hEvery = (fn, ms) => (H.timers ||= []).push(setInterval(fn, ms));
 const hStat = (id) => (H.stats[id] ||= { first: 0, laughs: 0, rejected: 0, peeks: 0, accepted: 0, unique: 0, shared: 0 });
+const KH_ROUNDS = { classic: [2, 3, 4], quick: [3, 6, 9] };
 
-function leaveRoom(tell = true) {
-  clearKL(); hClear();
-  if (KL.net) {
-    if (tell) isHost() ? KL.net.send({ t: "state", s: { phase: "closed" } }) : KL.net.send({ t: "bye", id: PID });
-    const n = KL.net; setTimeout(() => n.close(), 300);
-  }
-  Object.assign(KL, { role: null, code: "", net: null, S: null, view: "", my: {} });
-}
-
-// ---------------- hosting ----------------
-function hostRoom() {
-  leaveRoom(false);
-  const code = newRoomCode();
-  Object.assign(KL, { role: "host", code, my: {} });
-  Object.assign(H, { players: [{ id: PID, name: me.name, av: { ...me.av }, host: true }], answers: {}, votes: {}, plans: {}, stats: {}, score: {}, gain: {}, used: [], timers: [], deadline: 0, stopAt: 0, voteEnds: 0,
-    S: { phase: "lobby", code, mode: "classic", players: [], round: 0, rounds: 2, letter: "", cats: [], done: [], stop: null, groups: [], score: {}, gain: {}, funniest: null, awards: {}, voted: [], seq: 0 } });
-  setTop("");
-  show(`<div class="paper"><h2 style="font-size:26px">نجهّز الغرفة…</h2></div>`);
-  KL.net = openRoom(code, hostOn, (st) => { if (st === "SUBSCRIBED") hostSend(); else if (st === "CHANNEL_ERROR" || st === "TIMED_OUT") offline(); });
-  klLater(() => { if (!KL.S) hostSend(); }, 2500);
-}
-function offline() {
-  if (KL.S) return;
-  show(`<div class="paper" style="display:grid;gap:10px"><h2 style="font-size:26px">ما قدرنا نتصل</h2><p class="pmuted">تأكد إن النت شغال وجرّب مرة ثانية.</p></div><button type="button" class="btn btn-marker" id="retry">جرّب مرة ثانية</button>`);
-  $("retry").onclick = () => (isHost() ? hostRoom() : joinRoom(KL.code));
-}
-function hostSend() {
-  const S = H.S;
-  S.players = H.players.map((p) => ({ id: p.id, name: p.name, av: p.av, host: !!p.host, bot: !!p.bot }));
-  S.score = H.score; S.gain = H.gain;
-  S.left = H.deadline ? Math.max(0, H.deadline - now()) : 0;
-  S.stop = H.stopAt ? { by: H.stopBy, left: Math.max(0, H.stopAt - now()) } : null;
-  S.voteLeft = H.voteEnds ? Math.max(0, H.voteEnds - now()) : 0;
-  S.seq++;
-  const snap = JSON.parse(JSON.stringify(S));
-  if (KL.net) KL.net.send({ t: "state", s: snap });
-  apply(snap);
-}
-function hostOn(m) {
-  const S = H.S;
-  if (!m || !m.t) return;
-  switch (m.t) {
-    case "join": {
-      const p = H.players.find((x) => x.id === m.p.id);
-      if (p) Object.assign(p, { name: m.p.name, av: m.p.av, away: false });
-      else if (H.players.length < MAX_PLAYERS) { H.players.push({ id: m.p.id, name: String(m.p.name || "؟").slice(0, 12), av: m.p.av }); H.score[m.p.id] ||= 0; beep(620, 0.06); }
-      hostSend(); break;
+ROOM_GAMES.khallast = {
+  name: "خلّصت!", theme: "khallast", min: 2, need: "ينتظر لاعب واحد على الأقل", who: "٢ إلى ٣٠ · كتابة",
+  rules: ["يطلع حرف، وكل واحد يكتب في جواله كلمة تبدأ فيه لكل خانة.", "أول واحد يعبّي كل الخانات يضغط «خلّصت!»، والباقين عندهم ٥ ثواني.", "الإجابات المعروفة تنقبل تلقائياً، والغريبة تنعرض للتصويت بدون أسماء.", "الإجابة اللي ما كتبها غيرك ١٠ نقاط، المكررة ٥، وأضحك إجابة تاخذ ٥ زيادة.", "بعد آخر جولة كل لاعب ياخذ شهادة بلقب."],
+  setup(S) {
+    Object.assign(S, { mode: "classic", rounds: 2, picks: CATS.map((c) => c.id), letter: "", cats: [], done: [], stop: null, groups: [], score: {}, gain: {}, funniest: null, awards: {}, voted: [] });
+    Object.assign(H, { answers: {}, votes: {}, stats: {}, score: {}, gain: {}, used: [], deadline: 0, stopAt: 0, voteEnds: 0 });
+  },
+  joined(id) { H.score[id] ||= 0; },
+  snap(S) {
+    S.score = H.score; S.gain = H.gain;
+    S.left = H.deadline ? Math.max(0, H.deadline - now()) : 0;
+    S.stop = H.stopAt ? { by: H.stopBy, left: Math.max(0, H.stopAt - now()) } : null;
+    S.voteLeft = H.voteEnds ? Math.max(0, H.voteEnds - now()) : 0;
+  },
+  on(m) {
+    const S = H.S;
+    switch (m.t) {
+      case "ans": if (m.round === S.round && (S.phase === "write" || S.phase === "collect")) H.answers[m.id] = (m.a || []).slice(0, 4).map((x) => String(x || "").slice(0, 24)); break;
+      case "done": if (m.round === S.round) hostDone(m.id); break;
+      case "vote": if (S.phase === "vote" && m.round === S.round) { H.votes[m.id] = { v: m.v || {}, l: m.l || [] }; if (m.final && !S.voted.includes(m.id)) S.voted.push(m.id); if (allVoted()) hostReveal(); else if (m.final) hostSendSoon(); } break;
+      case "peek": hostPeek(m.id); break;
     }
-    case "hello": hostSend(); break;
-    case "bye": if (S.phase === "lobby") H.players = H.players.filter((p) => p.id !== m.id); hostSend(); break;
-    case "ans": if (m.round === S.round && (S.phase === "write" || S.phase === "collect")) H.answers[m.id] = (m.a || []).map((x) => String(x || "").slice(0, 24)); break;
-    case "done": if (m.round === S.round) hostDone(m.id); break;
-    case "vote": if (S.phase === "vote" && m.round === S.round) { H.votes[m.id] = { v: m.v || {}, l: m.l || [] }; if (m.final && !S.voted.includes(m.id)) S.voted.push(m.id); if (allVoted()) hostReveal(); else if (m.final) hostSend(); } break;
-    case "peek": hostPeek(m.id); break;
-    case "mode": if (S.phase === "lobby") { S.mode = m.mode; hostSend(); } break;
-  }
-}
-function hostAddBot() {
-  const b = BOTS.find((x) => !H.players.some((p) => p.id === x.id));
-  if (!b || H.players.length >= MAX_PLAYERS) return;
-  H.players.push({ id: b.id, name: b.name, av: b.av, bot: true, skill: b.skill }); H.score[b.id] = 0; beep(560, 0.05); hostSend();
-}
+  },
+  direct(m) { if (m.t === "peekRes") showPeek(m); },
+  lobby(S) {
+    const need = S.mode === "quick" ? 1 : 4;
+    return `<p class="muted" style="font-weight:700;color:var(--soft)">طريقة اللعب</p>
+      <div class="modes">
+        <button type="button" class="mode" data-mode="classic" aria-pressed="${S.mode === "classic"}"><b>الورقة</b><small>كل جولة ٤ خانات</small></button>
+        <button type="button" class="mode" data-mode="quick" aria-pressed="${S.mode === "quick"}"><b>خانة خانة</b><small>جولات سريعة بخانة وحدة</small></button>
+      </div>
+      <p class="muted" style="font-weight:700;color:var(--soft)">كم جولة؟</p>
+      <div class="chips pick">${KH_ROUNDS[S.mode].map((n) => `<button type="button" class="chip" data-rounds="${n}" aria-pressed="${S.rounds === n}">${AR(n)}</button>`).join("")}</div>
+      <p class="muted" style="font-weight:700;color:var(--soft)">الخانات (${S.mode === "quick" ? "اختر وحدة على الأقل" : "اختر ٤ على الأقل"})</p>
+      <div class="chips pick">${CATS.map((c) => `<button type="button" class="chip" data-cat="${c.id}" aria-pressed="${S.picks.includes(c.id)}">${c.n}</button>`).join("")}</div>
+      ${S.picks.length < need ? `<p class="muted" style="color:var(--ink-red)">اختر ${AR(need)} خانات على الأقل.</p>` : ""}`;
+  },
+  bindLobby(S) {
+    screen.querySelectorAll("[data-mode]").forEach((b) => (b.onclick = () => { S.mode = b.dataset.mode; H.S.mode = S.mode; H.S.rounds = KH_ROUNDS[S.mode][S.mode === "quick" ? 1 : 0]; beep(700, 0.04); hostSend(); }));
+    screen.querySelectorAll("[data-rounds]").forEach((b) => (b.onclick = () => { H.S.rounds = +b.dataset.rounds; beep(700, 0.04); hostSend(); }));
+    screen.querySelectorAll("[data-cat]").forEach((b) => (b.onclick = () => { const p = H.S.picks, id = b.dataset.cat; H.S.picks = p.includes(id) ? p.filter((x) => x !== id) : [...p, id]; beep(660, 0.04); hostSend(); }));
+    if (S.picks.length < (S.mode === "quick" ? 1 : 4)) $("start").disabled = true;
+  },
+  start: () => hostStart(),
+  views: { letter: vLetter, write: vWrite, collect: vCollect, vote: vVote, reveal: vReveal, board: vBoard, cert: vCert },
+};
+
+// ---------------- the host ----------------
 function hostStart() {
-  const S = H.S, pool = CATS.slice().sort(() => Math.random() - 0.5);
-  const plan = S.mode === "quick" ? pool.slice(0, 6).map((c) => [c]) : [pool.slice(0, 4), pool.slice(4, 8)];
+  const S = H.S, picked = CATS.filter((c) => S.picks.includes(c.id));
+  // «الورقة»: every round is 4 of the chosen boxes; «خانة خانة»: one box a round, going round the chosen ones
+  const plan = S.mode === "quick"
+    ? Array.from({ length: S.rounds }, (_, i) => (i % picked.length === 0 ? (H.deck = shuffled(picked)) : H.deck)[i % picked.length]).map((c) => [c])
+    : Array.from({ length: S.rounds }, () => shuffled(picked).slice(0, 4));
   Object.assign(H, { plan, used: [], stats: {}, score: {}, gain: {} });
   H.players.forEach((p) => (H.score[p.id] = 0));
   Object.assign(S, { rounds: plan.length, round: 0, funniest: null, awards: {} });
@@ -106,18 +79,8 @@ function hostRound() {
 function hostWrite() {
   const S = H.S, quick = S.cats.length === 1, T = quick ? 15000 : 55000;
   S.phase = "write"; H.deadline = now() + T;
-  // the pretend players write too, at their own speed
-  H.players.filter((p) => p.bot).forEach((b) => {
-    const L = S.letter, known = (c) => (DATA[L] && DATA[L][c.id]) || [];
-    const row = S.cats.map((c) => (Math.random() < b.skill && known(c).length ? pickOne(known(c)).replace(/^[?!]/, "") : ""));
-    H.plans[b.id] = { row, at: now() + (quick ? rnd(5, 11) : rnd(22, 42)) * 1000, full: row.every(Boolean) };
-  });
   hostSend();
-  hEvery(() => {
-    const t = now();
-    H.players.filter((p) => p.bot).forEach((b) => { const pl = H.plans[b.id]; if (pl && !S.done.includes(b.id) && t >= pl.at) { H.answers[b.id] = pl.row; if (pl.full) hostDone(b.id); else { S.done.push(b.id); hostSend(); } } });
-    if ((H.stopAt && t >= H.stopAt) || t >= H.deadline) hostCollect();
-  }, 250);
+  hEvery(() => { const t = now(); if ((H.stopAt && t >= H.stopAt) || t >= H.deadline) hostCollect(); }, 250);
 }
 function hostDone(id) {
   const S = H.S;
@@ -132,8 +95,6 @@ function hostCollect() {
   hClear();
   const S = H.S;
   S.phase = "collect"; H.deadline = 0; H.stopAt = 0;
-  // bots stopped mid-sheet keep what they had written by now
-  H.players.filter((p) => p.bot && !H.answers[p.id]).forEach((b) => { const pl = H.plans[b.id]; if (pl) H.answers[b.id] = pl.row.map((w, i) => (i < pl.row.length / 2 ? w : "")); });
   hostSend();
   hLater(hostGroups, 1800); // time for the last answers to arrive
 }
@@ -159,15 +120,6 @@ function hostGroups() {
   if (!groups.some((g) => g.doubt)) return hostReveal();
   S.phase = "vote"; S.voted = []; H.votes = {};
   H.voteEnds = now() + (S.cats.length === 1 ? 12000 : 25000);
-  H.players.filter((p) => p.bot).forEach((b) => hLater(() => {
-    const v = {}, l = [];
-    H.groups.filter((g) => g.doubt && !g.who.includes(b.id)).forEach((g) => {
-      const pAcc = { argue: 0.45, joke: 0.3, unknown: 0.72, wrong: 0.08 }[g.kind] ?? 0.6;
-      v[g.key] = Math.random() < pAcc ? "acc" : "rej";
-      if (Math.random() < ({ joke: 0.85, argue: 0.15 }[g.kind] ?? 0.1)) l.push(g.key);
-    });
-    hostOn({ t: "vote", id: b.id, round: S.round, v, l, final: true });
-  }, rnd(1500, 6000)));
   hEvery(() => { if (now() >= H.voteEnds) hostReveal(); }, 300);
   hostSend();
 }
@@ -228,12 +180,6 @@ function hostCert() {
   S.awards = got; S.phase = "cert";
   hostSend();
 }
-function hostAgain() {
-  hClear();
-  Object.assign(H.S, { phase: "lobby", round: 0, groups: [], done: [], funniest: null, awards: {} });
-  H.score = {}; H.gain = {}; H.players.forEach((p) => (H.score[p.id] = 0));
-  hostSend();
-}
 function hostPeek(id) {
   const S = H.S;
   if (S.phase !== "write") return;
@@ -241,7 +187,7 @@ function hostPeek(id) {
   const cands = [];
   H.players.forEach((p) => {
     if (p.id === id) return;
-    const row = p.bot ? (H.plans[p.id] || {}).row || [] : H.answers[p.id] || [];
+    const row = H.answers[p.id] || [];
     row.forEach((w, ci) => { if (w) cands.push({ name: p.name, cat: S.cats[ci].n, text: w }); });
   });
   const res = cands.length ? pickOne(cands) : { name: "", cat: "", text: "" };
@@ -249,74 +195,8 @@ function hostPeek(id) {
   if (id === PID) showPeek(m); else KL.net && KL.net.send(m);
 }
 
-// ---------------- joining ----------------
-function joinRoom(code) {
-  leaveRoom(false);
-  Object.assign(KL, { role: "player", code, my: {} });
-  setTop("");
-  show(`<div class="paper" style="display:grid;gap:8px"><h2 style="font-size:26px">ندخل الغرفة ${esc(code)}…</h2><p class="pmuted">ثواني بس.</p></div>`);
-  KL.net = openRoom(code, (m) => {
-    if (!m) return;
-    if (m.t === "state") apply(m.s);
-    if (m.t === "peekRes" && m.to === PID) showPeek(m);
-  }, (st) => {
-    if (st === "SUBSCRIBED") { KL.net.send({ t: "join", p: { id: PID, name: me.name, av: me.av } }); KL.net.send({ t: "hello", id: PID }); }
-    else if (st === "CHANNEL_ERROR" || st === "TIMED_OUT") offline();
-  });
-  klLater(() => {
-    if (KL.S) return;
-    show(`<div class="paper" style="display:grid;gap:10px"><h2 style="font-size:26px">ما لقينا الغرفة ${esc(code)}</h2><p class="pmuted">تأكد من الرمز، وإن المضيف فاتح الغرفة ومتصل بالنت.</p></div><button type="button" class="btn btn-marker" id="retry">جرّب مرة ثانية</button><button type="button" class="btn btn-ghost" id="back">رجوع</button>`);
-    $("retry").onclick = () => joinRoom(code);
-    $("back").onclick = () => { leaveRoom(); renderHub(); view("hub"); };
-  }, 8000);
-  // players who were away catch up
-  klEvery(() => { if (KL.S && KL.net && document.visibilityState === "visible" && now() - KL.gotAt > 15000) KL.net.send({ t: "hello", id: PID }); }, 5000);
-}
 
-// ---------------- what every phone shows ----------------
-function apply(S) {
-  if (!S) return;
-  if (S.phase === "closed") { KL.S = null; clearKL(); show(`<div class="paper" style="display:grid;gap:10px"><h2 style="font-size:26px">المضيف قفل الغرفة</h2><p class="pmuted">شكراً على اللعب!</p></div><button type="button" class="btn btn-marker" id="back">رجوع لفسحة</button>`); $("back").onclick = () => { leaveRoom(false); renderHub(); view("hub"); }; return; }
-  if (KL.S && S.seq < KL.S.seq) return;
-  const prev = KL.S;
-  KL.S = S; KL.gotAt = now();
-  $("roomCode").textContent = S.code || "";
-  if (!isHost() && prev && !S.players.some((p) => p.id === PID)) KL.net.send({ t: "join", p: { id: PID, name: me.name, av: me.av } });
-  const viewKey = S.phase + ":" + S.round;
-  if (viewKey !== KL.view) { KL.view = viewKey; renderPhase(S, true); } else renderPhase(S, false);
-}
-function renderPhase(S, fresh) {
-  const f = { lobby: vLobby, letter: vLetter, write: vWrite, collect: vCollect, vote: vVote, reveal: vReveal, board: vBoard, cert: vCert }[S.phase];
-  if (f) f(S, fresh);
-}
-const face = (p, s) => avatar(p.av || me.av, s);
-const hostOnly = (html, wait = "بانتظار المضيف…") => (isHost() ? html : `<p class="muted" style="text-align:center">${wait}</p>`);
-
-function vLobby(S) {
-  setTop("الغرفة");
-  const url = joinUrl(S.code);
-  show(`
-    <div class="paper" style="display:grid;gap:10px;justify-items:center;text-align:center">
-      <h2 style="font-size:30px">وينكم!</h2>
-      ${isHost() ? `<div class="qr" style="width:190px;max-width:70%;background:#fff;border-radius:12px;padding:6px">${qrSvg(url)}</div><p class="pmuted">صوّروا الباركود بكاميرا الجوال، أو ادخلوا فسحة واكتبوا الرمز</p>` : `<p class="pmuted">دخلت! انتظر المضيف يبدأ.</p>`}
-      <div style="font-family:var(--f-display);font-size:44px;letter-spacing:.18em;color:var(--ink-red);direction:ltr;line-height:1">${esc(S.code)}</div>
-      ${isHost() ? `<button type="button" class="btn btn-ghost" id="shareLink" style="width:auto;padding:6px 16px;font-size:14px">أرسل الرابط</button>` : ""}
-    </div>
-    <div class="players">${S.players.map((p) => `<div class="pl ${p.id === PID ? "me" : ""}">${face(p, 40)}<div class="grow"><div class="name">${esc(p.name)}</div><div class="tag">${p.host ? "يدير الجلسة" : p.bot ? "لاعب وهمي للتجربة" : "انضم"}${p.id === PID ? " · أنت" : ""}</div></div></div>`).join("")}</div>
-    ${isHost() ? `
-      <p class="muted" style="font-weight:700;color:var(--soft)">طريقة اللعب</p>
-      <div class="modes">
-        <button type="button" class="mode" data-mode="classic" aria-pressed="${S.mode === "classic"}"><b>الورقة</b><small>جولتين، كل جولة ٤ خانات</small></button>
-        <button type="button" class="mode" data-mode="quick" aria-pressed="${S.mode === "quick"}"><b>خانة خانة</b><small>٦ جولات سريعة بخانة وحدة</small></button>
-      </div>
-      <button type="button" class="btn btn-ghost" id="addBot" ${S.players.length >= MAX_PLAYERS ? "disabled" : ""}>أضف لاعب وهمي للتجربة</button>
-      <button type="button" class="btn btn-marker" id="start" ${S.players.length < 2 ? "disabled" : ""}>${S.players.length < 2 ? "ينتظر لاعب واحد على الأقل" : `ابدأ (${AR(S.players.length)} لاعبين)`}</button>` : `<p class="muted" style="text-align:center">المضيف يختار طريقة اللعب ويبدأ.</p>`}`);
-  if (!isHost()) return;
-  $("shareLink").onclick = async () => { const text = `تعال العب معنا «خلّصت!» في فسحة: ${url}`; try { if (window.Fos7aApp) window.Fos7aApp.share(text); else if (navigator.share) await navigator.share({ text }); else { await navigator.clipboard.writeText(text); $("shareLink").textContent = "انسخ الرابط"; } } catch (e) {} };
-  screen.querySelectorAll(".mode").forEach((b) => (b.onclick = () => { beep(700, 0.04); hostOn({ t: "mode", mode: b.dataset.mode }); }));
-  $("addBot").onclick = () => hostAddBot();
-  $("start").onclick = () => { beep(880, 0.08); hostStart(); };
-}
+// ---------------- every phone ----------------
 function vLetter(S, fresh) {
   if (!fresh) return;
   clearKL(); setTop(`الجولة ${AR(S.round)} من ${AR(S.rounds)}`);
@@ -350,7 +230,7 @@ function vWrite(S, fresh) {
     const inputs = S.cats.map((_, i) => $("a" + i));
     const sendAns = () => act({ t: "ans", id: PID, round: S.round, a: KL.my.ans });
     let deb = 0;
-    const sync = () => { $("doneBtn").disabled = !!(KL.S.stop) || !inputs.every((x) => x.value.trim()); };
+    const sync = () => { const d = $("doneBtn"); if (d) d.disabled = !!(KL.S.stop) || !inputs.every((x) => x.value.trim()); };
     inputs.forEach((x, i) => {
       x.addEventListener("input", () => { KL.my.ans[i] = x.value; sync(); clearTimeout(deb); deb = setTimeout(sendAns, 600); });
       x.addEventListener("keydown", (e) => { if (e.key === "Enter") { if (inputs[i + 1]) inputs[i + 1].focus(); else if (!$("doneBtn").disabled) $("doneBtn").click(); } });
@@ -372,7 +252,7 @@ function vWrite(S, fresh) {
     const p = who(S.stop.by);
     $("alert").innerHTML = `<div class="banner pop"><span class="row">${face(p, 34)}<span>${S.stop.by === PID ? "قلت «خلّصت!»، الباقين عندهم" : esc(p.name) + " خلّص! باقي لك"}</span></span><b id="five">${AR(Math.ceil(S.stop.left / 1000))}</b></div>`;
     beep(1200, 0.15, "square", 0.12); buzz([60, 40, 60]);
-    $("doneBtn").disabled = true;
+    if ($("doneBtn")) $("doneBtn").disabled = true;
   }
 }
 function showPeek(m) {
@@ -408,7 +288,7 @@ function vVote(S, fresh) {
     screen.querySelectorAll("button.vote").forEach((b) => (b.onclick = () => {
       const k = b.dataset.k;
       if (b.dataset.v === "lol") KL.my.lols[k] = !KL.my.lols[k]; else KL.my.votes[k] = KL.my.votes[k] === b.dataset.v ? undefined : b.dataset.v;
-      beep(b.dataset.v === "rej" ? 330 : 660, 0.05); send(false); draw();
+      beep(b.dataset.v === "rej" ? 330 : 660, 0.05); if (isHost()) send(false); draw();
     }));
     $("voteDone").onclick = () => { KL.my.final = true; send(true); beep(880, 0.08); draw(); };
     if (isHost()) $("reveal").onclick = () => hostReveal();
@@ -419,7 +299,11 @@ function vVote(S, fresh) {
     clearKL(); setTop(`الجولة ${AR(S.round)} · تصويت`);
     draw();
     if (!doubt.some((g) => !mine(g))) { KL.my.final = true; send(true); if (KL.S && KL.S.phase === "vote" && $("voteDone")) draw(); } // nothing for me to judge
-    klEvery(() => { const s = KL.S; if (!s || s.phase !== "vote") return; const v = $("vleft"); if (v) v.textContent = AR(Math.ceil(leftOf(s.voteLeft) / 1000)); }, 250);
+    klEvery(() => {
+      const s = KL.S; if (!s || s.phase !== "vote") return;
+      const left = leftOf(s.voteLeft), v = $("vleft"); if (v) v.textContent = AR(Math.ceil(left / 1000));
+      if (left < 1500 && !KL.my.final && !KL.my.lastCall) { KL.my.lastCall = true; send(false); } // whatever you picked still counts
+    }, 250);
   } else counts();
 }
 function vReveal(S, fresh) {

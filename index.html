@@ -274,6 +274,24 @@ body[data-theme="khat"] .gtop .gt { color: var(--chalk-y); }
 .k-honor .big { font-family: var(--f-display); font-size: 46px; line-height: 1.1; }
 .k-row { display: flex; align-items: center; gap: 10px; border-bottom: 1px dashed rgba(243,241,230,.35); padding-block: 6px; width: 100%; }
 .k-row b { color: var(--chalk-y); margin-inline-start: auto; }
+/* one room for every game */
+.modes.three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.modes.three .mode { padding: 8px; }
+.modes.three .mode b { font-size: 15px; }
+.players { grid-template-columns: repeat(auto-fill, minmax(132px, 1fr)); }
+.pl { padding: 5px 8px; gap: 8px; font: inherit; color: inherit; }
+.pl .name { font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+button.pl { border: 1px solid var(--line); background: var(--desk-2); width: 100%; }
+.chips.pick .chip { font-size: 14px; padding: 5px 12px; font-weight: 700; border-width: 1.5px; }
+.chips.pick .chip[aria-pressed="true"] { background: var(--sel); border-color: var(--marker); color: var(--marker-deep); }
+.rules { margin: 6px 0 0; padding-inline-start: 20px; display: grid; gap: 4px; font-size: 14.5px; }
+.kl-teams { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.kl-team { border: 2px dashed currentColor; border-radius: 14px; padding: 8px; display: grid; gap: 4px; align-content: start; }
+.kl-team.b { color: var(--ink-blue); } .kl-team.r { color: var(--ink-red); }
+.kl-p { display: flex; align-items: center; gap: 6px; background: none; border: 0; padding: 2px; color: var(--ink); font: inherit; font-weight: 600; font-size: 14px; text-align: start; }
+.kl-p span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.solo { font-size: 13px; color: #3c4a6b; text-align: center; }
+.fpop { animation: pop .5s ease-out; transform-box: fill-box; transform-origin: center; }
 .pop { animation: pop .35s ease-out; }
 @keyframes pop { from { transform: scale(.94); opacity: .4; } to { transform: none; opacity: 1; } }
 @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
@@ -303,8 +321,10 @@ body[data-theme="khat"] .gtop .gt { color: var(--chalk-y); }
 <script src="js/common.js"></script>
 <script src="js/net.js"></script>
 <script src="js/hub.js"></script>
+<script src="js/room.js"></script>
 <script src="js/khallast.js"></script>
 <script src="js/khat.js"></script>
+<script src="js/fold.js"></script>
 <script src="js/shell.js"></script>
 
 <script>

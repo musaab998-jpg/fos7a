@@ -1,215 +1,269 @@
 "use strict";
-  // ================= خط ثلاثة: X-O on the chalkboard, one question per square =================
-  const KCATS = ["ديرتنا", "أكل", "كورة", "جغرافيا", "الأغلبية", "عامية", "ألغاز", "تاريخ", "علوم"];
-  const KLABEL = (c) => (c === "الأغلبية" ? "وش يقول الأغلبية؟" : c);
-  // a: index of the right option; a = -1 means the room's majority decides
-  const KQB = {
-    "ديرتنا": [
-      { q: "وين يقع قصر المصمك؟", o: ["جدة", "الرياض", "الدمام", "أبها"], a: 1 },
-      { q: "وش المدينة اللي يسمونها «عروس البحر الأحمر»؟", o: ["ينبع", "جدة", "جازان", "الوجه"], a: 1 },
-      { q: "وش اسم الموقع الأثري المشهور في العُلا؟", o: ["البتراء", "الحِجر", "تدمر", "جرش"], a: 1 },
-    ],
-    "أكل": [
-      { q: "وش الأكلة اللي أساسها قمح مجروش؟", o: ["الكبسة", "الجريش", "المندي", "المطبق"], a: 1 },
-      { q: "كرات عجين مقلية تنسقى بالدبس أو الشيرة، وش اسمها؟", o: ["لقيمات", "بسبوسة", "كنافة", "معمول"], a: 0 },
-      { q: "المندي ينطبخ تقليدياً في؟", o: ["قدر ضغط", "حفرة في الأرض", "فرن كهربائي", "مقلاة"], a: 1 },
-    ],
-    "كورة": [
-      { q: "كم لاعب لكل فريق داخل الملعب؟", o: ["٩", "١٠", "١١", "١٢"], a: 2 },
-      { q: "كأس العالم ٢٠٢٢ أقيم في؟", o: ["الإمارات", "قطر", "السعودية", "مصر"], a: 1 },
-      { q: "السعودية بتستضيف كأس العالم سنة؟", o: ["٢٠٣٠", "٢٠٣٤", "٢٠٢٦", "٢٠٣٨"], a: 1 },
-    ],
-    "جغرافيا": [
-      { q: "وش عاصمة عُمان؟", o: ["صلالة", "صحار", "مسقط", "نزوى"], a: 2 },
-      { q: "كم عدد دول مجلس التعاون الخليجي؟", o: ["٤", "٥", "٦", "٧"], a: 2 },
-      { q: "وش البحر اللي بين السعودية ومصر؟", o: ["البحر الأحمر", "البحر المتوسط", "بحر العرب", "البحر الأسود"], a: 0 },
-    ],
-    "الأغلبية": [
-      { q: "أحسن كبسة؟", o: ["لحم", "دجاج", "سمك", "ولا وحدة"], a: -1, w: [4, 4, 1, 1] },
-      { q: "الشاي ولا القهوة العربية؟", o: ["الشاي", "القهوة", "الاثنين", "ولا واحد"], a: -1, w: [3, 3, 3, 1] },
-      { q: "الكشتة أحسن في؟", o: ["البر", "البحر", "الاستراحة", "البيت"], a: -1, w: [4, 2, 3, 1] },
-      { q: "أحسن وقت للطلعة؟", o: ["العصر", "المغرب", "بعد العشا", "الفجر"], a: -1, w: [1, 2, 4, 1] },
-    ],
-    "عامية": [
-      { q: "وش معنى «أبشر»؟", o: ["من عيوني", "انتبه", "مع السلامة", "تعال"], a: 0 },
-      { q: "«وش السالفة؟» يعني؟", o: ["وش القصة؟", "كم الساعة؟", "وين رايح؟", "كم السعر؟"], a: 0 },
-      { q: "إذا أحد قال لك «يعطيك العافية»، وش ترد؟", o: ["صباح النور", "الله يعافيك", "تم", "مع السلامة"], a: 1 },
-    ],
-    "ألغاز": [
-      { q: "شي كل ما زاد نقص؟", o: ["العمر", "الفلوس", "الأكل", "الماء"], a: 0 },
-      { q: "شي له أسنان وما يعض؟", o: ["الأسد", "المشط", "القط", "التمساح"], a: 1 },
-      { q: "شي يمشي بلا رجلين؟", o: ["الكرسي", "الساعة", "الباب", "الطاولة"], a: 1 },
-    ],
-    "تاريخ": [
-      { q: "توحيد المملكة العربية السعودية أُعلن سنة؟", o: ["١٩٠٢", "١٩٣٢", "١٩٤٥", "١٩٦٠"], a: 1 },
-      { q: "اليوم الوطني السعودي يوافق؟", o: ["٢٢ فبراير", "٢٣ سبتمبر", "٢ ديسمبر", "١٨ ديسمبر"], a: 1 },
-      { q: "يوم التأسيس السعودي يوافق؟", o: ["٢٢ فبراير", "٢٣ سبتمبر", "١ محرم", "٩ أغسطس"], a: 0 },
-    ],
-    "علوم": [
-      { q: "وش الكوكب اللي يسمونه الكوكب الأحمر؟", o: ["الزهرة", "المريخ", "المشتري", "زحل"], a: 1 },
-      { q: "الماء يغلي عند مستوى سطح البحر على كم درجة مئوية؟", o: ["٨٠", "٩٠", "١٠٠", "١٢٠"], a: 2 },
-      { q: "أكبر عضو في جسم الإنسان؟", o: ["الكبد", "الجلد", "القلب", "الرئة"], a: 1 },
-    ],
-  };
-  const LINES = [[0, 1, 2], [3, 4, 5], [6, 7, 8], [0, 3, 6], [1, 4, 7], [2, 5, 8], [0, 4, 8], [2, 4, 6]];
-  const KS = { timers: [] };
-  function kClear() { KS.timers.forEach((t) => { clearTimeout(t); clearInterval(t); }); KS.timers = []; }
-  const kLater = (fn, ms) => KS.timers.push(setTimeout(fn, ms));
-  const kEvery = (fn, ms) => KS.timers.push(setInterval(fn, ms));
-  const TEAM = () => ({ b: [me, BOTS[1], BOTS[2]], r: [BOTS[0], BOTS[3]] });
-  const TN = { b: "الأزرق", r: "الأحمر" };
-  const KP = (id) => [me, ...BOTS].find((p) => p.id === id);
-  const kStat = (id) => (KS.st[id] ||= { told: 0, right: 0 });
+// ================= خط ثلاثة: X-O on the chalkboard, one question per square, two teams voting =================
+const KCATS = ["ديرتنا", "أكل", "كورة", "جغرافيا", "الأغلبية", "عامية", "ألغاز", "تاريخ", "علوم"];
+const KLABEL = (c) => (c === "الأغلبية" ? "وش يقول الأغلبية؟" : c);
+// a: index of the right option; a = -1 means the room's majority decides
+const KQB = {
+  "ديرتنا": [
+    { q: "وين يقع قصر المصمك؟", o: ["جدة", "الرياض", "الدمام", "أبها"], a: 1 },
+    { q: "وش المدينة اللي يسمونها «عروس البحر الأحمر»؟", o: ["ينبع", "جدة", "جازان", "الوجه"], a: 1 },
+    { q: "وش اسم الموقع الأثري المشهور في العُلا؟", o: ["البتراء", "الحِجر", "تدمر", "جرش"], a: 1 },
+  ],
+  "أكل": [
+    { q: "وش الأكلة اللي أساسها قمح مجروش؟", o: ["الكبسة", "الجريش", "المندي", "المطبق"], a: 1 },
+    { q: "كرات عجين مقلية تنسقى بالدبس أو الشيرة، وش اسمها؟", o: ["لقيمات", "بسبوسة", "كنافة", "معمول"], a: 0 },
+    { q: "المندي ينطبخ تقليدياً في؟", o: ["قدر ضغط", "حفرة في الأرض", "فرن كهربائي", "مقلاة"], a: 1 },
+  ],
+  "كورة": [
+    { q: "كم لاعب لكل فريق داخل الملعب؟", o: ["٩", "١٠", "١١", "١٢"], a: 2 },
+    { q: "كأس العالم ٢٠٢٢ أقيم في؟", o: ["الإمارات", "قطر", "السعودية", "مصر"], a: 1 },
+    { q: "السعودية بتستضيف كأس العالم سنة؟", o: ["٢٠٣٠", "٢٠٣٤", "٢٠٢٦", "٢٠٣٨"], a: 1 },
+  ],
+  "جغرافيا": [
+    { q: "وش عاصمة عُمان؟", o: ["صلالة", "صحار", "مسقط", "نزوى"], a: 2 },
+    { q: "كم عدد دول مجلس التعاون الخليجي؟", o: ["٤", "٥", "٦", "٧"], a: 2 },
+    { q: "وش البحر اللي بين السعودية ومصر؟", o: ["البحر الأحمر", "البحر المتوسط", "بحر العرب", "البحر الأسود"], a: 0 },
+  ],
+  "الأغلبية": [
+    { q: "أحسن كبسة؟", o: ["لحم", "دجاج", "سمك", "ولا وحدة"], a: -1, w: [4, 4, 1, 1] },
+    { q: "الشاي ولا القهوة العربية؟", o: ["الشاي", "القهوة", "الاثنين", "ولا واحد"], a: -1, w: [3, 3, 3, 1] },
+    { q: "الكشتة أحسن في؟", o: ["البر", "البحر", "الاستراحة", "البيت"], a: -1, w: [4, 2, 3, 1] },
+    { q: "أحسن وقت للطلعة؟", o: ["العصر", "المغرب", "بعد العشا", "الفجر"], a: -1, w: [1, 2, 4, 1] },
+  ],
+  "عامية": [
+    { q: "وش معنى «أبشر»؟", o: ["من عيوني", "انتبه", "مع السلامة", "تعال"], a: 0 },
+    { q: "«وش السالفة؟» يعني؟", o: ["وش القصة؟", "كم الساعة؟", "وين رايح؟", "كم السعر؟"], a: 0 },
+    { q: "إذا أحد قال لك «يعطيك العافية»، وش ترد؟", o: ["صباح النور", "الله يعافيك", "تم", "مع السلامة"], a: 1 },
+  ],
+  "ألغاز": [
+    { q: "شي كل ما زاد نقص؟", o: ["العمر", "الفلوس", "الأكل", "الماء"], a: 0 },
+    { q: "شي له أسنان وما يعض؟", o: ["الأسد", "المشط", "القط", "التمساح"], a: 1 },
+    { q: "شي يمشي بلا رجلين؟", o: ["الكرسي", "الساعة", "الباب", "الطاولة"], a: 1 },
+  ],
+  "تاريخ": [
+    { q: "توحيد المملكة العربية السعودية أُعلن سنة؟", o: ["١٩٠٢", "١٩٣٢", "١٩٤٥", "١٩٦٠"], a: 1 },
+    { q: "اليوم الوطني السعودي يوافق؟", o: ["٢٢ فبراير", "٢٣ سبتمبر", "٢ ديسمبر", "١٨ ديسمبر"], a: 1 },
+    { q: "يوم التأسيس السعودي يوافق؟", o: ["٢٢ فبراير", "٢٣ سبتمبر", "١ محرم", "٩ أغسطس"], a: 0 },
+  ],
+  "علوم": [
+    { q: "وش الكوكب اللي يسمونه الكوكب الأحمر؟", o: ["الزهرة", "المريخ", "المشتري", "زحل"], a: 1 },
+    { q: "الماء يغلي عند مستوى سطح البحر على كم درجة مئوية؟", o: ["٨٠", "٩٠", "١٠٠", "١٢٠"], a: 2 },
+    { q: "أكبر عضو في جسم الإنسان؟", o: ["الكبد", "الجلد", "القلب", "الرئة"], a: 1 },
+  ],
+};
 
-  function kLobby() {
-    kClear(); setTop("الغرفة");
-    const all = TEAM(); let joined = 1;
-    const shown = () => [me, BOTS[1], BOTS[0], BOTS[2], BOTS[3]].slice(0, joined).map((p) => p.id);
-    const draw = () => {
-      const ids = shown();
-      const col = (k) => `<div class="k-team ${k}"><h3>الفريق ${TN[k]}</h3>${all[k].filter((p) => ids.includes(p.id)).map((p) => `<div class="k-p pop">${avatar(p.av, 34)}${esc(p.name)}${p === me ? " (أنت)" : ""}</div>`).join("") || '<span class="k-dim">…</span>'}</div>`;
-      show(`
-        <div class="k-card"><h2 class="k-h">وينكم!</h2><p class="k-dim">هذي تجربة مع لاعبين وهميين عشان تحس باللعبة. نسخة الربع الحقيقية جاية بعد «خلّصت!».</p></div>
-        <div class="k-teams">${col("b")}${col("r")}</div>
-        <p class="k-dim">السؤال والتصويت والنتيجة تطلع في جوال كل واحد. والتلفزيون، لو عندكم، يعرض السبورة للكل.</p>
-        <button type="button" class="k-btn" id="kStart" ${joined < 5 ? "disabled" : ""}>${joined < 5 ? "ينتظر اللاعبين…" : "ابدأ"}</button>`);
-      const s = $("kStart"); if (s) s.onclick = () => kNew();
-    };
-    draw();
-    for (let i = 1; i < 5; i++) kLater(() => { joined = i + 1; beep(520 + i * 70, 0.06); draw(); }, 600 * i);
-  }
-  function kNew() {
-    Object.assign(KS, { board: Array(9).fill(null), team: "b", used: new Set(), st: {}, turns: 0, win: null, sqCat: KCATS.slice() });
-    beep(990, 0.15, "triangle", 0.15); kBoard();
-  }
-  const kCount = (t) => KS.board.filter((x) => x === t).length;
-  function kWinner() { for (const l of LINES) { const [a, b, c] = l; if (KS.board[a] && KS.board[a] === KS.board[b] && KS.board[a] === KS.board[c]) return { t: KS.board[a], line: l }; } return null; }
-  function kBoardHTML(hot = -1) {
-    const w = KS.win ? KS.win.line : [];
-    return `<div class="k-frame"><div class="k-board">${KS.board.map((m, i) => m
-      ? `<div class="k-sq ${m} ${w.includes(i) ? "win" : ""}"><span class="m">${m === "b" ? "X" : "O"}</span></div>`
-      : `<button type="button" class="k-sq open ${i === hot ? "hot" : ""}" data-sq="${i}">${KLABEL(KS.sqCat[i])}</button>`).join("")}</div></div>`;
-  }
-  function kBoard() {
-    kClear(); setTop(`الدور ${AR(KS.turns + 1)}`);
-    const mine = KS.team === "b";
-    show(`
-      <div class="k-score"><span class="b">الأزرق ${AR(kCount("b"))}</span><span class="k-dim" style="font-family:var(--f-body)">أول خط ثلاثة يفوز</span><span class="r">${AR(kCount("r"))} الأحمر</span></div>
-      <div class="k-turn ${KS.team}">${mine ? "دوركم! اختاروا مربع" : "الفريق الأحمر يختار مربع…"}</div>
-      ${kBoardHTML()}
-      <p class="k-dim">${mine ? "في اللعبة الحقيقية أي واحد من الفريق يقترح المربع، والقائد يتبدّل كل دور." : "انتظر، وبعدها السؤال يطلع عندك."}</p>`);
-    if (mine) screen.querySelectorAll("[data-sq]").forEach((b) => (b.onclick = () => { beep(700, 0.05); kAsk(+b.dataset.sq, "b", false); }));
-    else kLater(() => {
-      const open = KS.board.map((m, i) => (m ? -1 : i)).filter((i) => i >= 0);
-      const wins = (t) => open.find((i) => LINES.some((l) => l.includes(i) && l.filter((x) => x !== i).every((x) => KS.board[x] === t)));
-      let pick = wins("r"); if (pick === undefined) pick = wins("b"); if (pick === undefined) pick = open.includes(4) && Math.random() < 0.6 ? 4 : pickOne(open);
-      screen.querySelector(".k-frame").outerHTML = kBoardHTML(pick);
-      beep(600, 0.06);
-      kLater(() => kAsk(pick, "r", false), 1100);
-    }, 1400);
-  }
-  function kQuestion(i) {
-    const cat = KS.sqCat[i], bank = KQB[cat];
-    let q = bank.find((x) => !KS.used.has(x.q)) || pickOne(bank);
-    KS.used.add(q.q); return { ...q, cat };
-  }
-  function kAsk(i, team, steal, q0, excluded) {
-    kClear();
-    const q = q0 || kQuestion(i), majority = q.a < 0;
-    const teams = TEAM(), voters = majority ? [...teams.b, ...teams.r] : teams[team];
-    const meVotes = voters.includes(me), T = majority ? 12 : steal ? 10 : 15, t0 = performance.now();
-    const votes = {}; // player id -> option index
-    setTop(steal ? "فرصة سرقة" : `الدور ${AR(KS.turns + 1)}`);
-    const draw = () => {
-      const counts = q.o.map((_, k) => Object.values(votes).filter((v) => v === k).length), total = Math.max(1, Object.keys(votes).length);
-      const showBars = majority || team === "b";
-      show(`
-        <div class="k-turn ${team}">${steal ? `فرصة سرقة للفريق ${TN[team]}` : `دور الفريق ${TN[team]}`}${majority ? " · الكل يصوّت" : ""}</div>
-        <div class="k-card" style="display:grid;gap:10px">
-          <span class="k-cat">${KLABEL(q.cat)}</span>
-          <div class="k-q">${esc(q.q)}</div>
-          <div class="k-timer"><i id="kbar"></i></div>
-          ${q.o.map((o, k) => `<button type="button" class="k-opt ${k === excluded ? "wrong" : ""}" data-o="${k}" aria-pressed="${votes.me === k}" ${!meVotes || k === excluded ? "disabled" : ""}><i style="width:${showBars ? Math.round((counts[k] / total) * 100) : 0}%"></i><span><b>${esc(o)}</b><small>${showBars && counts[k] ? AR(counts[k]) : ""}</small></span></button>`).join("")}
-          ${majority ? '<p class="k-dim">ما فيه جواب صح: الصح هو اللي يختاره أكثر الحاضرين، وفريقكم لازم يتوقّعه.</p>' : ""}
-        </div>
-        <div class="row" style="justify-content:space-between;gap:8px"><span class="k-dim">${meVotes ? (votes.me === undefined ? "اختر جوابك" : "تقدر تغيّر لين يخلص الوقت") : `الفريق ${TN[team]} يصوّت…`}</span>
-        <span class="k-faces">${voters.map((p) => `<span style="opacity:${votes[p.id] === undefined ? 0.35 : 1}">${avatar(p.av, 28)}</span>`).join("")}</span></div>`);
-      screen.querySelectorAll(".k-opt:not([disabled])").forEach((b) => (b.onclick = () => { votes.me = +b.dataset.o; beep(660, 0.05); draw(); check(); }));
-    };
-    const check = () => { if (voters.every((p) => votes[p.id] !== undefined)) kLater(finish, 700); };
-    let done = false;
-    const finish = () => { if (done) return; done = true; kClear(); kReveal(i, team, steal, q, votes, excluded); };
-    draw();
-    voters.filter((p) => p.bot).forEach((p) => kLater(() => {
-      if (majority) { const w = q.w.map((x, k) => (k === excluded ? 0 : x * rnd(0.6, 1.4))); let r = Math.random() * w.reduce((a, b) => a + b, 0); votes[p.id] = w.findIndex((x) => (r -= x) < 0); }
-      else { const ok = Math.random() < p.skill * 0.85; const wrongs = q.o.map((_, k) => k).filter((k) => k !== q.a && k !== excluded); votes[p.id] = ok ? q.a : pickOne(wrongs); }
-      beep(420, 0.03, "square", 0.03); draw(); check();
-    }, rnd(1500, T * 650)));
-    kEvery(() => { const left = Math.max(0, T - (performance.now() - t0) / 1000); const b = $("kbar"); if (b) b.style.transform = `scaleX(${left / T})`; if (left <= 0) finish(); }, 200);
-  }
-  function argmax(arr) { const m = Math.max(...arr); const idx = arr.map((v, k) => (v === m ? k : -1)).filter((k) => k >= 0); return pickOne(idx); }
-  function kReveal(i, team, steal, q, votes, excluded) {
-    const teams = TEAM(), majority = q.a < 0, other = team === "b" ? "r" : "b";
-    const tally = (ids) => q.o.map((_, k) => ids.filter((id) => votes[id] === k).length);
-    const teamIds = teams[team].map((p) => p.id).filter((id) => votes[id] !== undefined);
-    const teamCounts = tally(teamIds);
-    const teamAns = teamIds.length ? argmax(teamCounts) : -1;
-    const allIds = Object.keys(votes);
-    const right = majority ? argmax(tally(allIds)) : q.a;
-    const ok = teamAns === right;
-    if (!majority) teamIds.forEach((id) => { if (votes[id] === right) kStat(id).right++; });
-    const told = !ok && !majority ? teamIds.filter((id) => votes[id] === right) : [];
-    told.forEach((id) => kStat(id).told++);
-    if (ok) KS.board[i] = team;
-    let stealNext = !ok && !steal && !majority;
-    let note = "";
-    if (majority && !ok) { // no steal round: the other team's guess is already in
-      const oIds = teams[other].map((p) => p.id).filter((id) => votes[id] !== undefined);
-      if (oIds.length && argmax(tally(oIds)) === right && !steal) { KS.board[i] = other; note = `بس الفريق ${TN[other]} توقّع صح، والمربع راح لهم!`; }
+const LINES = [[0, 1, 2], [3, 4, 5], [6, 7, 8], [0, 3, 6], [1, 4, 7], [2, 5, 8], [0, 4, 8], [2, 4, 6]];
+const TN = { b: "الأزرق", r: "الأحمر" };
+const kOther = (t) => (t === "b" ? "r" : "b");
+const kStat = (id) => (H.kst[id] ||= { told: 0, right: 0 });
+const kWinner = (board) => { for (const l of LINES) { const [a, b, c] = l; if (board[a] && board[a] === board[b] && board[a] === board[c]) return { t: board[a], line: l }; } return null; };
+const kCount = (board, t) => board.filter((x) => x === t).length;
+function argmax(arr) { const m = Math.max(...arr); return pickOne(arr.map((v, k) => (v === m ? k : -1)).filter((k) => k >= 0)); }
+const myTeam = (S) => (S.teams || {})[PID];
+
+ROOM_GAMES.khat = {
+  name: "خط ثلاثة", theme: "khat", min: 2, need: "يحتاج لاعب في كل فريق", who: "فريقين · أسئلة",
+  rules: ["اللاعبين يتقسمون فريقين، أزرق وأحمر.", "الفريق اللي عليه الدور يختار مربع، وكل مربع فئة.", "السؤال يطلع عند الكل، والفريق يصوّت خلال ١٥ ثانية، وجواب الأغلبية هو جواب الفريق.", "صح؟ المربع لكم. غلط؟ الفريق الثاني ياخذ فرصة يسرقه.", "في مربع «وش يقول الأغلبية؟» الصح هو اللي اختاره أكثر الحاضرين.", "أول فريق يكمل خط ثلاثة يفوز باللوحة."],
+  setup(S) {
+    Object.assign(S, { picks: KCATS.slice(), best: 1, wins: { b: 0, r: 0 }, boardNo: 0 });
+    H.team ||= {};
+    H.players.forEach((p) => { if (!H.team[p.id]) ROOM_GAMES.khat.joined(p.id); });
+    H.kst = {};
+  },
+  joined(id) { const n = (t) => Object.values(H.team).filter((x) => x === t).length; H.team[id] = n("b") <= n("r") ? "b" : "r"; },
+  left(id) { delete H.team[id]; },
+  snap(S) {
+    S.teams = {}; H.players.forEach((p) => (S.teams[p.id] = H.team[p.id] || "b"));
+    S.left = H.deadline ? Math.max(0, H.deadline - now()) : 0;
+  },
+  key: (S) => S.phase + ":" + S.boardNo + ":" + (S.turns || 0) + ":" + (S.ask ? S.ask.steal : ""),
+  on(m) {
+    const S = H.S;
+    if (m.t === "kpick" && S.phase === "pick" && H.team[m.id] === S.team && Number.isInteger(m.i) && m.i >= 0 && m.i < 9 && !S.board[m.i]) hostAsk(m.i, S.team, false);
+    if (m.t === "kvote" && S.phase === "ask") {
+      const a = S.ask, k = m.k;
+      if (!Number.isInteger(k) || k < 0 || k >= a.q.o.length || k === a.excluded) return;
+      if (!a.maj && H.team[m.id] !== a.team) return;
+      H.votes[m.id] = k; kTally(); hostSendSoon();
+      if (kVoters().every((id) => H.votes[id] !== undefined)) { H.deadline = Math.min(H.deadline, now() + 700); }
     }
-    const counts = majority ? tally(allIds) : teamCounts, total = Math.max(1, majority ? allIds.length : teamIds.length);
-    if (ok) { beep(784, 0.1); setTimeout(() => beep(1047, 0.18), 110); buzz(60); } else { beep(200, 0.3, "sawtooth", 0.08); buzz([40, 30, 40]); }
-    KS.win = kWinner();
-    show(`
-      <div class="k-turn ${team}">${ok ? `صح! المربع للفريق ${TN[team]}` : majority ? `الفريق ${TN[team]} ما توقّع الأغلبية` : `غلط! ${steal ? "والسرقة ما نجحت" : `فرصة سرقة للفريق ${TN[other]}`}`}</div>
-      <div class="k-card" style="display:grid;gap:10px">
-        <span class="k-cat">${KLABEL(q.cat)}</span>
-        <div class="k-q">${esc(q.q)}</div>
-        ${q.o.map((o, k) => `<div class="k-opt ${k === right ? "right" : k === teamAns || k === excluded ? "wrong" : ""}"><i style="width:${Math.round((counts[k] / total) * 100)}%"></i><span><b>${esc(o)}</b><small>${counts[k] ? AR(counts[k]) : ""}</small></span></div>`).join("")}
-        <p class="k-dim">${majority ? `اختيار أغلب الحاضرين: «${esc(q.o[right])}».` : `جواب الفريق: «${teamAns >= 0 ? esc(q.o[teamAns]) : "ما جاوبوا"}».`} ${note}</p>
-      </div>
-      ${told.length ? `<div class="k-told pop">${told.map((id) => avatar(KP(id).av, 30)).join("")}<span>«قلت لكم!» ${told.map((id) => esc(KP(id).name)).join(" و")} صوّت صح +١</span></div>` : ""}
-      <button type="button" class="k-btn" id="kNext">${stealNext ? `فرصة الفريق ${TN[other]}` : KS.win || !KS.board.includes(null) ? "النتيجة" : "كمّل"}</button>`);
-    $("kNext").onclick = () => {
-      if (stealNext) return kAsk(i, other, true, q, teamAns);
-      KS.turns++;
-      if (KS.win || !KS.board.includes(null) || KS.turns >= 16) return kEnd();
-      KS.team = steal ? team : other; // after a steal the turn goes to the team that stole
-      kBoard();
-    };
-  }
-  function kEnd() {
-    kClear(); setTop("انتهت");
-    const b = kCount("b"), r = kCount("r");
-    const w = KS.win ? KS.win.t : b > r ? "b" : r > b ? "r" : null;
-    const everyone = [me, ...BOTS];
-    const top = (key) => everyone.slice().sort((x, y) => kStat(y.id)[key] - kStat(x.id)[key])[0];
-    const told = top("told"), right = top("right");
-    if (w === "b") { beep(523, 0.1); setTimeout(() => beep(659, 0.1), 120); setTimeout(() => beep(784, 0.25), 240); } else beep(262, 0.4, "triangle", 0.12);
-    show(`
-      ${kBoardHTML()}
-      <div class="k-card k-honor pop">
-        <p class="k-dim">لوحة الشرف</p>
-        <div class="big" style="color:${w === "b" ? "var(--tb)" : w === "r" ? "var(--tr)" : "var(--chalk-y)"}">${w ? `فاز الفريق ${TN[w]}!` : "تعادل!"}</div>
-        <div class="k-faces">${(w ? TEAM()[w] : everyone).map((p) => avatar(p.av, 46)).join("")}</div>
-        <div class="k-row">${avatar(right.av, 30)}<span>${esc(right.name)}</span><b>أكثر واحد جاوب صح (${AR(kStat(right.id).right)})</b></div>
-        ${kStat(told.id).told ? `<div class="k-row">${avatar(told.av, 30)}<span>${esc(told.name)}</span><b>ملك «قلت لكم!» (${AR(kStat(told.id).told)})</b></div>` : ""}
-        <div class="k-row">${avatar(me.av, 30)}<span>أنت</span><b>${AR(kStat("me").right)} صح · ${AR(kStat("me").told)} «قلت لكم!»</b></div>
-      </div>
-      <button type="button" class="k-btn" id="kAgain">جولة ثانية</button>
-      <button type="button" class="k-btn ghost" id="kHome">رجوع لفسحة</button>`);
-    $("kAgain").onclick = () => kNew();
-    $("kHome").onclick = () => { renderHub(); view("hub"); };
-  }
+  },
+  lobbyPlayers(S) {
+    const col = (t) => `<div class="kl-team ${t}"><b>الفريق ${TN[t]}</b>${S.players.filter((p) => (S.teams || {})[p.id] === t).map((p) => `<button type="button" class="kl-p" data-sw="${esc(p.id)}" ${isHost() ? "" : "disabled"}>${face(p, 30)}<span>${esc(p.name)}${p.id === PID ? " (أنت)" : ""}</span></button>`).join("") || '<span class="muted">…</span>'}</div>`;
+    return `<p class="muted" style="font-weight:700;color:var(--soft)">الفرق (${AR(S.players.length)} لاعب)${isHost() ? " · اضغط على لاعب ينقله للفريق الثاني" : ""}</p><div class="kl-teams">${col("b")}${col("r")}</div>`;
+  },
+  lobby(S) {
+    return `<p class="muted" style="font-weight:700;color:var(--soft)">كم لوحة؟</p>
+      <div class="chips pick"><button type="button" class="chip" data-best="1" aria-pressed="${S.best === 1}">لوحة وحدة</button><button type="button" class="chip" data-best="3" aria-pressed="${S.best === 3}">أفضل من ٣</button></div>
+      <p class="muted" style="font-weight:700;color:var(--soft)">فئات المربعات (اختر ٣ على الأقل)</p>
+      <div class="chips pick">${KCATS.map((c) => `<button type="button" class="chip" data-kc="${c}" aria-pressed="${S.picks.includes(c)}">${KLABEL(c)}</button>`).join("")}</div>`;
+  },
+  bindLobby(S) {
+    screen.querySelectorAll("[data-sw]").forEach((b) => (b.onclick = () => { const id = b.dataset.sw; H.team[id] = kOther(H.team[id] || "b"); beep(640, 0.04); hostSend(); }));
+    screen.querySelectorAll("[data-best]").forEach((b) => (b.onclick = () => { H.S.best = +b.dataset.best; beep(700, 0.04); hostSend(); }));
+    screen.querySelectorAll("[data-kc]").forEach((b) => (b.onclick = () => { const c = b.dataset.kc, p = H.S.picks; H.S.picks = p.includes(c) ? p.filter((x) => x !== c) : [...p, c]; beep(660, 0.04); hostSend(); }));
+    const t = Object.values(S.teams || {});
+    if (!t.includes("b") || !t.includes("r") || S.picks.length < 3) $("start").disabled = true;
+  },
+  start() { Object.assign(H.S, { wins: { b: 0, r: 0 }, boardNo: 0 }); H.kst = {}; H.usedQ = new Set(); kNewBoard(); },
+  views: { pick: kvPick, ask: kvAsk, res: kvRes, end: kvEnd },
+};
 
-  renderHub(); view("hub");
+// ---------------- the host ----------------
+function kNewBoard() {
+  hClear();
+  const S = H.S;
+  S.boardNo++;
+  let deck = []; while (deck.length < 9) deck = deck.concat(shuffled(S.picks));
+  Object.assign(S, { phase: "pick", board: Array(9).fill(null), sq: deck.slice(0, 9), team: S.boardNo % 2 ? "b" : "r", turns: 0, win: null, ask: null, res: null });
+  H.deadline = 0;
+  hostSend();
+}
+const kVoters = () => { const a = H.S.ask; return H.players.map((p) => p.id).filter((id) => a.maj || H.team[id] === a.team); };
+function kTally() {
+  const a = H.S.ask, n = a.q.o.length, t = { b: Array(n).fill(0), r: Array(n).fill(0) };
+  Object.entries(H.votes).forEach(([id, k]) => { const tm = H.team[id]; if (tm) t[tm][k]++; });
+  a.tally = t; a.voted = Object.keys(H.votes);
+}
+function hostAsk(i, team, steal, q0, excluded = -1) {
+  hClear();
+  const S = H.S, cat = S.sq[i];
+  let q = q0;
+  if (!q) { const bank = KQB[cat]; q = bank.find((x) => !H.usedQ.has(x.q)) || pickOne(bank); H.usedQ.add(q.q); q = { ...q, cat }; }
+  H.q = q; H.votes = {};
+  const maj = q.a < 0, T = maj ? 12000 : steal ? 10000 : 15000;
+  S.ask = { i, team, steal, excluded, maj, T, q: { q: q.q, o: q.o, cat } };
+  S.phase = "ask"; H.deadline = now() + T;
+  kTally(); hostSend();
+  hEvery(() => { if (now() >= H.deadline) kFinish(); }, 200);
+}
+function kFinish() {
+  hClear();
+  const S = H.S, a = S.ask, q = H.q, maj = a.maj, team = a.team, other = kOther(team), n = q.o.length;
+  const tally = (ids) => Array.from({ length: n }, (_, k) => ids.filter((id) => H.votes[id] === k).length);
+  const teamIds = Object.keys(H.votes).filter((id) => H.team[id] === team);
+  const teamAns = teamIds.length ? argmax(tally(teamIds)) : -1;
+  const allIds = Object.keys(H.votes);
+  const right = maj ? (allIds.length ? argmax(tally(allIds)) : -1) : q.a;
+  const ok = teamAns >= 0 && teamAns === right;
+  if (!maj) teamIds.forEach((id) => { if (H.votes[id] === right) kStat(id).right++; });
+  const told = !ok && !maj ? teamIds.filter((id) => H.votes[id] === right) : [];
+  told.forEach((id) => kStat(id).told++);
+  let note = "";
+  if (ok) S.board[a.i] = team;
+  else if (maj) { // no steal round here: the other team's guess is already in
+    const oIds = allIds.filter((id) => H.team[id] === other);
+    if (oIds.length && argmax(tally(oIds)) === right) { S.board[a.i] = other; note = `بس الفريق ${TN[other]} توقّع صح، والمربع راح لهم!`; }
+  }
+  S.win = kWinner(S.board);
+  const counts = maj ? tally(allIds) : tally(teamIds);
+  S.res = { ok, right, teamAns, told, note, counts, total: Math.max(1, maj ? allIds.length : teamIds.length), stealNext: !ok && !a.steal && !maj, answer: q.o[right] ?? "" };
+  S.phase = "res";
+  hostSend();
+}
+function kNext() {
+  const S = H.S, a = S.ask;
+  if (S.phase === "res") {
+    if (S.res.stealNext) return hostAsk(a.i, kOther(a.team), true, H.q, S.res.teamAns);
+    S.turns++;
+    if (S.win || !S.board.includes(null) || S.turns >= 16) return kBoardEnd();
+    S.team = a.steal ? a.team : kOther(a.team); // after a steal the turn goes to the team that stole
+    S.phase = "pick"; S.ask = null; S.res = null;
+    return hostSend();
+  }
+  if (S.phase === "end" && !S.over) return kNewBoard();
+}
+function kBoardEnd() {
+  const S = H.S, b = kCount(S.board, "b"), r = kCount(S.board, "r");
+  const w = S.win ? S.win.t : b > r ? "b" : r > b ? "r" : null;
+  if (w) S.wins[w]++;
+  const need = S.best === 3 ? 2 : 1;
+  S.boardWin = w;
+  S.over = S.wins.b >= need || S.wins.r >= need || S.boardNo >= (S.best === 3 ? 5 : 1);
+  const st = H.kst, top = (key) => { const id = Object.keys(st).sort((x, y) => st[y][key] - st[x][key])[0]; return id && st[id][key] > 0 ? { id, n: st[id][key] } : null; };
+  S.honor = { right: top("right"), told: top("told"), mine: {} };
+  Object.keys(st).forEach((id) => (S.honor.mine[id] = st[id]));
+  S.phase = "end";
+  hostSend();
+}
+
+// ---------------- every phone ----------------
+function kBoardHTML(S, pickable) {
+  const w = S.win ? S.win.line : [];
+  return `<div class="k-frame"><div class="k-board">${S.board.map((m, i) => m
+    ? `<div class="k-sq ${m} ${w.includes(i) ? "win" : ""}"><span class="m">${m === "b" ? "X" : "O"}</span></div>`
+    : `<button type="button" class="k-sq open" data-sq="${i}" ${pickable ? "" : "disabled"}>${KLABEL(S.sq[i])}</button>`).join("")}</div></div>`;
+}
+const kScore = (S) => `<div class="k-score"><span class="b">الأزرق ${AR(kCount(S.board, "b"))}</span><span class="k-dim" style="font-family:var(--f-body)">${S.best === 3 ? `لوحة ${AR(S.boardNo)} · ${AR(S.wins.b)}-${AR(S.wins.r)}` : "أول خط ثلاثة يفوز"}</span><span class="r">${AR(kCount(S.board, "r"))} الأحمر</span></div>`;
+function kvPick(S, fresh) {
+  if (!fresh) return;
+  clearKL(); setTop(`الدور ${AR(S.turns + 1)}`);
+  const mine = myTeam(S) === S.team;
+  show(`
+    ${kScore(S)}
+    <div class="k-turn ${S.team}">${mine ? "دوركم! أي واحد منكم يختار مربع" : `الفريق ${TN[S.team]} يختار مربع…`}</div>
+    ${kBoardHTML(S, mine)}
+    <p class="k-dim">${mine ? "اتفقوا بسرعة، أول ضغطة تحسم." : "انتظر، وبعدها السؤال يطلع عندك."}</p>`);
+  if (mine) screen.querySelectorAll("[data-sq]").forEach((b) => (b.onclick = () => { beep(700, 0.05); act({ t: "kpick", id: PID, i: +b.dataset.sq }); screen.querySelectorAll("[data-sq]").forEach((x) => (x.disabled = true)); b.classList.add("hot"); }));
+}
+function kvAsk(S, fresh) {
+  const a = S.ask, q = a.q, t = myTeam(S), canVote = a.maj || t === a.team;
+  if (fresh) { clearKL(); KL.my.kv = undefined; setTop(a.steal ? "فرصة سرقة" : `الدور ${AR(S.turns + 1)}`); beep(520, 0.06); }
+  const bars = a.maj ? a.q.o.map((_, k) => a.tally.b[k] + a.tally.r[k]) : t ? a.tally[t] : a.q.o.map(() => 0);
+  const showBars = a.maj || t === a.team, total = Math.max(1, bars.reduce((x, y) => x + y, 0));
+  const voters = S.players.filter((p) => a.maj || (S.teams || {})[p.id] === a.team);
+  show(`
+    <div class="k-turn ${a.team}">${a.steal ? `فرصة سرقة للفريق ${TN[a.team]}` : `دور الفريق ${TN[a.team]}`}${a.maj ? " · الكل يصوّت" : ""}</div>
+    <div class="k-card" style="display:grid;gap:10px">
+      <span class="k-cat">${KLABEL(q.cat)}</span>
+      <div class="k-q">${esc(q.q)}</div>
+      <div class="k-timer"><i id="kbar"></i></div>
+      ${q.o.map((o, k) => `<button type="button" class="k-opt ${k === a.excluded ? "wrong" : ""}" data-o="${k}" aria-pressed="${KL.my.kv === k}" ${!canVote || k === a.excluded ? "disabled" : ""}><i style="width:${showBars ? Math.round((bars[k] / total) * 100) : 0}%"></i><span><b>${esc(o)}</b><small>${showBars && bars[k] ? AR(bars[k]) : ""}</small></span></button>`).join("")}
+      ${a.maj ? '<p class="k-dim">ما فيه جواب صح: الصح هو اللي يختاره أكثر الحاضرين، وفريقكم لازم يتوقّعه.</p>' : ""}
+    </div>
+    <div class="row" style="justify-content:space-between;gap:8px"><span class="k-dim">${canVote ? (KL.my.kv === undefined ? "اختر جوابك" : "تقدر تغيّر لين يخلص الوقت") : `الفريق ${TN[a.team]} يصوّت…`}</span>
+    <span class="k-faces">${voters.map((p) => `<span style="opacity:${a.voted.includes(p.id) ? 1 : 0.35}">${face(p, 26)}</span>`).join("")}</span></div>`);
+  screen.querySelectorAll(".k-opt:not([disabled])").forEach((b) => (b.onclick = () => { KL.my.kv = +b.dataset.o; beep(660, 0.05); act({ t: "kvote", id: PID, k: KL.my.kv }); screen.querySelectorAll(".k-opt").forEach((x) => x.setAttribute("aria-pressed", String(x === b))); }));
+  if (fresh) klEvery(() => { const s = KL.S; if (!s || s.phase !== "ask") return; const b = $("kbar"); if (b) b.style.transform = `scaleX(${leftOf(s.left) / s.ask.T})`; }, 200);
+}
+function kvRes(S, fresh) {
+  if (!fresh) return;
+  clearKL();
+  const a = S.ask, r = S.res, q = a.q, other = kOther(a.team), t = myTeam(S);
+  const good = r.ok ? t === a.team : r.note ? t === other : t !== a.team;
+  if (good) { beep(784, 0.1); setTimeout(() => beep(1047, 0.18), 110); buzz(60); } else { beep(200, 0.3, "sawtooth", 0.08); buzz([40, 30, 40]); }
+  const last = S.win || !S.board.includes(null) || S.turns + 1 >= 16;
+  show(`
+    <div class="k-turn ${a.team}">${r.ok ? `صح! المربع للفريق ${TN[a.team]}` : a.maj ? `الفريق ${TN[a.team]} ما توقّع الأغلبية` : `غلط! ${a.steal ? "والسرقة ما نجحت" : `فرصة سرقة للفريق ${TN[other]}`}`}</div>
+    <div class="k-card" style="display:grid;gap:10px">
+      <span class="k-cat">${KLABEL(q.cat)}</span>
+      <div class="k-q">${esc(q.q)}</div>
+      ${q.o.map((o, k) => `<div class="k-opt ${k === r.right ? "right" : k === r.teamAns || k === a.excluded ? "wrong" : ""}"><i style="width:${Math.round((r.counts[k] / r.total) * 100)}%"></i><span><b>${esc(o)}</b><small>${r.counts[k] ? AR(r.counts[k]) : ""}</small></span></div>`).join("")}
+      <p class="k-dim">${a.maj ? `اختيار أغلب الحاضرين: «${esc(r.answer)}».` : `جواب الفريق: «${r.teamAns >= 0 ? esc(q.o[r.teamAns]) : "ما جاوبوا"}».`} ${r.note}</p>
+    </div>
+    ${r.told.length ? `<div class="k-told pop">${r.told.map((id) => face(who(id), 28)).join("")}<span>«قلت لكم!» ${r.told.map((id) => esc(who(id).name)).join(" و")} صوّت صح</span></div>` : ""}
+    ${isHost() ? `<button type="button" class="k-btn" id="kNext">${r.stealNext ? `فرصة الفريق ${TN[other]}` : last ? "النتيجة" : "كمّل"}</button>` : '<p class="k-dim" style="text-align:center">بانتظار المضيف…</p>'}`);
+  if (isHost()) $("kNext").onclick = () => kNext();
+}
+function kvEnd(S, fresh) {
+  if (!fresh) return;
+  clearKL(); setTop(S.over ? "انتهت" : `بعد اللوحة ${AR(S.boardNo)}`);
+  const w = S.over ? (S.wins.b > S.wins.r ? "b" : S.wins.r > S.wins.b ? "r" : null) : S.boardWin, t = myTeam(S);
+  if (w && w === t) { beep(523, 0.1); setTimeout(() => beep(659, 0.1), 120); setTimeout(() => beep(784, 0.25), 240); } else beep(262, 0.4, "triangle", 0.12);
+  const h = S.honor, mine = h.mine[PID] || { right: 0, told: 0 };
+  const team = (x) => S.players.filter((p) => (S.teams || {})[p.id] === x);
+  show(`
+    ${kBoardHTML(S, false)}
+    <div class="k-card k-honor pop">
+      <p class="k-dim">${S.over ? "لوحة الشرف" : `النتيجة ${AR(S.wins.b)}-${AR(S.wins.r)}`}</p>
+      <div class="big" style="color:${w === "b" ? "var(--tb)" : w === "r" ? "var(--tr)" : "var(--chalk-y)"}">${w ? `${S.over ? "فاز" : "اللوحة للفريق"} ${S.over ? `الفريق ${TN[w]}` : TN[w]}!` : "تعادل!"}</div>
+      <div class="k-faces">${(w ? team(w) : S.players).map((p) => face(p, 40)).join("")}</div>
+      ${S.over && h.right ? `<div class="k-row">${face(who(h.right.id), 28)}<span>${esc(who(h.right.id).name)}</span><b>أكثر واحد جاوب صح (${AR(h.right.n)})</b></div>` : ""}
+      ${S.over && h.told ? `<div class="k-row">${face(who(h.told.id), 28)}<span>${esc(who(h.told.id).name)}</span><b>ملك «قلت لكم!» (${AR(h.told.n)})</b></div>` : ""}
+      ${S.over ? `<div class="k-row">${face(who(PID), 28)}<span>أنت</span><b>${AR(mine.right)} صح · ${AR(mine.told)} «قلت لكم!»</b></div>` : ""}
+    </div>
+    ${isHost() ? (S.over ? '<button type="button" class="k-btn" id="kAgain">جلسة جديدة بنفس الربع</button>' : `<button type="button" class="k-btn" id="kGo">اللوحة ${AR(S.boardNo + 1)}</button>`) : '<p class="k-dim" style="text-align:center">بانتظار المضيف…</p>'}
+    <button type="button" class="k-btn ghost" id="kHome">رجوع لفسحة</button>`);
+  if (isHost()) { if (S.over) $("kAgain").onclick = () => hostAgain(); else $("kGo").onclick = () => kNext(); }
+  $("kHome").onclick = () => { leaveRoom(); renderHub(); view("hub"); };
+}

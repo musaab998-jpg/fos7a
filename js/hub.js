@@ -1,13 +1,11 @@
 "use strict";
   // ================= the yard =================
   const BELL = '<svg viewBox="0 0 40 40" aria-hidden="true"><path d="M20 5c-7 0-11 5-11 12v7l-4 5h30l-4-5v-7C31 10 27 5 20 5z" fill="#1b2a4a"/><circle cx="20" cy="33" r="3.5" fill="#1b2a4a"/><path d="M12 12q2-4 6-5" stroke="#ffc933" stroke-width="2.5" stroke-linecap="round" fill="none"/></svg>';
+  // what the cards say; the rules come from the games themselves (room.js)
   const GAMES = [
-    { id: "khallast", name: "خلّصت!", line: "حرف، وخانات، وأول واحد يخلّص يوقّف الكل. وبعدها تصويت على الإجابات الغريبة.", tags: ["٣ إلى ١٢ لاعب", "كتابة", "ضحك"], art: "notebook",
-      rules: ["تفتح غرفة من جوالك، والباقين يصوّرون الباركود ويدخلون من متصفح جوالهم بدون تطبيق.", "تختار «الورقة» (٤ خانات) أو «خانة خانة» (سريعة).", "يطلع حرف عند الكل، وكل واحد يكتب في جواله.", "أول واحد يعبّي كل شي يضغط «خلّصت!»، والباقين عندهم ٥ ثواني.", "الإجابات المعروفة تنقبل تلقائي، والغريبة تنعرض للتصويت بدون أسماء.", "الإجابة الوحيدة ١٠، المكررة ٥، وأضحك إجابة تاخذ ٥ زيادة.", "في النهاية كل واحد ياخذ شهادة بلقب."] },
-    { id: "khat", name: "خط ثلاثة", line: "إكس أو على السبورة: كل مربع سؤال، وفريقك يصوّت على الجواب. للحين تجربة مع لاعبين وهميين.", tags: ["فريقين", "معلومات", "تصويت"], art: "chalk",
-      rules: ["فريقين، أزرق وأحمر، والدور بالتناوب.", "فريقك يختار مربع، وكل مربع فئة.", "السؤال يطلع عند الكل، وفريقك يصوّت خلال ١٥ ثانية، وإجابة الأغلبية هي إجابتكم.", "صح؟ المربع لكم. غلط؟ الفريق الثاني ياخذ فرصة يسرقه.", "اللي صوّت صح وفريقه غلط ياخذ نقطة «قلت لكم!».", "مربع «وش يقول الأغلبية؟» ما له جواب صحيح: الصح هو اللي اختاره أكثر الحاضرين.", "أول فريق يسوي خط ثلاثة يفوز."] },
-    { id: "foldit", name: "اطوِها!", line: "لعبة الدفتر القديمة: نقطة حبر في نصفك، تطوي الورقة، وتنطبع على جنود خصمك. ولها لغز يومي.", tags: ["لاعبين", "مهارة", "لغز يومي"], art: "desk", ext: FOLD_IT,
-      rules: ["كل لاعب يوزّع جنوده في نصفه من الورقة.", "تحط نقطة حبر في نصفك، وتقدّر بعينك وين بتنطبع.", "تطوي الورقة، والحبر ينطبع على الجهة الثانية.", "خط الطي يتحرك ويميل كل دور.", "إذا صبت يستمر دورك."] },
+    { id: "khallast", line: "حرف، وخانات، وأول واحد يخلّص يوقّف الكل. وبعدها تصويت على الإجابات الغريبة.", tags: ["٢ إلى ٣٠ لاعب", "كتابة", "ضحك"], art: "notebook" },
+    { id: "khat", line: "إكس أو على السبورة: كل مربع سؤال، وفريقك يصوّت على الجواب، والغلط يفتح فرصة سرقة.", tags: ["فريقين", "حتى ٣٠ لاعب", "أسئلة"], art: "chalk" },
+    { id: "foldit", line: "لعبة الدفتر القديمة: نقطة حبر في نصفك، تنطوي الورقة، وتنطبع على جنود خصمك.", tags: ["لاعبين", "والباقي يتفرجون", "مهارة"], art: "desk", solo: FOLD_IT },
   ];
   function art(g) {
     if (g.art === "notebook") return `<div class="gart notebook"><svg viewBox="0 0 220 150" width="220" height="150" aria-hidden="true"><circle cx="170" cy="60" r="36" fill="#fff" stroke="#c8232c" stroke-width="4"/><text x="170" y="78" text-anchor="middle" font-family="Lalezar, sans-serif" font-size="52" fill="#c8232c">م</text><text x="112" y="42" text-anchor="middle" font-family="IBM Plex Sans Arabic, sans-serif" font-size="15" font-weight="700" fill="#1c2433">حيوان:</text><text x="58" y="42" text-anchor="middle" font-family="IBM Plex Sans Arabic, sans-serif" font-size="17" font-weight="700" fill="#1d3fb8">ماعز</text><text x="112" y="84" text-anchor="middle" font-family="IBM Plex Sans Arabic, sans-serif" font-size="15" font-weight="700" fill="#1c2433">أكلة:</text><text x="58" y="84" text-anchor="middle" font-family="IBM Plex Sans Arabic, sans-serif" font-size="17" font-weight="700" fill="#1d3fb8">مندي</text><rect x="28" y="104" width="132" height="32" rx="10" fill="#c8232c" transform="rotate(-4 94 120)"/><text x="94" y="127" text-anchor="middle" font-family="Lalezar, sans-serif" font-size="22" fill="#fff" transform="rotate(-4 94 120)">خلّصت!</text></svg></div>`;
@@ -15,11 +13,11 @@
     return `<div class="gart desk"><svg viewBox="0 0 220 150" width="220" height="150" aria-hidden="true"><rect x="40" y="18" width="140" height="116" rx="4" fill="#fbfbf5"/><path d="M40 76h140" stroke="#7c93b3" stroke-width="2.5" stroke-dasharray="8 6"/><circle cx="96" cy="104" r="16" fill="#1d3fb8"/><circle cx="96" cy="48" r="16" fill="#1d3fb8" opacity=".4"/><g stroke="#c8232c" stroke-width="3" stroke-linecap="round" fill="none"><circle cx="146" cy="40" r="6"/><path d="M146 46v12M139 51h14M146 58l-5 8M146 58l5 8"/></g></svg></div>`;
   }
   function renderHub() {
-    const crew = [me, ...BOTS];
+    const crew = [me, ...[24, 35, 1, 17, 30].map((k, i) => ({ av: { c: (i * 3 + 1) % NOTES.length, e: i % EYES.length, m: (i + 1) % MOUTHS.length, h: 0, k, r: i % 2 ? 3 : -3 } }))];
     $("hub").innerHTML = `<div class="hub-in">
       <header class="hdr">
         <a class="logo" href="#top" aria-label="فسحة">${BELL}فسحة</a>
-        <nav class="nav"><a href="#games">الألعاب</a><a href="#plans">الاشتراكات</a><a href="#faq">الأسئلة</a></nav>
+        <nav class="nav"><a href="#games">الألعاب</a><a href="#faq">الأسئلة</a></nav>
         <button type="button" class="me-chip" id="meChip">${avatar(me.av, 30)}<span>${me.name ? esc(me.name) : "سوّ شخصيتك"}</span></button>
       </header>
       <section class="hero" id="top">
@@ -34,8 +32,9 @@
       </section>
       <section class="sec" id="games">
         <div class="sec-h"><i></i><h2>ألعابنا</h2></div>
-        <div class="games">${GAMES.map((g) => `<article class="gcard">${art(g)}<div class="gbody"><h3>${g.name}</h3><p>${g.line}</p><div class="tags">${g.tags.map((t) => `<span>${t}</span>`).join("")}</div>
-          <div class="gbtns">${g.ext ? `<a class="play" href="${g.ext}">العب</a>` : `<button type="button" class="play" data-play="${g.id}">${g.id === "khallast" ? "افتح غرفة" : "جرّبها"}</button>`}<button type="button" class="info" data-info="${g.id}" aria-label="طريقة ${g.name}">؟</button></div></div></article>`).join("")}</div>
+        <div class="games">${GAMES.map((g) => `<article class="gcard">${art(g)}<div class="gbody"><h3>${ROOM_GAMES[g.id].name}</h3><p>${g.line}</p><div class="tags">${g.tags.map((t) => `<span>${t}</span>`).join("")}</div>
+          <div class="gbtns"><button type="button" class="play" data-play="${g.id}">افتح غرفة</button><button type="button" class="info" data-info="${g.id}" aria-label="طريقة ${ROOM_GAMES[g.id].name}">؟</button></div>
+          ${g.solo ? `<a class="solo" href="${g.solo}">أو العبها على نفس الجوال، ولها لغز يومي</a>` : ""}</div></article>`).join("")}</div>
       </section>
       <section class="sec">
         <div class="sec-h"><i></i><h2>كيف تلعبون</h2></div>
@@ -45,23 +44,14 @@
           <div class="step"><b>٣</b><h3>كل شي يطلع في الجوال</h3><p>الأسئلة والتصويت والنتائج عند كل واحد. وإذا عندكم تلفزيون يصير عرض إضافي.</p></div>
         </div>
       </section>
-      <section class="sec" id="plans">
-        <div class="sec-h"><i></i><h2>اشتراكات فسحة</h2></div>
-        <div class="plans">
-          <div class="plan"><h3>مجاني</h3><div class="price">٠</div><ul><li>جولة وحدة من كل لعبة</li><li>لين ٤ لاعبين</li><li>اطوِها ولغز اليوم</li></ul></div>
-          <div class="plan star"><h3>ليلة</h3><div class="price">٩٫٩٩ <small>ر.س لـ ١٢ ساعة</small></div><ul><li>كل الألعاب بلا حدود</li><li>لين ١٢ لاعب</li><li>المضيف بس يدفع</li></ul></div>
-          <div class="plan"><h3>شهر</h3><div class="price">١٩٫٩٩ <small>ر.س بالشهر</small></div><ul><li>كل اللي في «ليلة» طول الشهر</li><li>باقات خانات وأسئلة موسمية</li><li>ألوان وقبعات خاصة للشخصية</li></ul></div>
-        </div>
-        <p class="note">الأسعار مثال للمقارنة، نحددها بعدين.</p>
-      </section>
       <section class="sec" id="faq">
         <div class="sec-h"><i></i><h2>أسئلة</h2></div>
         <div class="faq">
           <details><summary>لازم أحمّل تطبيق؟</summary><p>لا. تدخلون من متصفح الجوال بالرمز، واللي يبي التطبيق يقدر ينزله.</p></details>
           <details><summary>نحتاج تلفزيون أو بروجكتر؟</summary><p>لا. كل شي يطلع في جوال كل لاعب: الأسئلة والتصويت والنتائج. التلفزيون عرض إضافي بس.</p></details>
-          <details><summary>مين يدفع؟</summary><p>اللي يفتح الغرفة بس. الباقين يدخلون مجاناً بدون حساب.</p></details>
-          <details><summary>كم لاعب؟</summary><p>من ٣ لين ١٢، و«خط ثلاثة» يتقسمون فيها فريقين.</p></details>
-          <details><summary>هذي النسخة الحقيقية؟</summary><p>هذا نموذج للتجربة: اللاعبين الثانين وهميين، والأسعار أمثلة.</p></details>
+          <details><summary>كم لاعب؟</summary><p>لين ٣٠ في الغرفة. «خط ثلاثة» يتقسمون فيها فريقين، و«اطوِها!» يلعبها اثنين والباقي يتفرجون.</p></details>
+          <details><summary>نقدر نغيّر اللعبة بدون ما نطلع؟</summary><p>إيه. المضيف يختار اللعبة من شاشة «وينكم!»، والكل يبقى في نفس الغرفة.</p></details>
+          <details><summary>كم تكلف؟</summary><p>مجانية وقت التجربة.</p></details>
         </div>
       </section>
       <footer class="foot"><span>فسحة · اسم مبدئي</span><span>ألعاب جماعية من جوالاتكم</span></footer>
@@ -69,7 +59,7 @@
     $("joinForm").onsubmit = (e) => { e.preventDefault(); const c = cleanCode($("joinCode").value); if (c.length === 4) { beep(700, 0.05); openJoin(c); } else $("joinCode").focus(); };
     $("meChip").onclick = $("heroMe").onclick = () => openProfile(() => { renderHub(); view("hub"); });
     document.querySelectorAll("[data-play]").forEach((b) => (b.onclick = () => { beep(700, 0.05); openGame(b.dataset.play); }));
-    document.querySelectorAll("[data-info]").forEach((b) => (b.onclick = () => { const g = GAMES.find((x) => x.id === b.dataset.info); $("modalCard").innerHTML = `<h3>${g.name}</h3><ol>${g.rules.map((r) => `<li>${r}</li>`).join("")}</ol><button type="button" class="pbtn" id="mClose">فهمت</button>`; $("modal").hidden = false; $("mClose").onclick = () => ($("modal").hidden = true); }));
+    document.querySelectorAll("[data-info]").forEach((b) => (b.onclick = () => { const g = ROOM_GAMES[b.dataset.info]; $("modalCard").innerHTML = `<h3>${g.name}</h3><ol>${g.rules.map((r) => `<li>${r}</li>`).join("")}</ol><button type="button" class="pbtn" id="mClose">فهمت</button>`; $("modal").hidden = false; $("mClose").onclick = () => ($("modal").hidden = true); }));
   }
   $("modal").addEventListener("click", (e) => { if (e.target === $("modal")) $("modal").hidden = true; });
 

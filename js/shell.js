@@ -1,30 +1,26 @@
 "use strict";
 // ================= opening games, joining rooms =================
-const TITLES = { khallast: "خلّصت!", khat: "خط ثلاثة" };
-
-// «ابدأ اللعب» on خلّصت! opens a room on this phone; خط ثلاثة is still the practice version with pretend players.
+// Every game opens a room on this phone; the others join it by QR code or by typing the code.
 function openGame(id) {
-  current = id; clearTimers(); if (typeof kClear === "function") kClear();
-  $("gTitle").textContent = TITLES[id]; $("roomCode").textContent = "";
+  current = id; clearTimers();
+  $("gTitle").textContent = ROOM_GAMES[id].name; $("roomCode").textContent = "";
   view("game");
-  const go = () => { if (id === "khallast") hostRoom(); else kLobby(); };
+  const go = () => hostRoom(id);
   if (!me.name) return openProfile(() => { current = id; view("game"); go(); });
   go();
 }
-
 // A player arriving by QR code or typing the room code.
 function openJoin(code) {
   code = cleanCode(code);
   if (code.length !== 4) return;
   current = "khallast";
-  $("gTitle").textContent = TITLES.khallast; $("roomCode").textContent = code;
+  $("gTitle").textContent = "فسحة"; $("roomCode").textContent = code;
   view("game");
   const go = () => joinRoom(code);
   if (!me.name) return openProfile(() => { current = "khallast"; view("game"); go(); });
   go();
 }
-
-$("quit").onclick = () => { clearTimers(); if (typeof kClear === "function") kClear(); leaveRoom(); renderHub(); view("hub"); };
+$("quit").onclick = () => { clearTimers(); leaveRoom(); renderHub(); view("hub"); };
 addEventListener("pagehide", () => { if (KL.net && !isHost()) KL.net.send({ t: "bye", id: PID }); });
 
 // the Android app sends its back button here: leave the game first, then let the app close
