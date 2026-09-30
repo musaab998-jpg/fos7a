@@ -1,0 +1,1366 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="اطوِها!">
+<link rel="apple-touch-icon" href="../icons/apple-touch-icon.png">
+<title>اطوِها! Fold It!</title>
+<meta name="theme-color" content="#151c2d">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lalezar&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: one dark desk under everything; a single centred column (home, battle) that turns into board + side panel on wide screens. Single dark world by choice. */
+:root {
+  --desk: #151c2d; --desk-2: #1f2839; --desk-3: #2a3449; --line: #34405a;
+  --chalk: #e9ecf3; --muted: #9aa5bb; --soft: #cfd6e4;
+  --marker: #f4d64a; --marker-deep: #b39a22; --marker-ink: #2a2206;
+  --near: #e9962b; --pen-blue: #8fa8ff; --paper-hi: #f6f1e4; --paper-mid: #e2d8c3; --paper-lo: #cfc3aa;
+  --f-display: "Lalezar", "IBM Plex Sans Arabic", system-ui, sans-serif;
+  --f-body: "IBM Plex Sans Arabic", "Segoe UI", Tahoma, system-ui, sans-serif;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { height: 100%; margin: 0; background: var(--desk); color: var(--chalk); overflow: hidden; }
+body { font-family: var(--f-body); font-size: 16px; line-height: 1.6; -webkit-tap-highlight-color: transparent; }
+h1, h2, h3 { font-family: var(--f-display); font-weight: 400; line-height: 1.15; margin: 0; text-wrap: balance; }
+p { margin: 0; }
+button { font: inherit; color: inherit; }
+:focus-visible { outline: 3px solid var(--marker); outline-offset: 3px; }
+
+#app { position: relative; height: 100%; overflow: hidden; user-select: none; -webkit-user-select: none; padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left); box-sizing: border-box; }
+#desk, #decor { position: absolute; inset: 0; width: 100%; height: 100%; display: block; pointer-events: none; }
+.view { position: absolute; inset: 0; display: flex; flex-direction: column; }
+
+/* home */
+.home { padding: 16px; align-items: center; }
+.home-col { width: 100%; max-width: 440px; flex: 1; display: flex; flex-direction: column; min-height: 0; }
+.icons { display: flex; gap: 8px; }
+.icons .spacer { flex: 1; }
+.ibtn { width: 44px; height: 44px; border-radius: 14px; border: 1px solid var(--line); background: rgba(42,52,73,.85); display: grid; place-items: center; cursor: pointer; flex: none; backdrop-filter: blur(4px); }
+.ibtn svg { width: 20px; height: 20px; }
+.ibtn.lang { font-family: var(--f-display); font-size: 17px; width: auto; padding: 0 12px; }
+.home-mid { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; text-align: center; min-height: 0; }
+.logo { width: clamp(112px, 22vh, 156px); aspect-ratio: 1; border-radius: 23%; transform: rotate(-4deg); box-shadow: 0 18px 30px -8px rgba(0,0,0,.75), 0 4px 8px rgba(0,0,0,.4); display: block; }
+.wordmark { font-size: clamp(52px, 10vh, 76px); margin-top: 14px; background: linear-gradient(180deg, var(--paper-hi), var(--paper-mid) 55%, var(--paper-lo)); -webkit-background-clip: text; background-clip: text; color: transparent; filter: drop-shadow(0 7px 7px rgba(0,0,0,.7)); padding: 0 8px; }
+.tag { color: var(--pen-blue); font-size: 18px; font-weight: 500; line-height: 1.4; }
+.underline { width: 180px; height: 14px; display: block; }
+.btn { border: 0; border-radius: 18px; padding: 12px 16px; cursor: pointer; width: 100%; display: grid; gap: 0; justify-items: center; font-weight: 700; font-size: 17px; line-height: 1.5; }
+.btn small { font-weight: 500; font-size: 12.5px; opacity: .75; }
+.btn-marker { background: var(--marker); color: var(--marker-ink); box-shadow: 0 5px 0 var(--marker-deep); }
+.btn-marker:active { transform: translateY(3px); box-shadow: 0 2px 0 var(--marker-deep); }
+.btn-marker[disabled] { background: var(--line); color: var(--chalk); box-shadow: 0 5px 0 var(--desk-3); opacity: .6; cursor: not-allowed; transform: none; }
+.btn-ghost { background: rgba(31,40,57,.96); color: var(--chalk); border: 1.5px solid var(--line); }
+.home-btns { display: grid; gap: 12px; padding-bottom: 8px; }
+.btn-play { font-size: 20px; padding: 14px 16px; }
+.modes { display: grid; gap: 8px; }
+.mode { display: grid; grid-template-columns: 40px minmax(0, 1fr) auto; align-items: center; gap: 12px; text-align: start; background: var(--desk); border: 1.5px solid var(--line); border-radius: 16px; padding: 10px 12px; cursor: pointer; }
+.mode svg { width: 34px; height: 34px; }
+.mode b { display: block; font-size: 15.5px; }
+.mode small { display: block; color: var(--muted); font-size: 12.5px; line-height: 1.45; }
+.mode[aria-pressed="true"] { border-color: var(--marker); background: #26291f; }
+.badge { font-size: 11.5px; font-weight: 700; color: var(--marker-ink); background: var(--marker); border-radius: 999px; padding: 2px 9px; white-space: nowrap; }
+.badge.done { background: var(--desk-3); color: var(--soft); }
+.group-h { font-size: 13px; font-weight: 700; color: var(--soft); margin-bottom: -4px; }
+.note { font-size: 12.5px; color: var(--muted); text-align: center; }
+
+/* game */
+.game { display: grid; grid-template-columns: minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr) auto; grid-template-areas: "head" "board" "side"; max-width: 560px; margin: 0 auto; }
+.g-head { grid-area: head; }
+.g-side { grid-area: side; }
+.topbar { padding: 8px 10px 4px; display: flex; align-items: center; gap: 8px; }
+.topbar .mid { flex: 1; min-width: 0; display: grid; gap: 2px; }
+.topbar .ibtn { width: 40px; height: 40px; }
+.turn { text-align: center; font-weight: 600; font-size: 15px; line-height: 1.3; display: flex; justify-content: center; align-items: center; gap: 8px; min-width: 0; }
+.pip { width: 10px; height: 10px; border-radius: 50%; flex: none; }
+.score { display: flex; justify-content: space-between; gap: 8px; font-size: 12px; line-height: 1.3; color: var(--muted); }
+.side { display: flex; align-items: center; gap: 6px; }
+.lives { display: flex; gap: 3px; }
+.lives i { width: 9px; height: 9px; border-radius: 50%; display: block; }
+.timer { height: 3px; margin: 0 10px 4px; border-radius: 4px; background: var(--desk-3); overflow: hidden; }
+.timer i { display: block; height: 100%; width: 100%; background: var(--marker); transform-origin: right; }
+[dir="ltr"] .timer i { transform-origin: left; }
+.board-wrap { grid-area: board; min-height: 0; position: relative; margin: 0 4px; }
+.board-wrap canvas { position: absolute; inset: 0; width: 100%; height: 100%; touch-action: none; }
+.status { text-align: center; font-size: 12.5px; color: var(--soft); padding: 4px 12px 0; min-height: 24px; line-height: 1.45; }
+.status b { color: var(--marker); font-weight: 600; }
+.controls { padding: 6px 10px 10px; display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); gap: 8px; align-items: stretch; }
+.controls .btn { padding: 8px 10px; font-size: 16px; }
+.controls.solo { grid-template-columns: minmax(0, 1fr); }
+.controls.solo .btn { padding: 12px 16px; font-size: 17px; }
+.inks { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 5px; }
+.ink { font-size: 11.5px; background: var(--desk-3); border: 1.5px solid var(--line); border-radius: 12px; padding: 4px 2px; min-width: 0; cursor: pointer; display: grid; justify-items: center; gap: 1px; line-height: 1.3; }
+.ink svg { width: 22px; height: 14px; }
+.ink small { color: var(--muted); font-size: 10.5px; display: none; }
+.ink span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 100%; }
+.ink[aria-pressed="true"] { border-color: var(--marker); background: #3a3a2a; }
+.ink[disabled] { opacity: .35; cursor: not-allowed; }
+.toast { position: absolute; top: 96px; left: 50%; transform: translateX(-50%) translateY(-8px); padding: 6px 16px; border-radius: 999px; font-size: 14px; font-weight: 700; opacity: 0; transition: opacity .2s, transform .2s; z-index: 15; pointer-events: none; white-space: nowrap; }
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+@media (min-aspect-ratio: 5/4) {
+  .game { max-width: 1000px; grid-template-columns: minmax(0, 1fr) 300px; grid-template-rows: auto minmax(0, 1fr); grid-template-areas: "board head" "board side"; padding: 8px 8px 8px 0; }
+  [dir="rtl"] .game { padding: 8px 0 8px 8px; }
+  .board-wrap { margin: 0; }
+  .g-side { align-self: start; }
+  .controls { grid-template-columns: minmax(0, 1fr); }
+  .controls .btn { padding: 12px 16px; font-size: 17px; }
+  .ink { font-size: 12.5px; padding: 5px 4px; }
+  .ink small { display: block; }
+  .toast { top: 50%; }
+}
+
+/* sheets and overlays */
+.overlay { position: absolute; inset: 0; z-index: 30; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; padding: 28px; text-align: center; background: rgba(15,20,31,.95); }
+.overlay > * { max-width: 380px; width: 100%; }
+.overlay h3 { font-size: 36px; }
+.overlay p { color: var(--soft); font-size: 14.5px; }
+.sheet { position: absolute; inset: 0; z-index: 30; background: rgba(10,14,22,.7); display: flex; align-items: flex-end; justify-content: center; }
+.sheet-card { width: 100%; max-width: 520px; max-height: 88%; overflow: auto; background: var(--desk-2); border: 1px solid var(--line); border-bottom: 0; border-radius: 26px 26px 0 0; padding: 18px 16px 26px; display: grid; gap: 14px; }
+.sheet-h { display: flex; align-items: center; justify-content: space-between; }
+.sheet-h h3 { font-size: 28px; }
+.lbl { font-size: 12.5px; color: var(--muted); margin-bottom: -6px; }
+.seg { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.seg.two { grid-template-columns: repeat(2, 1fr); }
+.seg button { background: var(--desk); border: 1px solid var(--line); border-radius: 12px; padding: 7px 0; font-size: 13.5px; cursor: pointer; }
+.seg button[aria-pressed="true"] { background: var(--chalk); color: var(--desk); border-color: var(--chalk); font-weight: 700; }
+.row { display: flex; align-items: center; justify-content: space-between; gap: 10px; font-size: 14.5px; }
+.switch { width: 48px; height: 28px; border-radius: 99px; background: var(--desk); border: 1px solid var(--line); position: relative; cursor: pointer; flex: none; }
+.switch::after { content: ""; position: absolute; top: 3px; inset-inline-start: 3px; width: 20px; height: 20px; border-radius: 50%; background: var(--muted); transition: inset-inline-start .15s; }
+.switch[aria-checked="true"] { background: var(--marker); border-color: var(--marker); }
+.switch[aria-checked="true"]::after { inset-inline-start: 23px; background: var(--marker-ink); }
+.stepper { display: flex; align-items: center; gap: 8px; }
+.stepper button { width: 34px; height: 34px; border-radius: 10px; border: 1px solid var(--line); background: var(--desk); cursor: pointer; font-size: 18px; }
+.stepper output { font-family: var(--f-display); font-size: 22px; min-width: 18px; text-align: center; }
+.swatches { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+.sw { border: 1.5px solid var(--line); border-radius: 12px; padding: 4px; cursor: pointer; background: var(--desk); display: grid; gap: 3px; justify-items: center; font-size: 11px; color: var(--soft); line-height: 1.3; }
+.sw canvas { width: 100%; aspect-ratio: 1; border-radius: 8px; display: block; }
+.sw[aria-pressed="true"] { border-color: var(--marker); }
+@media (min-width: 560px) { .swatches { grid-template-columns: repeat(6, minmax(0, 1fr)); } }
+.stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.stats div { background: var(--desk-3); border-radius: 14px; padding: 8px 4px; display: grid; }
+.stats b { font-family: var(--f-display); font-weight: 400; font-size: 26px; }
+.stats span { font-size: 11.5px; color: var(--muted); }
+.help-list { display: grid; gap: 8px; font-size: 14px; color: var(--soft); }
+.help-list b { color: var(--chalk); }
+.curtain { background: repeating-linear-gradient(90deg, #1e2638 0 18px, #222b3f 18px 36px); }
+.hand-note { font-size: 15px; font-weight: 600; letter-spacing: .02em; }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+</style>
+
+</head>
+<body>
+<div id="app" dir="rtl" lang="ar">
+  <canvas id="desk" aria-hidden="true"></canvas>
+  <canvas id="decor" aria-hidden="true"></canvas>
+
+  <div class="view home" id="v-home">
+    <div class="home-col">
+      <div class="icons">
+        <button type="button" class="ibtn" id="openSettings" data-aria="settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.2"/><path d="M19.4 13.5a7.6 7.6 0 0 0 0-3l2-1.6-2-3.4-2.4.9a7.6 7.6 0 0 0-2.6-1.5L14 2.5h-4l-.4 2.4A7.6 7.6 0 0 0 7 6.4l-2.4-.9-2 3.4 2 1.6a7.6 7.6 0 0 0 0 3l-2 1.6 2 3.4 2.4-.9a7.6 7.6 0 0 0 2.6 1.5l.4 2.4h4l.4-2.4a7.6 7.6 0 0 0 2.6-1.5l2.4.9 2-3.4z"/></svg></button>
+        <button type="button" class="ibtn" id="openKit" data-aria="kit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M15.5 4.5l4 4L9 19l-5 1 1-5z"/><path d="M13.5 6.5l4 4"/></svg></button>
+        <button type="button" class="ibtn" id="openHelp" data-aria="help"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M9.3 9.3a2.8 2.8 0 0 1 5.4 1c0 1.9-2.7 2.3-2.7 4.2"/><circle cx="12" cy="17.6" r="1.1" fill="currentColor" stroke="none"/></svg></button>
+        <span class="spacer"></span>
+        <a class="ibtn lang" href="../" style="text-decoration:none;color:inherit" aria-label="رجوع لفسحة">فسحة</a>
+        <button type="button" class="ibtn lang" id="langBtn">EN</button>
+      </div>
+      <div class="home-mid">
+        <canvas class="logo" id="homeLogo" width="320" height="320" aria-hidden="true"></canvas>
+        <h1 class="wordmark" id="homeName">اطوِها!</h1>
+        <p class="tag" id="homeTag">نقطة حبر وورقة تكفي</p>
+        <svg class="underline" viewBox="0 0 210 14" aria-hidden="true"><path d="M4 10 C60 3, 150 5, 206 4" fill="none" stroke="#2c55e0" stroke-width="3.2" stroke-linecap="round"/><circle cx="206" cy="4" r="2.4" fill="#2c55e0"/></svg>
+      </div>
+      <div class="home-btns">
+        <button type="button" class="btn btn-marker btn-play" id="playBtn"><span data-t="playNow"></span><small id="playHint"></small></button>
+      </div>
+    </div>
+  </div>
+
+  <div class="view game" id="v-game" hidden>
+    <div class="g-head">
+      <div class="topbar">
+        <button type="button" class="ibtn" id="backBtn" data-aria="menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path class="chev" d="M9 6l6 6-6 6"/></svg></button>
+        <div class="mid">
+          <div class="turn" id="turnLbl"><span class="pip"></span><span>…</span></div>
+          <div class="score">
+            <div class="side"><span id="meName"></span><div class="lives" id="meLives"></div></div>
+            <div class="side"><div class="lives" id="opLives"></div><span id="opName"></span></div>
+          </div>
+        </div>
+        <button type="button" class="ibtn sound-btn" data-aria="sound"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z" fill="currentColor"/><path class="wave" d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11"/></svg></button>
+      </div>
+      <div class="timer" id="timerBar"><i id="timerFill"></i></div>
+    </div>
+    <div class="board-wrap" id="boardWrap"><canvas id="board"></canvas></div>
+    <div class="g-side">
+      <div class="status" id="status"></div>
+      <div class="controls">
+        <div class="inks">
+          <button type="button" class="ink" data-ink="normal" aria-pressed="true"><svg viewBox="0 0 22 14"><circle cx="11" cy="7" r="3.8" fill="currentColor"/></svg><span data-t="inkNormal"></span><small data-t="unlimited"></small></button>
+          <button type="button" class="ink" data-ink="big" aria-pressed="false"><svg viewBox="0 0 22 14"><circle cx="11" cy="7" r="6.5" fill="currentColor"/></svg><span data-t="inkBig"></span><small id="bigLeft"></small></button>
+          <button type="button" class="ink" data-ink="double" aria-pressed="false"><svg viewBox="0 0 22 14"><circle cx="6" cy="7" r="3.6" fill="currentColor"/><circle cx="16" cy="7" r="3.6" fill="currentColor"/></svg><span data-t="inkDouble"></span><small id="dblLeft"></small></button>
+        </div>
+        <button type="button" class="btn btn-marker" id="foldBtn" disabled></button>
+      </div>
+    </div>
+    <div class="toast" id="toast"></div>
+  </div>
+
+  <div class="sheet" id="modes" hidden>
+    <div class="sheet-card">
+      <div class="sheet-h"><h3 data-t="howPlay"></h3><button type="button" class="ibtn" data-close data-aria="close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+      <div class="modes">
+        <button type="button" class="mode" data-m="daily"><svg viewBox="0 0 34 34" fill="none"><rect x="4" y="6" width="26" height="24" rx="4" fill="#fbfbf5"/><path d="M4 12h26" stroke="#e46b6b" stroke-width="2"/><path d="M11 3v6M23 3v6" stroke="#9aa5bb" stroke-width="2.4" stroke-linecap="round"/><circle cx="17" cy="21" r="4.5" fill="#1d3fb8"/></svg><span><b data-t="daily"></b><small id="dailyInfo"></small></span><span class="badge" id="dailyBadge"></span></button>
+        <button type="button" class="mode" data-m="ai"><svg viewBox="0 0 34 34" fill="none"><rect x="6" y="9" width="22" height="18" rx="5" fill="#2a3449" stroke="#9aa5bb" stroke-width="1.8"/><circle cx="13" cy="18" r="2.6" fill="#f4d64a"/><circle cx="21" cy="18" r="2.6" fill="#f4d64a"/><path d="M17 4v5" stroke="#9aa5bb" stroke-width="1.8" stroke-linecap="round"/></svg><span><b data-t="vsAi"></b><small data-t="vsAiHint"></small></span><span></span></button>
+        <button type="button" class="mode" data-m="pass"><svg viewBox="0 0 34 34" fill="none"><circle cx="11" cy="12" r="4.5" fill="#6d8dff"/><circle cx="23" cy="12" r="4.5" fill="#ef6b6b"/><path d="M3.5 28c.8-5 3.6-8 7.5-8s6.7 3 7.5 8M15.5 28c.8-5 3.6-8 7.5-8s6.7 3 7.5 8" stroke="#cfd6e4" stroke-width="2" stroke-linecap="round"/></svg><span><b data-t="pass"></b><small data-t="passHint"></small></span><span></span></button>
+      </div>
+      <p class="note" id="dailyNote"></p>
+      <div class="lbl" data-t="difficulty" id="diffLbl"></div>
+      <div class="seg" id="diffSeg"><button type="button" data-d="easy"></button><button type="button" data-d="normal"></button><button type="button" data-d="hard"></button></div>
+      <div class="row" id="soldiersRow"><span data-t="soldiers"></span><div class="stepper"><button type="button" id="nMinus">−</button><output id="nOut"></output><button type="button" id="nPlus">+</button></div></div>
+      <button type="button" class="btn btn-marker" id="goBtn" data-t="go"></button>
+    </div>
+  </div>
+
+  <div class="sheet" id="settings" hidden>
+    <div class="sheet-card">
+      <div class="sheet-h"><h3 data-t="settings"></h3><button type="button" class="ibtn" data-close data-aria="close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+      <div class="lbl" data-t="language"></div>
+      <div class="seg two" id="langSeg"><button type="button" data-l="ar">العربية</button><button type="button" data-l="en">English</button></div>
+      <div class="row"><span data-t="sound"></span><button type="button" class="switch" id="swSound" role="switch" aria-checked="true"></button></div>
+      <div class="group-h" data-t="extras"></div>
+      <div class="row"><span data-t="timer"></span><button type="button" class="switch" id="swTimer" role="switch" aria-checked="true"></button></div>
+      <div class="row"><span data-t="moving"></span><button type="button" class="switch" id="swShift" role="switch" aria-checked="true"></button></div>
+      <div class="row"><span data-t="hazards"></span><button type="button" class="switch" id="swHaz" role="switch" aria-checked="true"></button></div>
+      <button type="button" class="btn btn-marker" data-close data-t="done"></button>
+    </div>
+  </div>
+
+  <div class="sheet" id="kit" hidden>
+    <div class="sheet-card">
+      <div class="sheet-h"><h3 data-t="kit"></h3><button type="button" class="ibtn" data-close data-aria="close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+      <div class="lbl" data-t="paper"></div>
+      <div class="swatches" id="paperSw"></div>
+      <div class="lbl" data-t="ink"></div>
+      <div class="swatches" id="inkSw"></div>
+      <button type="button" class="btn btn-marker" data-close data-t="done"></button>
+    </div>
+  </div>
+
+  <div class="sheet" id="help" hidden>
+    <div class="sheet-card">
+      <div class="sheet-h"><h3 data-t="help"></h3><button type="button" class="ibtn" data-close data-aria="close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+      <div class="help-list" id="helpList"></div>
+      <button type="button" class="btn btn-marker" data-close data-t="gotIt"></button>
+    </div>
+  </div>
+
+  <div class="overlay curtain" id="curtain" hidden>
+    <p class="hand-note" style="color:var(--muted)" data-t="cover"></p>
+    <h3 id="curtainTitle"></h3>
+    <p id="curtainText"></p>
+    <button type="button" class="btn btn-marker" id="curtainBtn" style="max-width:220px" data-t="ready"></button>
+  </div>
+
+  <div class="overlay" id="result" hidden>
+    <p class="hand-note" style="color:var(--marker)" data-t="over"></p>
+    <h3 id="resTitle"></h3>
+    <p id="resText"></p>
+    <div class="stats"><div><b id="stF"></b><span data-t="folds"></span></div><div><b id="stH"></b><span data-t="hits"></span></div><div><b id="stA"></b><span id="stALbl" data-t="accuracy"></span></div></div>
+    <p class="note" id="resNote"></p>
+    <button type="button" class="btn btn-marker" id="shareBtn" data-t="share" hidden></button>
+    <button type="button" class="btn btn-marker" id="againBtn" data-t="again"></button>
+    <button type="button" class="btn btn-ghost" id="homeBtn" data-t="menu"></button>
+  </div>
+</div>
+
+<script>
+(() => {
+  "use strict";
+  const $ = (id) => document.getElementById(id);
+  const AR = (n) => String(n).replace(/\d/g, (d) => "٠١٢٣٤٥٦٧٨٩"[d]);
+  const HAND = '"IBM Plex Sans Arabic", sans-serif';
+  const DISPLAY = '"Lalezar", sans-serif';
+
+  // ---------------- text ----------------
+  const TEXT = {
+    ar: {
+      appName: "اطوِها!", tagline: "نقطة حبر وورقة تكفي",
+      vsAi: "ضد الكمبيوتر", pass: "لاعبين على جهاز واحد", passHint: "تتبادلون الجهاز",
+      aiHint: (d, n) => `${d} · ${n} جنود`, easy: "سهل", normal: "متوسط", hard: "صعب",
+      settings: "الإعدادات", language: "اللغة", paper: "الورق", ink: "الحبر", difficulty: "المستوى", soldiers: "عدد الجنود",
+      timer: "مؤقت ١٠ ثواني", moving: "خط الطي يتحرك", hazards: "قهوة وشريط لاصق", sound: "الصوت", done: "تم",
+      help: "كيف ألعب؟", gotIt: "فهمت",
+      helpSteps: [
+        ["١. وزّع جنودك", "في نصفك، بعيد شوي عن النص. خصمك يشوف جنودك وأنت تشوف جنوده."],
+        ["٢. شوف خط الطي:", "يتحرك ويميل كل دور، فالانعكاس يتغيّر."],
+        ["٣. حط الحبر", "في جهتك وقدّر بعينك وين بينطبع. عندك ١٠ ثواني."],
+        ["٤. اطوِ.", "إذا صبت يستمر دورك وتطوي مرة ثانية."],
+        ["٥. انتبه للعوائق:", "بقعة القهوة تشرب الحبر، والشريط اللاصق يحمي الجندي من ضربة وحدة."],
+        ["الحبر الخاص:", "بقعة كبيرة ورشّة مزدوجة، كل وحدة مرة وحدة في الجولة."],
+        ["لغز اليوم:", "نفس الورقة للكل كل يوم. خمس طيّات، وانسخ نتيجتك وتحدّى فيها أصحابك."],
+      ],
+      cover: "غطِّ الشاشة", ready: "أنا جاهز",
+      p1Starts: "اللاعب الأول يبدأ", p1StartsText: "وزّع جنودك، وخلّ خصمك يلف وجهه.",
+      p2Turn: "دور اللاعب الثاني", p2TurnText: "سلّم الجهاز عشان يوزّع جنوده.",
+      battle: "بدأت المعركة", battleText: "الجنود كلهم ظاهرين الحين. سلّم الجهاز للاعب الأول.",
+      over: "انتهت المعركة", youWin: "فزت!", aiWins: "فاز الكمبيوتر", wins: (n) => `فاز ${n}!`,
+      loseText: "جرّب مستوى أسهل، أو خبّ جنودك ورا بقعة القهوة.", winText: "كل جنود الخصم انشطبوا.",
+      folds: "طيّات", hits: "إصابات", accuracy: "الدقة", again: "جولة ثانية", menu: "القائمة",
+      you: "أنت", computer: "الكمبيوتر", p1: "الأول", p2: "الثاني",
+      placeYours: "وزّع جنودك", placeNamed: (n) => `${n}: وزّع جنودك`, yourTurn: "دورك", aiTurn: "دور الكمبيوتر", turnOf: (n) => `دور ${n}`,
+      inkNormal: "عادي", inkBig: "بقعة كبيرة", inkDouble: "رشّة مزدوجة", unlimited: "بلا حدود", once: "مرة وحدة", used: "انستخدمت",
+      fold: "اطوِ الورقة", start: "جاهز، ابدأ", left: (n) => `باقي ${n} جنود`,
+      setupStatus: (n) => `وزّع <b>${n}</b> جنود في نصفك، بعيد شوي عن النص.`, remaining: (n) => `باقي <b>${n}</b>. لمسة على الجندي تشيله.`, allPlaced: "تمام! اضغط <b>جاهز</b>.",
+      aiThinking: "الكمبيوتر يفكر…", aiAiming: "الكمبيوتر يصوّب…",
+      aimMoving: "خط الطي <b>تحرك</b>. قدّر الانعكاس، وحط الحبر، واطوِ.", aim: "حط الحبر في نصفك وقدّر وين بينطبع، واطوِ.",
+      twoHits: "إصابتين!", hitKeeps: "إصابة! دورك مستمر", tapeSaved: "الشريط حمى الجندي!", coffee: "القهوة شربت الحبر", off: "طار الحبر برا الورقة",
+      near: "طائشة، بس قريبة!", miss: "طائشة", timeUp: "خلص الوقت!", wrongSide: "حط الحبر في جهتك من خط الطي", full: "اكتمل جنودك",
+      badSpot: "في نصفك، وبعيد عن النص والحواف", tooClose: "بعّدهم عن بعض شوي", setupHint: "المس هنا عشان تحط جنودك",
+      aria: { settings: "الإعدادات", sound: "الصوت", help: "كيف ألعب؟", menu: "القائمة", close: "إغلاق", kit: "المقلمة" },
+      playNow: "العب الآن", howPlay: "كيف تبي تلعب؟", go: "ابدأ", kit: "المقلمة", extras: "تحديات إضافية",
+      vsAiHint: "وزّع جنودك وواجه الكمبيوتر",
+      daily: "لغز اليوم", dailyReady: (n) => `لغز رقم ${n} · نفس اللغز للكل`, dailyDone: (h, st) => `شطبت ${h} من ٥ · سلسلة ${st}`,
+      badgeNew: "جديد", badgeDone: "محلول",
+      dailyRules: "خمس جنود للخصم وخمس طيّات. كل طيّة نقطة حبر وحدة، والخط يتحرك كل مرة. كم جندي تقدر تشطب؟",
+      dailyPractice: "حليت لغز اليوم. تقدر تعيده للتدريب، والنتيجة ما تنحسب.",
+      dailyTitle: (n) => `لغز اليوم #${n}`, foldOf: (i) => `طيّة ${i} من ٥`, dailyStatus: "حط نقطة حبر، قدّر الانعكاس، واطوِ.",
+      dailyScore: (h) => `شطبت ${h} من ٥`, dailyNext: (h) => `اللغز الجاي بعد ${h} ساعة تقريباً`, share: "انسخ النتيجة", copied: "انسخت النتيجة، الصقها لأصحابك",
+      streak: "سلسلة", hit: "إصابة!", target: "الخصم", playHintNew: "لغز اليوم ينتظرك", playHintStreak: (n) => `سلسلتك ${n} أيام`,
+      practice: "تدريب",
+    },
+    en: {
+      appName: "Fold It!", tagline: "A drop of ink and a sheet of paper.",
+      vsAi: "vs Computer", pass: "Two players, one device", passHint: "Take turns",
+      aiHint: (d, n) => `${d} · ${n} soldiers`, easy: "Easy", normal: "Normal", hard: "Hard",
+      settings: "Settings", language: "Language", paper: "Paper", ink: "Ink", difficulty: "Difficulty", soldiers: "Soldiers",
+      timer: "10-second timer", moving: "Moving fold line", hazards: "Coffee and tape", sound: "Sound", done: "Done",
+      help: "How to play", gotIt: "Got it",
+      helpSteps: [
+        ["1. Place your soldiers", "on your half, away from the middle. Both sides can see every soldier."],
+        ["2. Watch the fold line:", "it shifts and tilts every turn, so the mirror changes."],
+        ["3. Drop ink", "on your side and judge by eye where it will print. You have 10 seconds."],
+        ["4. Fold.", "A hit keeps your turn, so fold again."],
+        ["5. Mind the obstacles:", "coffee soaks up ink, and tape saves a soldier from one hit."],
+        ["Special inks:", "a big blot and a double drop, once each per game."],
+        ["Daily puzzle:", "the same sheet for everyone each day. Five folds, then copy your result and challenge your friends."],
+      ],
+      cover: "Cover the screen", ready: "I'm ready",
+      p1Starts: "Player one starts", p1StartsText: "Place your soldiers while your opponent looks away.",
+      p2Turn: "Player two's turn", p2TurnText: "Hand over the device so they can place their soldiers.",
+      battle: "The battle begins", battleText: "Every soldier is visible now. Hand the device to player one.",
+      over: "Battle over", youWin: "You win!", aiWins: "The computer wins", wins: (n) => `${n} wins!`,
+      loseText: "Try an easier level, or hide your soldiers behind the coffee.", winText: "Every enemy soldier is crossed out.",
+      folds: "Folds", hits: "Hits", accuracy: "Accuracy", again: "Play again", menu: "Menu",
+      you: "You", computer: "Computer", p1: "Player 1", p2: "Player 2",
+      placeYours: "Place your soldiers", placeNamed: (n) => `${n}: place your soldiers`, yourTurn: "Your turn", aiTurn: "Computer's turn", turnOf: (n) => `${n}'s turn`,
+      inkNormal: "Normal", inkBig: "Big blot", inkDouble: "Double drop", unlimited: "Unlimited", once: "Once", used: "Used",
+      fold: "Fold the paper", start: "Ready, start", left: (n) => `${n} more to place`,
+      setupStatus: (n) => `Place <b>${n}</b> soldiers on your half, away from the middle.`, remaining: (n) => `<b>${n}</b> to go. Tap a soldier to remove it.`, allPlaced: "Done! Press <b>Ready</b>.",
+      aiThinking: "The computer is thinking…", aiAiming: "The computer is aiming…",
+      aimMoving: "The fold line <b>moved</b>. Judge the mirror, drop ink and fold.", aim: "Drop ink on your half, judge where it prints, and fold.",
+      twoHits: "Two hits!", hitKeeps: "Hit! Go again", tapeSaved: "The tape saved the soldier!", coffee: "The coffee soaked up the ink", off: "The ink flew off the sheet",
+      near: "Missed, but close!", miss: "Missed", timeUp: "Time's up!", wrongSide: "Drop the ink on your side of the fold", full: "All your soldiers are placed",
+      badSpot: "On your half, away from the middle and edges", tooClose: "Spread them out a little", setupHint: "Tap here to place soldiers",
+      aria: { settings: "Settings", sound: "Sound", help: "How to play", menu: "Menu", close: "Close", kit: "Pencil case" },
+      playNow: "Play now", howPlay: "How do you want to play?", go: "Start", kit: "Pencil case", extras: "Extra challenges",
+      vsAiHint: "Place your soldiers and take on the computer",
+      daily: "Daily puzzle", dailyReady: (n) => `Puzzle #${n} · the same for everyone`, dailyDone: (h, st) => `${h} of 5 crossed out · streak ${st}`,
+      badgeNew: "New", badgeDone: "Solved",
+      dailyRules: "Five enemy soldiers and five folds. One ink dot per fold, and the line moves every time. How many can you cross out?",
+      dailyPractice: "You've solved today's puzzle. Play it again for practice; it won't count.",
+      dailyTitle: (n) => `Daily #${n}`, foldOf: (i) => `Fold ${i} of 5`, dailyStatus: "Drop one ink dot, judge the mirror, fold.",
+      dailyScore: (h) => `You crossed out ${h} of 5`, dailyNext: (h) => `Next puzzle in about ${h} hours`, share: "Copy result", copied: "Result copied. Paste it to your friends",
+      streak: "Streak", hit: "Hit!", target: "Enemy", playHintNew: "Today's puzzle is waiting", playHintStreak: (n) => `Your streak: ${n} days`,
+      practice: "Practice",
+    },
+  };
+  let lang = "ar";
+  const t = (k, ...a) => { const v = TEXT[lang][k]; return typeof v === "function" ? v(...a) : v; };
+  const num = (n) => (lang === "ar" ? AR(n) : String(n));
+
+
+  // ---------------- skins: real school paper and real pens ----------------
+  const PAPERS = [
+    { id: "ar", name: "دفتر عربي", en: "Arabic notebook", bg: "#fbfaf3", line: "#b8cce4", gap: 0.055, margin: { side: "right", color: "#e07b7b", double: true }, header: "ar", fold: "#8394ad", back: "#ecebe2" },
+    { id: "en", name: "دفتر إنجليزي", en: "English notebook", bg: "#fdfdf7", line: "#a9c3e5", gap: 0.055, margin: { side: "left", color: "#e46b6b" }, header: "en", holes: "left", fold: "#8394ad", back: "#ecece4" },
+    { id: "fools", name: "فولسكاب", en: "Foolscap", bg: "#fbfbf5", line: "#9dbee2", gap: 0.042, margin: { side: "right", color: "#e46b6b" }, header: "fools", holes: "right", fold: "#7c93b3", back: "#e9e9e1" },
+    { id: "grid", name: "مربعات", en: "Graph paper", bg: "#f7fafc", grid: true, fold: "#6f86a6", back: "#e6edf4" },
+    { id: "sketch", name: "كراسة رسم", en: "Sketchbook", bg: "#f1e9d8", fibers: true, perforated: true, fold: "#9a8766", back: "#e3d9c4" },
+    { id: "board", name: "سبورة", en: "Chalkboard", bg: "#243a30", line: "rgba(255,255,255,.06)", gap: 0.06, dark: true, smudge: true, fold: "rgba(255,255,255,.45)", back: "#1c2e26" },
+  ];
+  const INKS = [
+    { id: "bic", name: "قلم جاف", en: "Ballpoint", c: ["#1d3fb8", "#c8232c"], style: "ballpoint" },
+    { id: "fountain", name: "قلم حبر", en: "Fountain pen", c: ["#1b2a6b", "#7d1f2a"], style: "fountain" },
+    { id: "pencil", name: "رصاص وملوّن", en: "Pencils", c: ["#3f3f46", "#cf3b2b"], style: "pencil" },
+    { id: "hl", name: "هايلايتر", en: "Highlighter", c: ["#2fcf73", "#ff58ab"], style: "highlighter" },
+    { id: "marker", name: "فلوماستر", en: "Felt-tip", c: ["#0f7d5c", "#e2601d"], style: "marker" },
+  ];
+  let paper = PAPERS[2], inkSet = INKS[0];
+  const pen = (p) => inkSet.c[p - 1];
+  const chalkify = (col) => (paper.dark ? lighten(col, 0.45) : col);
+  function lighten(hex, k) {
+    const m = hex.match(/\w\w/g); if (!m) return hex;
+    const [r, g, b] = m.map((x) => parseInt(x, 16));
+    const f = (v) => Math.round(v + (255 - v) * k);
+    return `rgb(${f(r)},${f(g)},${f(b)})`;
+  }
+  const penC = (p) => chalkify(pen(p));
+
+  // ---------------- geometry ----------------
+  let H = 1.45, MID = H / 2; // the sheet's height in widths; set per game to fill the screen
+  const SR = 0.052, INK = { normal: 0.036, big: 0.072 };
+  const SAFE = SR * 1.8, EDGE = SR; // soldiers keep this far from the middle and the edges; a moving fold steers round them
+  const dist = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
+  const rnd = (a, b) => a + Math.random() * (b - a);
+  function gauss() { let u = 0, v = 0; while (!u) u = Math.random(); while (!v) v = Math.random(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v); }
+
+  // fold line: through (0.5, cy) with angle ang (radians); normal points towards player 1 (down)
+  function foldOf(S) { const a = S.fold.ang; return { c: { x: 0.5, y: S.fold.cy }, n: { x: -Math.sin(a), y: Math.cos(a) }, t: { x: Math.cos(a), y: Math.sin(a) } }; }
+  const sd = (f, p) => (p.x - f.c.x) * f.n.x + (p.y - f.c.y) * f.n.y; // >0 = blue side
+  const reflect = (f, p) => { const d = sd(f, p); return { x: p.x - 2 * d * f.n.x, y: p.y - 2 * d * f.n.y }; };
+  const onSide = (f, p, pl, pad = 0) => (pl === 1 ? sd(f, p) > pad : sd(f, p) < -pad);
+  const inSheet = (p, pad = 0) => p.x > pad && p.x < 1 - pad && p.y > pad && p.y < H - pad;
+  function halfPoly(f, pl) {
+    // clip the sheet rectangle to one side of the fold line
+    let poly = [{ x: 0, y: 0 }, { x: 1, y: 0 }, { x: 1, y: H }, { x: 0, y: H }];
+    const keep = (p) => (pl === 1 ? sd(f, p) >= 0 : sd(f, p) <= 0);
+    const out = [];
+    for (let i = 0; i < poly.length; i++) {
+      const a = poly[i], b = poly[(i + 1) % poly.length];
+      const ka = keep(a), kb = keep(b);
+      if (ka) out.push(a);
+      if (ka !== kb) { const da = sd(f, a), db = sd(f, b), t = da / (da - db); out.push({ x: a.x + (b.x - a.x) * t, y: a.y + (b.y - a.y) * t }); }
+    }
+    return out;
+  }
+
+  // ---------------- state ----------------
+  const S = {
+    mode: "ai", diff: "normal", N: 4, timerOn: true, shiftOn: true, hazOn: true, sound: true,
+    phase: "setup", turn: 1, viewer: 1, soldiers: [], stamps: [], drops: [], ink: "normal",
+    special: { 1: { big: 1, double: 1 }, 2: { big: 1, double: 1 } }, stats: { 1: { f: 0, h: 0 }, 2: { f: 0, h: 0 } },
+    fold: { cy: MID, ang: 0 }, coffee: [], busy: false, anim: null, fx: null, pulse: 0, deadline: 0,
+  };
+
+  // ---------------- audio ----------------
+  let actx = null;
+  const ac = () => { if (!actx) { try { actx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {} } return actx; };
+  function buf(dur, fn) {
+    const a = ac(); if (!a) return null;
+    const n = Math.floor(a.sampleRate * dur), b = a.createBuffer(1, n, a.sampleRate), d = b.getChannelData(0);
+    let last = 0; const noise = (k) => (last += (Math.random() * 2 - 1 - last) * k) * 1.6;
+    for (let i = 0; i < n; i++) d[i] = fn(i / a.sampleRate, i / n, noise);
+    return b;
+  }
+  const env = (p, at, rel) => Math.max(0, Math.min(1, p < at ? p / at : p < rel ? 1 - ((p - at) / (rel - at)) * 0.6 : 0.4 * (1 - (p - rel) / (1 - rel))));
+  const cache = {};
+  const SFX = {
+    tap: [0.045, (t, p) => Math.sin(2 * Math.PI * 900 * t) * (1 - p) ** 2 * 0.22],
+    place: [0.11, (t, p, n) => (n(0.35) * 0.5 + Math.sin(2 * Math.PI * 1400 * t) * 0.12 * (1 - p)) * env(p, 0.05, 0.95)],
+    drop: [0.14, (t, p) => Math.sin(2 * Math.PI * (900 - 650 * p) * t) * env(p, 0.02, 0.9) * 0.45],
+    fold: [0.55, (t, p, n) => (n(0.12 + 0.25 * p) * Math.sin(p * Math.PI) * 1.1 + (Math.random() > 0.965 ? Math.random() * 0.9 * Math.sin(p * Math.PI) : 0)) * 0.8],
+    stamp: [0.32, (t, p, n) => Math.sin(2 * Math.PI * (110 - 60 * p) * t) * env(p, 0.005, 0.5) * 0.95 + n(0.5) * env(p, 0.01, 0.25) * 0.55],
+    hit: [0.62, (t, p, n) => (p < 0.35 ? n(0.6) * Math.sin((p / 0.35) * 18 * Math.PI) ** 2 * 0.6 : 0) + (p > 0.2 ? (Math.sin(2 * Math.PI * 784 * t) * 0.5 + Math.sin(2 * Math.PI * 1175 * t) * 0.35 + Math.sin(2 * Math.PI * 1568 * t) * 0.15) * (1 - (p - 0.2) / 0.8) ** 2 * 0.55 : 0)],
+    tape: [0.35, (t, p, n) => n(0.7) * env(p, 0.02, 0.4) * 0.8],
+    slurp: [0.4, (t, p) => Math.sin(2 * Math.PI * (300 - 220 * p) * t) * Math.sin(p * Math.PI) * 0.35],
+    miss: [0.2, (t, p, n) => (Math.sin(2 * Math.PI * (180 - 70 * p) * t) * 0.6 + n(0.2) * 0.3) * env(p, 0.01, 0.6) * 0.6],
+    tick: [0.04, (t, p) => Math.sin(2 * Math.PI * 1800 * t) * (1 - p) * 0.2],
+    win: [0.7, (t, p) => { const f = [523, 659, 784, 1046, 1318][Math.min(4, Math.floor(p * 5))]; return (Math.sin(2 * Math.PI * f * t) * 0.75 + Math.sin(4 * Math.PI * f * t) * 0.2) * 0.4; }],
+    lose: [0.8, (t, p) => { const f = [392, 349, 294, 262][Math.min(3, Math.floor(p * 4))]; return Math.sin(2 * Math.PI * f * t) * 0.35; }],
+  };
+  function play(name) {
+    if (!S.sound) return; const a = ac(); if (!a) return;
+    try { if (!cache[name]) cache[name] = buf(SFX[name][0], SFX[name][1]); const s = a.createBufferSource(); s.buffer = cache[name]; const g = a.createGain(); g.gain.value = 0.9; s.connect(g).connect(a.destination); s.start(); } catch (e) {}
+  }
+  const buzz = (ms) => { try { navigator.vibrate && navigator.vibrate(ms); } catch (e) {} };
+
+  // ---------------- drawing ----------------
+  function seeded(s) { s = s >>> 0 || 1; return () => ((s = (s * 1664525 + 1013904223) >>> 0) / 4294967296); }
+  function rr(ctx, x, y, w, h, r) { ctx.beginPath(); ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r); ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath(); }
+
+  function blobPath(ctx, x, y, r, seed) {
+    const R = seeded(seed), n = 14, pts = [];
+    for (let i = 0; i < n; i++) { const a = (i / n) * Math.PI * 2, q = r * (0.8 + R() * 0.38); pts.push([x + Math.cos(a) * q, y + Math.sin(a) * q]); }
+    ctx.beginPath();
+    const mid = (i) => [(pts[i % n][0] + pts[(i + 1) % n][0]) / 2, (pts[i % n][1] + pts[(i + 1) % n][1]) / 2];
+    ctx.moveTo(...mid(n - 1));
+    for (let i = 0; i < n; i++) ctx.quadraticCurveTo(pts[i][0], pts[i][1], ...mid(i));
+    ctx.closePath();
+    return R;
+  }
+  function hatch(ctx, x, y, r, spacing, angle, color, width, alpha, jitter) {
+    ctx.save(); ctx.strokeStyle = color; ctx.lineWidth = width; ctx.globalAlpha = alpha; ctx.translate(x, y); ctx.rotate(angle);
+    const R = seeded(Math.floor(x * 7 + y * 13));
+    for (let i = -r * 1.6; i < r * 1.6; i += spacing) { const j = jitter ? (R() - 0.5) * spacing * 0.8 : 0; ctx.beginPath(); ctx.moveTo(-r * 1.6, i + j); ctx.lineTo(r * 1.6, i - j); ctx.stroke(); }
+    ctx.restore();
+  }
+  // A drop or print of ink, drawn the way the chosen pen really behaves on paper.
+  function blob(ctx, x, y, r, seed, color, alpha, drips = 0) {
+    const st = color.startsWith("#") || color.startsWith("rgb(") ? inkSet.style : "flat";
+    ctx.save(); ctx.globalAlpha = alpha; ctx.fillStyle = color;
+    if (st === "highlighter" && !paper.dark) ctx.globalCompositeOperation = "multiply";
+    if (st === "fountain") { ctx.shadowColor = color; ctx.shadowBlur = r * 0.35; }
+    if (st === "marker") { ctx.shadowColor = color; ctx.shadowBlur = r * 0.12; }
+    const R = blobPath(ctx, x, y, r, seed);
+    if (st !== "pencil") ctx.fill();
+    ctx.shadowBlur = 0;
+    // texture inside the blot
+    ctx.save(); blobPath(ctx, x, y, r, seed); ctx.clip();
+    if (st === "ballpoint") { hatch(ctx, x, y, r, r * 0.13, -0.6, "rgba(255,255,255,.22)", r * 0.035, 1, true); hatch(ctx, x, y, r, r * 0.21, -0.55, color, r * 0.05, 0.5, true); }
+    if (st === "fountain") { const g = ctx.createRadialGradient(x, y, r * 0.15, x, y, r * 1.05); g.addColorStop(0, "rgba(255,255,255,.12)"); g.addColorStop(0.75, "rgba(0,0,0,0)"); g.addColorStop(1, "rgba(0,0,0,.35)"); ctx.fillStyle = g; ctx.fillRect(x - r * 2, y - r * 2, r * 4, r * 4); }
+    if (st === "pencil") { hatch(ctx, x, y, r, r * 0.07, -0.75, color, r * 0.05, 0.75, true); hatch(ctx, x, y, r, r * 0.11, 0.6, color, r * 0.04, 0.4, true); ctx.fillStyle = paper.bg; ctx.globalAlpha = 0.45; for (let i = 0; i < 60; i++) { ctx.beginPath(); ctx.arc(x + (R() - 0.5) * r * 2, y + (R() - 0.5) * r * 2, r * 0.035, 0, 7); ctx.fill(); } }
+    if (st === "highlighter") { ctx.fillStyle = color; ctx.globalAlpha = 0.25; ctx.fillRect(x - r, y - r * 0.2, r * 2, r * 0.5); }
+    if (st === "marker") hatch(ctx, x, y, r, r * 0.3, 0.2, "rgba(255,255,255,.14)", r * 0.12, 1, false);
+    ctx.restore();
+    if (st === "ballpoint") { ctx.strokeStyle = color; ctx.lineWidth = Math.max(1, r * 0.05); ctx.globalAlpha = alpha * 0.8; blobPath(ctx, x, y, r, seed); ctx.stroke(); ctx.globalAlpha = alpha; }
+    // splatter: pens that hold wet ink throw droplets; pencils and highlighters do not
+    const spl = st === "pencil" || st === "highlighter" ? 0 : st === "ballpoint" ? 3 : 7;
+    for (let i = 0; i < spl + Math.floor(R() * 3); i++) { const a = R() * Math.PI * 2, d = r * (1.2 + R() * 0.8); ctx.beginPath(); ctx.arc(x + Math.cos(a) * d, y + Math.sin(a) * d, r * (0.06 + R() * 0.12), 0, 7); ctx.fill(); }
+    if (st !== "pencil" && st !== "highlighter") for (let i = 0; i < drips; i++) { const dx = (R() - 0.5) * r * 1.2, len = r * (0.8 + R() * 1.6); ctx.lineWidth = r * (0.12 + R() * 0.1); ctx.lineCap = "round"; ctx.strokeStyle = color; ctx.beginPath(); ctx.moveTo(x + dx, y + r * 0.4); ctx.lineTo(x + dx, y + r * 0.4 + len); ctx.stroke(); ctx.beginPath(); ctx.arc(x + dx, y + r * 0.4 + len, ctx.lineWidth * 0.8, 0, 7); ctx.fill(); }
+    ctx.restore();
+  }
+
+  function paperText(ctx, text, x, y, size, color, align) {
+    ctx.save(); ctx.font = `${size}px "IBM Plex Sans Arabic", sans-serif`; ctx.direction = /[\u0600-\u06ff]/.test(text) ? "rtl" : "ltr"; ctx.fillStyle = color; ctx.textAlign = align; ctx.textBaseline = "alphabetic"; ctx.fillText(text, x, y); ctx.restore();
+  }
+  function drawPaper(ctx, u, poly) {
+    const w = u, h = H * u, pp = paper;
+    ctx.save();
+    if (poly) { ctx.beginPath(); poly.forEach((p, i) => (i ? ctx.lineTo(p.x * u, p.y * u) : ctx.moveTo(p.x * u, p.y * u))); ctx.closePath(); ctx.clip(); }
+    ctx.fillStyle = pp.bg; ctx.fillRect(0, 0, w, h);
+    const R = seeded(91);
+    // paper grain
+    ctx.fillStyle = pp.dark ? "rgba(255,255,255,.035)" : "rgba(60,50,30,.035)";
+    for (let i = 0; i < 700; i++) ctx.fillRect(R() * w, R() * h, 1, 1);
+    const top = pp.header ? 0.13 * u : 0;
+    if (pp.gap) {
+      ctx.strokeStyle = pp.line; ctx.lineWidth = 1;
+      ctx.beginPath(); for (let y = top + pp.gap * u; y < h - 0.02 * u; y += pp.gap * u) { ctx.moveTo(0, y); ctx.lineTo(w, y); } ctx.stroke();
+    }
+    if (pp.grid) {
+      const g = 0.03 * u; let i = 0;
+      for (let x = g; x < w; x += g, i++) { ctx.strokeStyle = i % 5 === 4 ? "#9fbfdf" : "#d3e3f2"; ctx.lineWidth = i % 5 === 4 ? 1.2 : 0.8; ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, h); ctx.stroke(); }
+      i = 0; for (let y = g; y < h; y += g, i++) { ctx.strokeStyle = i % 5 === 4 ? "#9fbfdf" : "#d3e3f2"; ctx.lineWidth = i % 5 === 4 ? 1.2 : 0.8; ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke(); }
+    }
+    if (pp.margin) {
+      const mx = pp.margin.side === "right" ? w - 0.1 * u : 0.12 * u;
+      ctx.strokeStyle = pp.margin.color; ctx.lineWidth = 1.4;
+      ctx.beginPath(); ctx.moveTo(mx, 0); ctx.lineTo(mx, h); if (pp.margin.double) { const d = pp.margin.side === "right" ? -4 : 4; ctx.moveTo(mx + d, 0); ctx.lineTo(mx + d, h); } ctx.stroke();
+    }
+    const small = Math.max(8, 0.032 * u), ink = pp.id === "fools" ? "#7fa3cc" : "#8fabcb";
+    if (pp.header === "ar") { paperText(ctx, "التاريخ:  ....... / ....... / .......", w - 0.13 * u, 0.085 * u, small, ink, "right"); paperText(ctx, "الموضوع: ..............", 0.05 * u, 0.085 * u, small, ink, "left"); }
+    if (pp.header === "en") { paperText(ctx, "Date: ______________", 0.15 * u, 0.085 * u, small, ink, "left"); }
+    if (pp.header === "fools") {
+      ctx.strokeStyle = "#6f9ad0"; ctx.lineWidth = 1.2; ctx.beginPath(); ctx.moveTo(0, 0.11 * u); ctx.lineTo(w, 0.11 * u); ctx.moveTo(0, 0.118 * u); ctx.lineTo(w, 0.118 * u); ctx.stroke();
+      paperText(ctx, "الاسم: ....................", w - 0.13 * u, 0.075 * u, small, ink, "right"); paperText(ctx, "الصف: ..........", 0.06 * u, 0.075 * u, small, ink, "left");
+    }
+    if (pp.holes) {
+      const hx = pp.holes === "left" ? 0.045 * u : w - 0.045 * u, ys = pp.holes === "left" ? [0.2, 0.5, 0.8] : [0.25, 0.75];
+      for (const t of ys) { const hy = t * h; ctx.fillStyle = "#1a2232"; ctx.beginPath(); ctx.arc(hx, hy, 0.02 * u, 0, 7); ctx.fill(); ctx.strokeStyle = "rgba(0,0,0,.15)"; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(hx, hy, 0.022 * u, 0, 7); ctx.stroke(); }
+    }
+    if (pp.fibers) { for (let i = 0; i < 380; i++) { ctx.strokeStyle = `rgba(120,95,55,${0.06 + R() * 0.08})`; ctx.lineWidth = 0.8; const x = R() * w, y = R() * h, a = R() * 3; ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x + Math.cos(a) * 4, y + Math.sin(a) * 4); ctx.stroke(); } }
+    if (pp.perforated) { ctx.fillStyle = "#1a2232"; for (let x = 4; x < w; x += 9) { ctx.beginPath(); ctx.arc(x, 0, 2.2, 0, 7); ctx.fill(); } }
+    if (pp.smudge) { for (let i = 0; i < 7; i++) { ctx.fillStyle = "rgba(255,255,255,.035)"; ctx.beginPath(); ctx.ellipse(R() * w, R() * h, u * (0.1 + R() * 0.2), u * 0.05, R() * 3, 0, 7); ctx.fill(); } }
+    // soft vignette so the sheet reads as paper, not a flat rectangle
+    const vg = ctx.createRadialGradient(w / 2, h / 2, Math.min(w, h) * 0.35, w / 2, h / 2, Math.max(w, h) * 0.75);
+    vg.addColorStop(0, "rgba(0,0,0,0)"); vg.addColorStop(1, pp.dark ? "rgba(0,0,0,.25)" : "rgba(90,70,40,.08)");
+    ctx.fillStyle = vg; ctx.fillRect(0, 0, w, h);
+    ctx.restore();
+  }
+
+  // Strokes a path the way the chosen pen draws lines.
+  function penStroke(ctx, path, color, w) {
+    const st = inkSet.style;
+    ctx.save(); ctx.strokeStyle = color; ctx.lineCap = "round"; ctx.lineJoin = "round";
+    if (st === "pencil") { const R = seeded(3); for (let i = 0; i < 3; i++) { ctx.save(); ctx.translate((R() - 0.5) * 1.2, (R() - 0.5) * 1.2); ctx.globalAlpha = 0.42; ctx.lineWidth = w * 0.8; ctx.stroke(path); ctx.restore(); } }
+    else if (st === "highlighter") { if (!paper.dark) ctx.globalCompositeOperation = "multiply"; ctx.globalAlpha = 0.55; ctx.lineWidth = w * 2.1; ctx.lineCap = "butt"; ctx.stroke(path); }
+    else { ctx.lineWidth = st === "marker" ? w * 1.35 : st === "ballpoint" ? w * 0.85 : w; ctx.globalAlpha = st === "ballpoint" ? 0.92 : 1; if (st === "fountain") { ctx.shadowColor = color; ctx.shadowBlur = 1.5; } ctx.stroke(path); }
+    ctx.restore();
+  }
+  function drawSoldier(ctx, u, s) {
+    const x = s.x * u, y = s.y * u, r = SR * u;
+    const col = s.alive ? penC(s.p) : (paper.dark ? "rgba(255,255,255,.35)" : "#8b93a3");
+    const w = Math.max(1.6, r * 0.13);
+    ctx.save(); ctx.translate(x, y);
+    if (s.alive) { ctx.save(); ctx.strokeStyle = col; ctx.globalAlpha = 0.18; ctx.setLineDash([3, 4]); ctx.lineWidth = 1.2; ctx.beginPath(); ctx.arc(0, 0, r, 0, 7); ctx.stroke(); ctx.restore(); }
+    const hr = r * 0.3, hy = -r * 0.42, body = new Path2D();
+    body.arc(0, hy, hr, 0, Math.PI * 2);
+    body.moveTo(0, hy + hr); body.lineTo(0, r * 0.3);
+    if (s.alive) { body.moveTo(-r * 0.55, -r * 0.02); body.lineTo(0, -r * 0.1); body.lineTo(r * 0.6, -r * 0.3); body.moveTo(r * 0.35, -r * 0.1); body.lineTo(r * 0.85, -r * 0.62); }
+    else { body.moveTo(-r * 0.5, r * 0.3); body.lineTo(0, -r * 0.05); body.lineTo(r * 0.5, r * 0.3); }
+    body.moveTo(-r * 0.4, r * 0.82); body.lineTo(0, r * 0.3); body.lineTo(r * 0.4, r * 0.82);
+    const helmet = new Path2D(); helmet.moveTo(-hr * 1.25, hy - hr * 0.2); helmet.quadraticCurveTo(0, hy - hr * 2.1, hr * 1.25, hy - hr * 0.2); helmet.closePath();
+    penStroke(ctx, body, col, w);
+    ctx.save(); ctx.fillStyle = col; if (inkSet.style === "highlighter") { if (!paper.dark) ctx.globalCompositeOperation = "multiply"; ctx.globalAlpha = 0.6; } if (inkSet.style === "pencil") ctx.globalAlpha = 0.7; ctx.fill(helmet); ctx.restore();
+    if (s.tape) { ctx.save(); ctx.rotate(-0.25); ctx.fillStyle = "rgba(236,226,190,.82)"; ctx.fillRect(-r * 1.15, -r * 0.28, r * 2.3, r * 0.56); ctx.fillStyle = "rgba(255,255,255,.35)"; ctx.fillRect(-r * 1.15, -r * 0.28, r * 2.3, r * 0.12); ctx.strokeStyle = "rgba(160,140,90,.45)"; ctx.lineWidth = 1; ctx.beginPath(); for (let i = 0; i <= 6; i++) { ctx.lineTo(-r * 1.15 + (i % 2) * 2, -r * 0.28 + (i * r * 0.56) / 6); } ctx.stroke(); ctx.restore(); }
+    if (!s.alive) { const x2 = new Path2D(); x2.moveTo(-r, -r); x2.lineTo(r, r); x2.moveTo(r, -r); x2.lineTo(-r, r); penStroke(ctx, x2, penC(s.p === 1 ? 2 : 1), r * 0.16); }
+    ctx.restore();
+  }
+
+  function drawCoffee(ctx, u, c) {
+    const x = c.x * u, y = c.y * u, r = c.r * u;
+    ctx.save();
+    const g = ctx.createRadialGradient(x, y, r * 0.2, x, y, r);
+    g.addColorStop(0, "rgba(139,90,43,.12)"); g.addColorStop(0.85, "rgba(139,90,43,.22)"); g.addColorStop(1, "rgba(120,72,30,.55)");
+    ctx.fillStyle = g; blobPath(ctx, x, y, r, c.seed); ctx.fill();
+    ctx.strokeStyle = "rgba(110,66,28,.5)"; ctx.lineWidth = 2; ctx.stroke();
+    ctx.restore();
+  }
+
+  function drawStamp(ctx, u, st) {
+    const r = INK[st.size] * u;
+    blob(ctx, st.sx * u, st.sy * u, r * 0.55, st.seed + 7, penC(st.p), 0.3);
+    if (st.res === "off") return;
+    const hit = st.res === "hit";
+    const col = hit ? penC(st.p) : st.res === "coffee" ? "rgba(110,66,28,.8)" : paper.dark ? "rgba(255,255,255,.45)" : "#5b6477";
+    blob(ctx, st.x * u, st.y * u, r, st.seed, col, hit ? 0.92 : 0.5, hit ? 3 : 0);
+  }
+
+  function drawDrop(ctx, u, d, p, size) {
+    const x = d.x * u, y = d.y * u, r = INK[size] * u;
+    ctx.save(); ctx.fillStyle = penC(p); ctx.globalAlpha = 0.15; ctx.beginPath(); ctx.arc(x, y, r * (1.5 + 0.35 * S.pulse), 0, 7); ctx.fill(); ctx.restore();
+    const g = ctx.createRadialGradient(x - r * 0.35, y - r * 0.35, r * 0.1, x, y, r);
+    g.addColorStop(0, "#fff"); g.addColorStop(0.2, penC(p)); g.addColorStop(1, penC(p));
+    ctx.save(); if (inkSet.style === "neon") { ctx.shadowColor = penC(p); ctx.shadowBlur = 12; } ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y, r, 0, 7); ctx.fill(); ctx.restore();
+  }
+
+  function drawFoldLine(ctx, u, f) {
+    const L = 2;
+    ctx.save(); ctx.strokeStyle = paper.fold; ctx.lineWidth = 2; ctx.setLineDash([9, 7]);
+    ctx.beginPath(); ctx.moveTo((f.c.x - f.t.x * L) * u, (f.c.y - f.t.y * L) * u); ctx.lineTo((f.c.x + f.t.x * L) * u, (f.c.y + f.t.y * L) * u); ctx.stroke();
+    ctx.restore();
+  }
+
+  function contentFor(ctx, u, side) {
+    // stamps printed on this side, source dots of this side's shots, soldiers, coffee, wet drops
+    const f = foldOf(S);
+    for (const c of S.coffee) if (c.p === side) drawCoffee(ctx, u, c);
+    for (const st of S.stamps) { if (st.p === side) blob(ctx, st.sx * u, st.sy * u, INK[st.size] * u * 0.55, st.seed + 7, penC(st.p), 0.3); }
+    for (const st of S.stamps) { if (st.p !== side && st.res !== "off") drawStampOnly(ctx, u, st); }
+    for (const s of S.soldiers) if (s.p === side && (S.phase !== "setup" || s.p === S.viewer)) drawSoldier(ctx, u, s);
+    const shooter = S.anim ? S.anim.shooter : S.turn;
+    if ((S.phase === "battle" || S.phase === "folding") && side === shooter) for (const d of S.drops) drawDrop(ctx, u, d, shooter, S.ink === "big" ? "big" : "normal");
+    void f;
+  }
+  function drawStampOnly(ctx, u, st) {
+    const r = INK[st.size] * u, hit = st.res === "hit";
+    const col = hit ? penC(st.p) : st.res === "coffee" ? "rgba(110,66,28,.8)" : paper.dark ? "rgba(255,255,255,.45)" : "#5b6477";
+    blob(ctx, st.x * u, st.y * u, r, st.seed, col, hit ? 0.92 : 0.5, hit ? 3 : 0);
+  }
+
+  // ---------------- board ----------------
+  const board = $("board"), wrap = $("boardWrap");
+  let L = { u: 1, ox: 0, oy: 0, dpr: 1 };
+  function resize() {
+    const r = wrap.getBoundingClientRect(), dpr = Math.min(window.devicePixelRatio || 1, 2);
+    board.width = Math.max(1, Math.round(r.width * dpr)); board.height = Math.max(1, Math.round(r.height * dpr));
+    const u = Math.min(r.width - 4, (r.height - 4) / H);
+    L = { u, ox: (r.width - u) / 2, oy: (r.height - u * H) / 2, dpr };
+    render();
+  }
+  function clipPoly(ctx, u, poly) { ctx.beginPath(); poly.forEach((p, i) => (i ? ctx.lineTo(p.x * u, p.y * u) : ctx.moveTo(p.x * u, p.y * u))); ctx.closePath(); ctx.clip(); }
+
+  function render() {
+    const ctx = board.getContext("2d"), { u, ox, oy, dpr } = L;
+    ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.clearRect(0, 0, board.width, board.height);
+    ctx.save(); ctx.scale(dpr, dpr); ctx.translate(ox, oy);
+    // hit zoom and shake
+    if (S.fx) {
+      const k = S.fx.k, cx = S.fx.x * u, cy = S.fx.y * u;
+      ctx.translate(cx, cy); ctx.scale(1 + 0.12 * k, 1 + 0.12 * k); ctx.translate(-cx, -cy);
+      ctx.translate((Math.random() - 0.5) * 10 * k, (Math.random() - 0.5) * 10 * k);
+    }
+    if (S.viewer === 2) { ctx.translate(u, H * u); ctx.rotate(Math.PI); }
+    const f = foldOf(S);
+    ctx.save(); ctx.shadowColor = "rgba(0,0,0,.45)"; ctx.shadowBlur = 16; ctx.shadowOffsetY = 8; ctx.fillStyle = paper.bg;
+    if (!S.anim) { rr(ctx, 0, 0, u, H * u, 4); ctx.fill(); }
+    ctx.restore();
+    const sides = [1, 2];
+    for (const side of sides) {
+      const poly = halfPoly(f, side);
+      if (S.anim && S.anim.shooter === side) continue;
+      drawPaper(ctx, u, poly);
+      ctx.save(); clipPoly(ctx, u, poly); contentFor(ctx, u, side); ctx.restore();
+    }
+    if (S.anim) {
+      const a = S.anim, poly = halfPoly(f, a.shooter), s = Math.cos(Math.PI * a.p);
+      // shadow over the stationary half
+      ctx.save(); clipPoly(ctx, u, halfPoly(f, a.shooter === 1 ? 2 : 1)); ctx.fillStyle = `rgba(0,0,0,${0.35 * Math.sin(Math.PI * a.p)})`; ctx.fillRect(0, 0, u, H * u); ctx.restore();
+      // the flap: squash along the fold normal, flip past 90°
+      ctx.save();
+      ctx.translate(f.c.x * u, f.c.y * u); ctx.rotate(S.fold.ang); ctx.scale(1, s); ctx.rotate(-S.fold.ang); ctx.translate(-f.c.x * u, -f.c.y * u);
+      if (s > 0) { drawPaper(ctx, u, poly); ctx.save(); clipPoly(ctx, u, poly); contentFor(ctx, u, a.shooter); ctx.fillStyle = `rgba(0,0,0,${0.2 * Math.sin(Math.PI * a.p)})`; ctx.fillRect(0, 0, u, H * u); ctx.restore(); }
+      else { ctx.save(); clipPoly(ctx, u, poly); ctx.fillStyle = paper.back; ctx.fillRect(0, 0, u, H * u); ctx.strokeStyle = "rgba(0,0,0,.06)"; for (let i = -H * u; i < u; i += 12) { ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i + H * u, H * u); ctx.stroke(); } ctx.restore(); }
+      ctx.restore();
+    } else {
+      ctx.save(); rr(ctx, 0, 0, u, H * u, 4); ctx.clip(); drawFoldLine(ctx, u, f); ctx.restore();
+    }
+    // splash particles
+    if (S.fx) for (const pt of S.fx.parts) { ctx.fillStyle = pt.c; ctx.globalAlpha = Math.max(0, pt.life); ctx.beginPath(); ctx.arc(pt.x * u, pt.y * u, pt.r, 0, 7); ctx.fill(); ctx.globalAlpha = 1; }
+    // setup hint
+    if (S.phase === "setup" && S.soldiers.filter((s) => s.p === S.turn).length === 0 && $("curtain").hidden) {
+      ctx.save(); ctx.fillStyle = penC(S.turn); ctx.globalAlpha = 0.55; ctx.font = `600 ${Math.round(0.046 * u)}px ${HAND}`; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+      const cy = S.turn === 1 ? MID + MID / 2 : MID / 2; ctx.translate(0.5 * u, cy * u); if (S.viewer === 2) ctx.rotate(Math.PI);
+      ctx.fillText(t("setupHint"), 0, 0); ctx.restore();
+    }
+    ctx.restore();
+  }
+
+
+
+  // ---------------- logos ----------------
+  const BRAND = { blue: "#1d3fb8", red: "#c8232c", paper: "#fbfaf3", line: "#a9c6e6", margin: "#e46b6b" };
+  function offscreen(w, h) { const c = document.createElement("canvas"); c.width = w; c.height = h; return c; }
+  // ballpoint texture on anything already drawn in an offscreen canvas
+  function inkTexture(c, color, seed) {
+    const x = c.getContext("2d"), R = seeded(seed);
+    x.save(); x.globalCompositeOperation = "source-atop";
+    x.strokeStyle = "rgba(255,255,255,.2)"; x.lineWidth = Math.max(1, c.width / 260);
+    for (let i = -c.height; i < c.width + c.height; i += c.width / 70) { x.beginPath(); x.moveTo(i + R() * 3, 0); x.lineTo(i - c.height * 0.6 + R() * 3, c.height); x.stroke(); }
+    x.fillStyle = "rgba(0,0,0,.12)"; for (let i = 0; i < 400; i++) x.fillRect(R() * c.width, R() * c.height, 2, 2);
+    x.restore();
+  }
+  function grain(c, amount, seed) { const x = c.getContext("2d"), R = seeded(seed); x.save(); x.globalCompositeOperation = "destination-out"; for (let i = 0; i < amount; i++) { x.globalAlpha = 0.3 + R() * 0.5; x.beginPath(); x.arc(R() * c.width, R() * c.height, 0.6 + R() * 1.6, 0, 7); x.fill(); } x.restore(); }
+  function foolscapTile(ctx, x, y, w, h, rad) {
+    ctx.save(); rr(ctx, x, y, w, h, rad); ctx.clip();
+    ctx.fillStyle = BRAND.paper; ctx.fillRect(x, y, w, h);
+    ctx.strokeStyle = BRAND.line; ctx.lineWidth = Math.max(1, w / 180);
+    for (let yy = y + h * 0.08; yy < y + h; yy += h * 0.075) { ctx.beginPath(); ctx.moveTo(x, yy); ctx.lineTo(x + w, yy); ctx.stroke(); }
+    ctx.strokeStyle = BRAND.margin; ctx.lineWidth = Math.max(1.2, w / 140); ctx.beginPath(); ctx.moveTo(x + w * 0.86, y); ctx.lineTo(x + w * 0.86, y + h); ctx.stroke();
+    ctx.restore();
+  }
+  function inkBlot(ctx, x, y, r, seed, color, alpha, mirror, foldY) {
+    const c = offscreen(Math.ceil(r * 5), Math.ceil(r * 5)), o = c.getContext("2d"), cx = c.width / 2, cy = c.height / 2;
+    o.fillStyle = color; blobPath(o, cx, cy, r, seed); o.fill();
+    const Rr = seeded(seed + 1); for (let i = 0; i < 6; i++) { const a = Rr() * 7, d = r * (1.2 + Rr() * 0.7); o.beginPath(); o.arc(cx + Math.cos(a) * d, cy + Math.sin(a) * d, r * (0.06 + Rr() * 0.11), 0, 7); o.fill(); }
+    inkTexture(c, color, seed);
+    if (mirror) grain(c, Math.round(r * 9), seed + 5);
+    ctx.save(); ctx.globalAlpha = alpha;
+    if (mirror) { ctx.translate(0, foldY * 2); ctx.scale(1, -1); }
+    ctx.drawImage(c, x - cx, y - cy); ctx.restore();
+  }
+  function crossedSoldier(ctx, x, y, r, color, xColor) {
+    ctx.save(); ctx.translate(x, y); ctx.strokeStyle = color; ctx.fillStyle = color; ctx.lineCap = "round"; ctx.lineWidth = r * 0.14;
+    const hr = r * 0.3; ctx.beginPath(); ctx.arc(0, -r * 0.42, hr, 0, 7); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(0, -r * 0.12); ctx.lineTo(0, r * 0.3); ctx.moveTo(-r * 0.5, r * 0.3); ctx.lineTo(0, 0); ctx.lineTo(r * 0.5, r * 0.3); ctx.moveTo(-r * 0.4, r * 0.82); ctx.lineTo(0, r * 0.3); ctx.lineTo(r * 0.4, r * 0.82); ctx.stroke();
+    ctx.strokeStyle = xColor; ctx.lineWidth = r * 0.2; ctx.beginPath(); ctx.moveTo(-r, -r); ctx.lineTo(r, r); ctx.moveTo(r, -r); ctx.lineTo(-r, r); ctx.stroke();
+    ctx.restore();
+  }
+
+  // App icon, three directions. W is the square size in pixels.
+  function icon(ctx, W, variant) {
+    ctx.clearRect(0, 0, W, W);
+    const rad = W * 0.23;
+    if (variant === 0) {
+      // THE PRINT: the wet drop below the fold, its mirrored print above it, a soldier crossed out under the print
+      foolscapTile(ctx, 0, 0, W, W, rad);
+      ctx.save(); rr(ctx, 0, 0, W, W, rad); ctx.clip();
+      const fy = W * 0.52;
+      const sh = ctx.createLinearGradient(0, fy - W * 0.1, 0, fy + W * 0.06); sh.addColorStop(0, "rgba(40,50,80,0)"); sh.addColorStop(0.62, "rgba(40,50,80,.16)"); sh.addColorStop(1, "rgba(40,50,80,0)"); ctx.fillStyle = sh; ctx.fillRect(0, fy - W * 0.1, W, W * 0.16);
+      crossedSoldier(ctx, W * 0.43, W * 0.26, W * 0.11, "rgba(200,35,44,.55)", BRAND.blue);
+      inkBlot(ctx, W * 0.43, W * 0.74, W * 0.17, 41, BRAND.blue, 0.62, true, fy);
+      inkBlot(ctx, W * 0.43, W * 0.74, W * 0.17, 41, BRAND.blue, 1, false, fy);
+      ctx.fillStyle = "rgba(255,255,255,.85)"; ctx.beginPath(); ctx.arc(W * 0.37, W * 0.69, W * 0.028, 0, 7); ctx.fill();
+      ctx.strokeStyle = "#7c93b3"; ctx.lineWidth = W * 0.014; ctx.setLineDash([W * 0.04, W * 0.028]); ctx.beginPath(); ctx.moveTo(0, fy); ctx.lineTo(W, fy); ctx.stroke(); ctx.setLineDash([]);
+      ctx.restore();
+    } else if (variant === 1) {
+      // THE CORNER: the top-right corner folded over; the ink it lifted shows on its back, mirrored
+      ctx.fillStyle = "#1f2839"; rr(ctx, 0, 0, W, W, rad); ctx.fill();
+      ctx.save(); rr(ctx, 0, 0, W, W, rad); ctx.clip();
+      const a = W * 0.62; // fold runs from (W-a, 0) to (W, a)
+      ctx.save(); ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(W - a, 0); ctx.lineTo(W, a); ctx.lineTo(W, W); ctx.lineTo(0, W); ctx.closePath(); ctx.clip(); foolscapTile(ctx, 0, 0, W, W, 0); ctx.restore();
+      inkBlot(ctx, W * 0.5, W * 0.46, W * 0.14, 23, BRAND.blue, 1, false, 0);
+      crossedSoldier(ctx, W * 0.3, W * 0.74, W * 0.1, "rgba(200,35,44,.9)", BRAND.blue);
+      // flap = triangle (W-a,0),(W,0),(W,a) reflected across the fold line
+      const fx0 = W - a, fy0 = 0, fx1 = W, fy1 = a; // reflection of the corner (W,0) across the fold line x - y = W - a ... through the two points
+      const rx = fx0, ry = fy1; // the corner lands here
+      ctx.save(); ctx.shadowColor = "rgba(0,0,0,.35)"; ctx.shadowBlur = W * 0.05; ctx.shadowOffsetX = -W * 0.02; ctx.shadowOffsetY = W * 0.02;
+      const g = ctx.createLinearGradient(fx1, fy0, rx, ry); g.addColorStop(0, "#e9e8df"); g.addColorStop(1, "#d6d4c8");
+      ctx.fillStyle = g; ctx.beginPath(); ctx.moveTo(fx0, fy0); ctx.lineTo(fx1, fy1); ctx.lineTo(rx, ry); ctx.closePath(); ctx.fill(); ctx.restore();
+      ctx.save(); ctx.beginPath(); ctx.moveTo(fx0, fy0); ctx.lineTo(fx1, fy1); ctx.lineTo(rx, ry); ctx.closePath(); ctx.clip();
+      // the blot's mirror image across the fold line x - y = W - a
+      const bx = W * 0.5, by = W * 0.46, k = bx - by - (W - a); const mx = bx - k, my = by + k;
+      inkBlot(ctx, mx, my, W * 0.14, 23, BRAND.blue, 0.6, false, 0);
+      ctx.restore();
+      ctx.restore();
+    } else {
+      // THE STAMP: a school rubber stamp in red, like «ممتاز» at the bottom of homework
+      foolscapTile(ctx, 0, 0, W, W, rad);
+      const c = offscreen(W, W), o = c.getContext("2d"), cx = W / 2, cy = W / 2;
+      o.translate(cx, cy); o.rotate(-0.16); o.translate(-cx, -cy);
+      o.strokeStyle = BRAND.red; o.lineWidth = W * 0.035; o.beginPath(); o.arc(cx, cy, W * 0.36, 0, 7); o.stroke();
+      o.lineWidth = W * 0.014; o.beginPath(); o.arc(cx, cy, W * 0.3, 0, 7); o.stroke();
+      o.fillStyle = BRAND.red; o.font = `${W * 0.2}px ${DISPLAY}`; o.textAlign = "center"; o.textBaseline = "middle"; o.direction = "rtl"; o.fillText("اطوِها", cx, cy + W * 0.02);
+      for (let i = 0; i < 12; i++) { const a = (i / 12) * Math.PI * 2; o.beginPath(); o.arc(cx + Math.cos(a) * W * 0.33, cy + Math.sin(a) * W * 0.33, W * 0.009, 0, 7); o.fill(); }
+      grain(c, 900, 12);
+      ctx.save(); rr(ctx, 0, 0, W, W, rad); ctx.clip(); ctx.globalAlpha = 0.92; ctx.globalCompositeOperation = "multiply"; ctx.drawImage(c, 0, 0); ctx.restore();
+    }
+  }
+
+  
+
+  // ---------------- the desk and the props on it ----------------
+  const BIC = "#1d3fb8";
+  function poly(ctx, pts) { ctx.beginPath(); pts.forEach(([x, y], i) => (i ? ctx.lineTo(x, y) : ctx.moveTo(x, y))); ctx.closePath(); }
+  function withShadow(ctx, blur, dy, fn) { ctx.save(); ctx.shadowColor = "rgba(0,0,0,.55)"; ctx.shadowBlur = blur; ctx.shadowOffsetY = dy; fn(); ctx.restore(); }
+
+  function drawDesk(c) {
+    const r = c.getBoundingClientRect(), dpr = Math.min(devicePixelRatio || 1, 2);
+    c.width = Math.max(1, Math.round(r.width * dpr)); c.height = Math.max(1, Math.round(r.height * dpr));
+    const ctx = c.getContext("2d"), w = c.width, h = c.height, u = Math.min(w, h);
+    const g = ctx.createLinearGradient(0, 0, 0, h); g.addColorStop(0, "#1c2640"); g.addColorStop(0.5, "#151c2d"); g.addColorStop(1, "#121827");
+    ctx.fillStyle = g; ctx.fillRect(0, 0, w, h);
+    const R = seeded(7), n = Math.min(26000, (w * h) / 180);
+    for (let i = 0; i < n; i++) { ctx.fillStyle = R() < 0.5 ? `rgba(255,255,255,${0.03 + R() * 0.03})` : `rgba(0,0,0,${0.06 + R() * 0.05})`; ctx.fillRect(R() * w, R() * h, 1.6 * dpr, 1.6 * dpr); }
+    // old ink soaked into the desk
+    [[0.05, 0.42, 0.07], [0.93, 0.2, 0.05], [0.12, 0.8, 0.04], [0.9, 0.62, 0.06]].forEach(([x, y, s], i) => { ctx.save(); ctx.globalAlpha = 0.35; ctx.fillStyle = "#0a1020"; blobPath(ctx, x * w, y * h, s * u, 60 + i); ctx.fill(); ctx.restore(); });
+    const v = ctx.createRadialGradient(w / 2, h / 2, Math.max(w, h) * 0.41, w / 2, h / 2, Math.max(w, h) * 0.75);
+    v.addColorStop(0, "rgba(0,0,0,0)"); v.addColorStop(1, "rgba(0,0,0,.4)"); ctx.fillStyle = v; ctx.fillRect(0, 0, w, h);
+  }
+
+  function crumpled(ctx, pts, seed, lined, tone = "#e8e0cc") {
+    const xs = pts.map((p) => p[0]), ys = pts.map((p) => p[1]);
+    const minX = Math.min(...xs), maxX = Math.max(...xs), minY = Math.min(...ys), maxY = Math.max(...ys);
+    withShadow(ctx, 22, 8, () => { poly(ctx, pts); ctx.fillStyle = tone; ctx.fill(); });
+    const g = ctx.createLinearGradient(minX, minY, maxX, maxY); g.addColorStop(0, tone); g.addColorStop(0.5, "#cfc5ae"); g.addColorStop(1, tone);
+    poly(ctx, pts); ctx.fillStyle = g; ctx.fill();
+    ctx.save(); poly(ctx, pts); ctx.clip();
+    const R = seeded(seed);
+    if (lined) { ctx.strokeStyle = "rgba(157,190,226,.35)"; ctx.lineWidth = 1.4; for (let y = minY + 14; y < maxY; y += 22) { ctx.beginPath(); ctx.moveTo(minX, y); ctx.lineTo(maxX, y + (maxX - minX) * 0.05); ctx.stroke(); } }
+    for (let i = 0; i < 9; i++) {
+      const a = [minX + R() * (maxX - minX), minY + R() * (maxY - minY)], b = [minX + R() * (maxX - minX), minY + R() * (maxY - minY)];
+      ctx.strokeStyle = "rgba(255,255,255,.24)"; ctx.lineWidth = 2.2; ctx.beginPath(); ctx.moveTo(...a); ctx.lineTo(...b); ctx.stroke();
+      ctx.strokeStyle = "rgba(58,42,16,.1)"; ctx.lineWidth = 1.6; ctx.beginPath(); ctx.moveTo(a[0] + 2, a[1] + 2); ctx.lineTo(b[0] + 2, b[1] + 2); ctx.stroke();
+    }
+    for (let i = 0; i < 5; i++) { const cx = minX + R() * (maxX - minX), cy = minY + R() * (maxY - minY), s = (maxX - minX) * (0.1 + R() * 0.2); ctx.fillStyle = "rgba(42,26,0,.06)"; poly(ctx, [[cx, cy], [cx + s, cy + s * 0.3], [cx + s * 0.2, cy + s]]); ctx.fill(); }
+    ctx.restore();
+  }
+
+  function penProp(ctx, tip, end, width) {
+    const dx = end[0] - tip[0], dy = end[1] - tip[1], len = Math.hypot(dx, dy);
+    ctx.save(); ctx.translate(tip[0], tip[1]); ctx.rotate(Math.atan2(dy, dx));
+    withShadow(ctx, 14, 10, () => { rr(ctx, len * 0.16, -width / 2, len * 0.84, width, width / 2); ctx.fillStyle = "#1b2335"; ctx.fill(); });
+    const body = ctx.createLinearGradient(0, -width / 2, 0, width / 2); body.addColorStop(0, "#3a4768"); body.addColorStop(0.5, "#1b2335"); body.addColorStop(1, "#0e1320");
+    rr(ctx, len * 0.16, -width / 2, len * 0.84, width, width / 2); ctx.fillStyle = body; ctx.fill();
+    const grip = ctx.createLinearGradient(0, -width / 2, 0, width / 2); grip.addColorStop(0, "#2a2f3a"); grip.addColorStop(1, "#0b0d12");
+    ctx.fillStyle = grip; ctx.fillRect(len * 0.16, -width / 2, len * 0.2, width);
+    ctx.strokeStyle = "rgba(255,255,255,.25)"; ctx.lineWidth = width * 0.12; ctx.lineCap = "round"; ctx.beginPath(); ctx.moveTo(len * 0.38, -width * 0.22); ctx.lineTo(len * 0.96, -width * 0.22); ctx.stroke();
+    const cone = ctx.createLinearGradient(0, -width / 2, 0, width / 2); cone.addColorStop(0, "#e4e8ee"); cone.addColorStop(0.5, "#8c95a3"); cone.addColorStop(1, "#5b6270");
+    poly(ctx, [[len * 0.16, -width * 0.42], [len * 0.02, -width * 0.08], [len * 0.02, width * 0.08], [len * 0.16, width * 0.42]]); ctx.fillStyle = cone; ctx.fill();
+    ctx.fillStyle = BIC; ctx.beginPath(); ctx.arc(len * 0.015, 0, width * 0.09, 0, 7); ctx.fill();
+    ctx.restore();
+  }
+
+  function plane(ctx, x, y, s) {
+    ctx.save(); ctx.strokeStyle = "rgba(217,208,190,.5)"; ctx.lineWidth = 2.2; ctx.lineCap = "round"; ctx.setLineDash([10, 9]);
+    ctx.beginPath(); ctx.moveTo(x - s * 0.2, y + s * 0.35); ctx.bezierCurveTo(x - s * 1.1, y + s * 0.9, x - s * 0.4, y + s * 1.9, x + s * 0.55, y + s * 1.25); ctx.stroke();
+    ctx.setLineDash([]); const ax = x + s * 0.55, ay = y + s * 1.25;
+    ctx.beginPath(); ctx.moveTo(ax, ay); ctx.lineTo(ax - s * 0.2, ay + s * 0.03); ctx.moveTo(ax, ay); ctx.lineTo(ax - s * 0.05, ay + s * 0.19); ctx.stroke(); ctx.restore();
+    const nose = [x + s, y - s * 0.35], left = [nose, [x - s * 0.1, y + s * 0.2], [x + s * 0.45, y + s * 0.25]], right = [nose, [x + s * 0.45, y + s * 0.25], [x + s * 0.55, y + s * 0.75]];
+    withShadow(ctx, 10, 6, () => { ctx.fillStyle = "#e8e0cc"; poly(ctx, left); ctx.fill(); poly(ctx, right); ctx.fill(); });
+    ctx.fillStyle = "#e8e0cc"; poly(ctx, left); ctx.fill(); ctx.fillStyle = "#c7bda6"; poly(ctx, right); ctx.fill();
+    ctx.strokeStyle = "rgba(0,0,0,.2)"; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(...nose); ctx.lineTo(x + s * 0.45, y + s * 0.25); ctx.stroke();
+  }
+
+  // Props kept to the corners so they never sit under the buttons' text. On wide screens they spread around the column.
+  function drawDecor(c) {
+    const r = c.getBoundingClientRect(), dpr = Math.min(devicePixelRatio || 1, 2);
+    c.width = Math.max(1, Math.round(r.width * dpr)); c.height = Math.max(1, Math.round(r.height * dpr));
+    const ctx = c.getContext("2d"); ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    const w = r.width, h = r.height, u = Math.min(w, h, 620) * (w > 900 ? 1.25 : 1);
+    const savedP = paper, savedI = inkSet; paper = PAPERS[2]; inkSet = INKS[0];
+    crumpled(ctx, [[w - u * 0.3, -u * 0.05], [w + u * 0.05, -u * 0.05], [w + u * 0.05, u * 0.36], [w - u * 0.06, u * 0.3], [w - u * 0.2, u * 0.14]], 3);
+    crumpled(ctx, [[w - u * 0.2, -u * 0.05], [w + u * 0.05, -u * 0.05], [w + u * 0.05, u * 0.22], [w - u * 0.08, u * 0.12]], 4, false, "#f0e9d8");
+    plane(ctx, u * 0.06, h * (w > 900 ? 0.3 : 0.2), u * 0.17);
+    crumpled(ctx, [[-u * 0.05, h - u * 0.34], [u * 0.22, h - u * 0.18], [u * 0.32, h + u * 0.05], [-u * 0.05, h + u * 0.05]], 5);
+    crumpled(ctx, [[-u * 0.05, h - u * 0.16], [u * 0.2, h - u * 0.02], [u * 0.05, h + u * 0.05], [-u * 0.05, h + u * 0.05]], 6, false, "#d9d0bb");
+    const sheet = [[w - u * 0.34, h - u * 0.22], [w + u * 0.05, h - u * 0.33], [w + u * 0.05, h + u * 0.05], [w - u * 0.26, h + u * 0.05]];
+    crumpled(ctx, sheet, 7, true, "#f0ead9");
+    ctx.save(); poly(ctx, sheet); ctx.clip();
+    blob(ctx, w - u * 0.11, h - u * 0.16, u * 0.055, 12, BIC, 0.9); blob(ctx, w - u * 0.2, h - u * 0.07, u * 0.025, 13, BIC, 0.85);
+    ctx.restore();
+    penProp(ctx, [w - u * 0.24, h - u * 0.17], [w + u * 0.08, h + u * 0.08], u * 0.045);
+    paper = savedP; inkSet = savedI;
+  }
+
+  // The app icon on a handled sheet: the print logo with creases and a soft edge.
+  function drawHomeLogo(c) {
+    const ctx = c.getContext("2d"), W = c.width;
+    icon(ctx, W, 0);
+    ctx.save(); rr(ctx, 0, 0, W, W, W * 0.23); ctx.clip();
+    const R = seeded(21);
+    for (let i = 0; i < 10; i++) {
+      const a = [R() * W, R() * W], b = [R() * W, R() * W];
+      ctx.strokeStyle = "rgba(255,255,255,.25)"; ctx.lineWidth = W * 0.008; ctx.beginPath(); ctx.moveTo(...a); ctx.lineTo(...b); ctx.stroke();
+      ctx.strokeStyle = "rgba(48,30,0,.08)"; ctx.lineWidth = W * 0.006; ctx.beginPath(); ctx.moveTo(a[0] + W * 0.006, a[1] + W * 0.006); ctx.lineTo(b[0] + W * 0.006, b[1] + W * 0.006); ctx.stroke();
+    }
+    const v = ctx.createRadialGradient(W / 2, W / 2, W * 0.45, W / 2, W / 2, W * 0.75); v.addColorStop(0, "rgba(90,70,40,0)"); v.addColorStop(1, "rgba(90,70,40,.2)");
+    ctx.fillStyle = v; ctx.fillRect(0, 0, W, W); ctx.restore();
+  }
+
+
+  // ---------------- saved settings ----------------
+  const KEY = "foldit.settings.v1";
+  function loadSettings() {
+    let saved = null;
+    try { saved = JSON.parse(localStorage.getItem(KEY) || "null"); } catch (e) {}
+    const nav = (navigator.language || "ar").toLowerCase();
+    lang = saved && TEXT[saved.lang] ? saved.lang : nav.startsWith("ar") ? "ar" : "en";
+    if (saved) {
+      paper = PAPERS.find((p) => p.id === saved.paper) || paper;
+      inkSet = INKS.find((i) => i.id === saved.ink) || inkSet;
+      for (const k of ["diff", "N", "timerOn", "shiftOn", "hazOn", "sound"]) if (k in saved) S[k] = saved[k];
+    }
+  }
+  function saveSettings() {
+    try { localStorage.setItem(KEY, JSON.stringify({ lang, paper: paper.id, ink: inkSet.id, diff: S.diff, N: S.N, timerOn: S.timerOn, shiftOn: S.shiftOn, hazOn: S.hazOn, sound: S.sound })); } catch (e) {}
+  }
+
+  // ---------------- UI helpers ----------------
+  const inGame = () => !$("v-game").hidden;
+  const names = (p) => (S.mode === "ai" ? (p === 1 ? t("you") : t("computer")) : p === 1 ? t("p1") : t("p2"));
+  let statusFn = () => "";
+  const setStatus = (fn) => { statusFn = fn; $("status").innerHTML = fn(); };
+  let toastT = 0;
+  function toast(msg, bg, fg = "#fff") { const el = $("toast"); el.textContent = msg; el.style.background = bg; el.style.color = fg; el.classList.add("show"); clearTimeout(toastT); toastT = setTimeout(() => el.classList.remove("show"), 1500); }
+  function refresh() {
+    const me = S.viewer, op = me === 1 ? 2 : 1;
+    const isDaily = S.mode === "daily";
+    $("meName").textContent = isDaily ? t("foldOf", num(Math.min(5, S.stats[1].f + (S.phase === "over" ? 0 : 1)))) : S.mode === "ai" ? t("you") : names(me);
+    $("opName").textContent = isDaily ? t("target") : names(op);
+    const lives = (p, el) => { el.innerHTML = ""; const list = S.soldiers.filter((s) => s.p === p), count = isDaily ? list.length : S.N; for (let i = 0; i < count; i++) { const s = list[i], e = document.createElement("i"); const on = S.phase === "setup" ? !!s : s && s.alive; e.style.background = on ? pen(p) : "transparent"; e.style.border = `1.5px solid ${pen(p)}`; el.append(e); } };
+    lives(me, $("meLives")); lives(op, $("opLives"));
+    $("turnLbl").querySelector(".pip").style.background = pen(S.turn);
+    $("turnLbl").querySelector("span:last-child").textContent = S.phase === "setup" ? (S.mode === "ai" ? t("placeYours") : t("placeNamed", names(S.turn))) : S.phase === "over" ? t("over") : isDaily ? t("dailyTitle", num(D.no)) + (D.practice ? ` · ${t("practice")}` : "") : S.mode === "ai" ? (S.turn === 1 ? t("yourTurn") : t("aiTurn")) : t("turnOf", names(S.turn));
+    document.querySelector(".inks").hidden = isDaily; document.querySelector(".controls").classList.toggle("solo", isDaily);
+    const sp = S.special[S.turn], myTurn = S.phase === "battle" && !S.busy && !(S.mode === "ai" && S.turn === 2);
+    document.querySelectorAll(".ink").forEach((b) => { const k = b.dataset.ink; b.setAttribute("aria-pressed", String(S.ink === k)); b.disabled = !myTurn || (k !== "normal" && !sp[k] && S.ink !== k); b.style.color = S.ink === k ? lighten(pen(S.turn), 0.35) : ""; });
+    $("bigLeft").textContent = sp.big ? t("once") : t("used"); $("dblLeft").textContent = sp.double ? t("once") : t("used");
+    const fb = $("foldBtn");
+    if (S.phase === "setup") { const n = S.soldiers.filter((s) => s.p === S.turn).length; fb.textContent = n >= S.N ? t("start") : t("left", num(S.N - n)); fb.disabled = n < S.N; }
+    else { fb.textContent = t("fold"); fb.disabled = !myTurn || S.drops.length < (S.ink === "double" ? 2 : 1); }
+    $("timerBar").style.visibility = S.timerOn && !isDaily && S.phase === "battle" && !(S.mode === "ai" && S.turn === 2) ? "visible" : "hidden";
+  }
+
+  // ---------------- flow ----------------
+  function newGame() {
+    Object.assign(S, { phase: "setup", turn: 1, viewer: 1, soldiers: [], stamps: [], drops: [], ink: "normal", busy: false, anim: null, fx: null, coffee: [],
+      special: { 1: { big: 1, double: 1 }, 2: { big: 1, double: 1 } }, stats: { 1: { f: 0, h: 0 }, 2: { f: 0, h: 0 } }, fold: { cy: MID, ang: 0 }, deadline: 0 });
+    game++;
+    const wr = wrap.getBoundingClientRect();
+    if (wr.width > 40 && wr.height > 40) { H = Math.min(1.75, Math.max(1.3, (wr.height - 4) / (wr.width - 4))); MID = H / 2; S.fold = { cy: MID, ang: 0 }; }
+    $("result").hidden = true; $("curtain").hidden = true;
+    if (S.mode === "daily") { setupDaily(); resize(); return; }
+    setStatus(() => t("setupStatus", num(S.N)));
+    if (S.mode === "pass") curtain("p1Starts", "p1StartsText", () => {});
+    refresh(); resize();
+  }
+  let game = 0; // bumps on every new game so stale timers from an abandoned one do nothing
+  const later = (fn, ms) => { const g = game; setTimeout(() => { if (g === game) fn(); }, ms); };
+  const baseFold = () => ({ c: { x: 0.5, y: MID }, n: { x: 0, y: 1 }, t: { x: 1, y: 0 } });
+  function randomLayout(p) {
+    const out = [], f = baseFold(); let g = 0;
+    while (out.length < S.N && g++ < 800) { const c = { x: rnd(EDGE, 1 - EDGE), y: p === 1 ? rnd(MID + SAFE, H - EDGE) : rnd(EDGE, MID - SAFE) }; if (out.every((o) => dist(o, c) > 0.17) && onSide(f, c, p, SAFE)) out.push(c); }
+    return out.map((c) => ({ p, x: c.x, y: c.y, alive: true, tape: false }));
+  }
+  function finishSetup(p) {
+    if (S.mode === "ai") { S.soldiers.push(...randomLayout(2)); startBattle(); }
+    else if (p === 1) { S.turn = 2; S.viewer = 2; curtain("p2Turn", "p2TurnText", () => { setStatus(() => t("setupStatus", num(S.N))); refresh(); render(); }); refresh(); }
+    else startBattle();
+  }
+  function startBattle() {
+    S.phase = "battle"; S.turn = 1; S.viewer = 1; S.drops = []; S.ink = "normal";
+    if (S.hazOn) {
+      for (const p of [1, 2]) {
+        const mine = S.soldiers.filter((s) => s.p === p); mine[Math.floor(Math.random() * mine.length)].tape = true;
+        let g = 0, c;
+        do { c = { p, x: rnd(0.15, 0.85), y: p === 1 ? rnd(MID + 0.12, H - 0.1) : rnd(0.1, MID - 0.12), r: rnd(0.06, 0.085), seed: Math.floor(Math.random() * 1e9) }; } while (g++ < 200 && mine.some((s) => dist(s, c) < c.r + SR * 1.4));
+        S.coffee.push(c);
+      }
+    }
+    play("hit"); buzz(40);
+    if (S.mode === "pass") curtain("battle", "battleText", () => beginTurn());
+    else beginTurn();
+    refresh(); render();
+  }
+  let curtainKeys = null;
+  function curtain(title, body, then) {
+    curtainKeys = [title, body];
+    $("curtainTitle").textContent = t(title); $("curtainText").textContent = t(body); $("curtain").hidden = false;
+    $("curtainBtn").onclick = () => { $("curtain").hidden = true; play("tap"); then && then(); render(); };
+  }
+
+  function moveFold() {
+    if (S.mode === "daily") { const f = D.spec.folds[Math.min(4, S.stats[1].f)]; S.fold = { cy: MID + f.off * MID, ang: f.ang }; return; }
+    if (!S.shiftOn) { S.fold = { cy: MID, ang: 0 }; return; }
+    // a random shift and tilt that never crosses a live soldier; smaller moves when they sit near the middle
+    const live = S.soldiers.filter((s) => s.alive);
+    for (let scale = 1, i = 0; i < 4; i++, scale *= 0.6) {
+      for (let j = 0; j < 12; j++) {
+        const cand = { cy: MID + rnd(-0.07, 0.07) * scale, ang: (rnd(-10, 10) * scale * Math.PI) / 180 };
+        const f = foldOf({ fold: cand });
+        if (live.every((s) => onSide(f, s, s.p, SR * 1.15))) { S.fold = cand; return; }
+      }
+    }
+    S.fold = { cy: MID, ang: 0 };
+  }
+  function beginTurn(keepFold) {
+    if (!keepFold) moveFold();
+    S.drops = []; S.ink = "normal"; S.busy = false;
+    if (S.mode === "daily") { setStatus(() => t("dailyStatus")); S.deadline = 0; refresh(); render(); return; }
+    if (S.mode === "ai" && S.turn === 2) { setStatus(() => t("aiThinking")); S.deadline = 0; refresh(); render(); later(aiTurn, 700); return; }
+    setStatus(() => (S.shiftOn ? t("aimMoving") : t("aim")));
+    S.deadline = S.timerOn ? performance.now() + 10000 : 0; $("timerFill").style.transform = "scaleX(1)"; $("timerFill").style.background = "var(--marker)";
+    refresh(); render();
+  }
+
+  function doFold() {
+    const need = S.ink === "double" ? 2 : 1;
+    if (S.phase !== "battle" || S.drops.length < need || S.busy) return;
+    const shooter = S.turn, size = S.ink === "big" ? "big" : "normal", g = game;
+    if (S.ink !== "normal") S.special[shooter][S.ink] = 0;
+    S.busy = true; S.phase = "folding"; S.stats[shooter].f++; S.deadline = 0;
+    play("fold"); buzz(25); refresh();
+    const drops = S.drops.slice(), t0 = performance.now(), CLOSE = 560, HOLD = 220, OPEN = 520;
+    const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+    let results = null;
+    S.anim = { shooter, p: 0 };
+    const step = (now) => {
+      if (g !== game) return;
+      const k = now - t0;
+      const ease = (x) => (x < 0.5 ? 2 * x * x : 1 - (-2 * x + 2) ** 2 / 2);
+      S.anim.p = reduce ? (k < 200 ? 1 : 0) : k < CLOSE ? ease(k / CLOSE) : k < CLOSE + HOLD ? 1 : 1 - ease(Math.min(1, (k - CLOSE - HOLD) / OPEN));
+      if (!results && (reduce ? k >= 100 : k >= CLOSE)) { results = drops.map((d) => resolve(shooter, d, size)); S.drops = []; play("stamp"); buzz(90); }
+      render();
+      if (k < (reduce ? 300 : CLOSE + HOLD + OPEN)) requestAnimationFrame(step);
+      else { S.anim = null; afterFold(shooter, results); }
+    };
+    requestAnimationFrame(step);
+  }
+
+  function resolve(shooter, d, size) {
+    const f = foldOf(S), tp = reflect(f, d), target = shooter === 1 ? 2 : 1, inkR = INK[size];
+    const st = { p: shooter, x: tp.x, y: tp.y, sx: d.x, sy: d.y, size, seed: Math.floor(Math.random() * 1e9), res: "miss" };
+    if (!inSheet(tp)) { st.res = "off"; S.stamps.push(st); return st; }
+    if (S.coffee.some((c) => c.p === target && dist(c, tp) < c.r)) { st.res = "coffee"; S.stamps.push(st); return st; }
+    let best = null, bd = 9;
+    for (const s of S.soldiers) if (s.p === target && s.alive) { const dd = dist(s, tp); if (dd < bd) { bd = dd; best = s; } }
+    if (best && bd <= SR + inkR * 0.85) {
+      if (best.tape) { best.tape = false; st.res = "tape"; }
+      else { best.alive = false; st.res = "hit"; S.stats[shooter].h++; }
+      st.near = true;
+    } else if (best && bd <= SR + inkR + 0.08) st.near = true;
+    S.stamps.push(st);
+    return st;
+  }
+
+  function splash(st) {
+    const parts = [];
+    for (let i = 0; i < 26; i++) { const a = Math.random() * 7, v = rnd(0.004, 0.014); parts.push({ x: st.x, y: st.y, vx: Math.cos(a) * v, vy: Math.sin(a) * v, r: rnd(2, 5), c: penC(st.p), life: 1 }); }
+    S.fx = { x: st.x, y: st.y, k: 1, parts }; const t0 = performance.now();
+    const step = (now) => {
+      const k = (now - t0) / 700; if (!S.fx) return;
+      S.fx.k = Math.max(0, 1 - k); for (const p of S.fx.parts) { p.x += p.vx; p.y += p.vy; p.vy += 0.0006; p.life -= 0.03; }
+      render(); if (k < 1) requestAnimationFrame(step); else { S.fx = null; render(); }
+    };
+    requestAnimationFrame(step);
+  }
+
+  function afterFold(shooter, results) {
+    const hits = results.filter((r) => r.res === "hit"), target = shooter === 1 ? 2 : 1;
+    if (hits.length) { splash(hits[0]); play("hit"); buzz([60, 40, 120]); toast(hits.length > 1 ? t("twoHits") : S.mode === "daily" ? t("hit") : t("hitKeeps"), pen(shooter)); }
+    else if (results.some((r) => r.res === "tape")) { play("tape"); toast(t("tapeSaved"), "#b8a76a", "#2a2206"); }
+    else if (results.some((r) => r.res === "coffee")) { play("slurp"); toast(t("coffee"), "#7a4d22"); }
+    else if (results.every((r) => r.res === "off")) { play("miss"); toast(t("off"), "#e9ecf3", "#161d2c"); }
+    else if (results.some((r) => r.near)) { play("miss"); toast(t("near"), "#e9962b"); }
+    else { play("miss"); toast(t("miss"), "#e9ecf3", "#161d2c"); }
+    if (S.mode === "daily") {
+      const r0 = results[0]; D.marks.push(r0.res === "hit" ? "hit" : r0.res === "tape" ? "tape" : r0.near ? "near" : "miss");
+      if (S.stats[1].f >= 5 || !S.soldiers.some((s) => s.alive)) return dailyOver();
+      S.phase = "battle"; later(() => beginTurn(), 650); return;
+    }
+    if (!S.soldiers.some((s) => s.p === target && s.alive)) return gameOver(shooter);
+    S.phase = "battle";
+    if (hits.length) { later(() => beginTurn(), 650); return; } // a hit keeps the turn
+    S.turn = target;
+    if (S.mode === "pass") { S.busy = true; refresh(); later(() => { S.viewer = target; toast(t("turnOf", names(target)), pen(target)); beginTurn(); }, 800); }
+    else later(() => beginTurn(), 450);
+  }
+
+  let lastWinner = 0;
+  function showResult() {
+    const daily = S.mode === "daily";
+    $("shareBtn").hidden = !daily; $("againBtn").hidden = daily; $("resNote").hidden = !daily;
+    $("stALbl").textContent = daily ? t("streak") : t("accuracy");
+    if (daily) {
+      const h = S.stats[1].h;
+      $("resTitle").textContent = t("dailyTitle", num(D.no)); $("resTitle").style.color = "var(--marker)";
+      $("resText").textContent = t("dailyScore", num(h)) + (D.practice ? ` · ${t("practice")}` : "");
+      $("stF").textContent = num(S.stats[1].f); $("stH").textContent = num(h); $("stA").textContent = num(streak());
+      $("resNote").textContent = t("dailyNext", num(hoursLeft()));
+      return;
+    }
+    const w = lastWinner, st = S.stats[S.mode === "ai" ? 1 : w];
+    $("resTitle").textContent = S.mode === "ai" ? (w === 1 ? t("youWin") : t("aiWins")) : t("wins", names(w)); $("resTitle").style.color = lighten(pen(w), 0.35);
+    $("resText").textContent = S.mode === "ai" && w === 2 ? t("loseText") : t("winText");
+    $("stF").textContent = num(st.f); $("stH").textContent = num(st.h); $("stA").textContent = lang === "ar" ? AR(st.f ? Math.round((st.h / st.f) * 100) : 0) + "٪" : (st.f ? Math.round((st.h / st.f) * 100) : 0) + "%";
+  }
+  function gameOver(w) {
+    S.phase = "over"; S.deadline = 0; lastWinner = w; refresh(); render();
+    const human = S.mode === "pass" || w === 1; play(human ? "win" : "lose"); buzz([80, 60, 160]);
+    later(() => { showResult(); $("result").hidden = false; }, 1000);
+  }
+
+  // ---------------- daily puzzle ----------------
+  // Everyone gets the same sheet each day: five enemy soldiers, one coffee stain, one taped soldier and
+  // five fold lines, all drawn from the date. Positions are kept as fractions of the enemy half so the
+  // puzzle is the same on every screen shape.
+  const DKEY = "foldit.daily.v1";
+  const today = () => { const d = new Date(); return Math.floor(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()) / 864e5); };
+  const FIRST_DAY = Math.floor(Date.UTC(2026, 8, 1) / 864e5);
+  const puzzleNo = () => today() - FIRST_DAY + 1;
+  const hoursLeft = () => { const d = new Date(), m = new Date(d.getFullYear(), d.getMonth(), d.getDate() + 1); return Math.max(1, Math.ceil((m - d) / 36e5)); };
+  function dailyLog() { try { return JSON.parse(localStorage.getItem(DKEY) || "{}") || {}; } catch (e) { return {}; } }
+  function saveDaily(day, rec) { const log = dailyLog(); log[day] = rec; try { localStorage.setItem(DKEY, JSON.stringify(log)); } catch (e) {} }
+  function streak() { const log = dailyLog(); let d = today(); if (!log[d]) d--; let n = 0; while (log[d]) { n++; d--; } return n; }
+  let D = null;
+  function buildDaily(day) {
+    const R = seeded(day * 7919 + 17), r = (a, b) => a + R() * (b - a), NM = 0.725; // NM: the middle on a standard sheet
+    const soldiers = []; let g = 0;
+    while (soldiers.length < 5 && g++ < 3000) {
+      const c = { x: r(0.07, 0.93), v: r(0.2, 0.9) };
+      if (soldiers.every((o) => Math.hypot(o.x - c.x, (o.v - c.v) * NM) > 0.18)) soldiers.push(c);
+    }
+    soldiers[Math.floor(R() * soldiers.length)].tape = true;
+    let coffee = null; g = 0;
+    do { coffee = { x: r(0.15, 0.85), v: r(0.25, 0.85), r: r(0.06, 0.08), seed: Math.floor(R() * 1e9) }; } while (g++ < 300 && soldiers.some((o) => Math.hypot(o.x - coffee.x, (o.v - coffee.v) * NM) < coffee.r + SR * 1.4));
+    const folds = [];
+    for (let i = 0; i < 5; i++) {
+      let pickF = { off: 0, ang: 0 };
+      for (let scale = 1, k = 0; k < 4 && !pickF.off; k++, scale *= 0.6) {
+        for (let j = 0; j < 12; j++) {
+          const off = r(-0.1, 0.1) * scale, ang = (r(-10, 10) * scale * Math.PI) / 180;
+          const f = foldOf({ fold: { cy: NM + off * NM, ang } });
+          if (soldiers.every((o) => onSide(f, { x: o.x, y: NM - o.v * NM }, 2, SR * 1.4))) { pickF = { off, ang }; break; }
+        }
+      }
+      folds.push(pickF);
+    }
+    return { soldiers, coffee, folds };
+  }
+  function setupDaily() {
+    const day = today();
+    const spec = buildDaily(day);
+    D = { no: puzzleNo(), day, spec, practice: !!dailyLog()[day], marks: [] };
+    S.soldiers = spec.soldiers.map((c) => ({ p: 2, x: c.x, y: MID - c.v * MID, alive: true, tape: !!c.tape }));
+    S.coffee = [{ p: 2, x: spec.coffee.x, y: MID - spec.coffee.v * MID, r: spec.coffee.r, seed: spec.coffee.seed }];
+    S.special = { 1: { big: 0, double: 0 }, 2: { big: 0, double: 0 } };
+    S.phase = "battle"; S.turn = 1; S.viewer = 1;
+    beginTurn();
+  }
+  function dailyOver() {
+    S.phase = "over"; S.deadline = 0; refresh(); render();
+    const h = S.stats[1].h;
+    if (!D.practice) saveDaily(D.day, { h, m: D.marks.join(",") });
+    play(h >= 3 ? "win" : "lose"); buzz([80, 60, 160]);
+    later(() => { showResult(); $("result").hidden = false; }, 900);
+  }
+  $("shareBtn").onclick = () => {
+    const icons = { hit: "🟦", tape: "🟨", near: "🟧", miss: "⬜" };
+    const txt = `${t("appName")} ${t("dailyTitle", D.no)}\n${D.marks.map((m) => icons[m]).join("")} ${S.stats[1].h}/5`;
+    const shown = () => { const n = $("resNote"); n.textContent = txt; n.style.userSelect = "text"; try { const rg = document.createRange(); rg.selectNodeContents(n); const sel = getSelection(); sel.removeAllRanges(); sel.addRange(rg); } catch (e) {} };
+    try { navigator.clipboard.writeText(txt).then(() => toast(t("copied"), "#3fbf7f"), shown); } catch (e) { shown(); }
+  };
+
+  // ---------------- computer ----------------
+  function aiTurn() {
+    if (S.phase !== "battle" || S.turn !== 2) return;
+    const f = foldOf(S), targets = S.soldiers.filter((s) => s.p === 1 && s.alive);
+    if (!targets.length) return;
+    const sigma = { easy: 0.124, normal: 0.089, hard: 0.066 }[S.diff];
+    const aim = (tg) => { const src = reflect(f, tg); let p = { x: src.x + gauss() * sigma, y: src.y + gauss() * sigma }; p.x = Math.min(0.97, Math.max(0.03, p.x)); p.y = Math.min(H - 0.03, Math.max(0.03, p.y)); if (!onSide(f, p, 2, 0.01)) p = reflect(f, p); return p; };
+    const pick = targets.slice().sort((a, b) => (a.tape - b.tape) + Math.random() - 0.5)[0];
+    let ink = "normal"; const sp = S.special[2];
+    if (S.diff !== "easy" && sp.double && targets.length > 1 && Math.random() < 0.35) ink = "double";
+    else if (S.diff !== "easy" && sp.big && Math.random() < 0.3) ink = "big";
+    S.ink = ink; S.drops = [];
+    const list = [aim(pick)]; if (ink === "double") list.push(aim(targets.find((x) => x !== pick) || pick));
+    setStatus(() => t("aiAiming")); refresh();
+    let i = 0; const next = () => { S.drops.push(list[i++]); play("drop"); render(); if (i < list.length) later(next, 350); else later(doFold, 480); };
+    later(next, 400);
+  }
+
+  // ---------------- input ----------------
+  let dragI = -1;
+  function toBoard(ev) {
+    const r = board.getBoundingClientRect(); let x = (ev.clientX - r.left - L.ox) / L.u, y = (ev.clientY - r.top - L.oy) / L.u;
+    if (S.viewer === 2) { x = 1 - x; y = H - y; } return { x, y };
+  }
+  board.addEventListener("pointerdown", (ev) => {
+    if (S.busy || S.phase === "over" || S.phase === "folding" || !$("curtain").hidden) return;
+    ac(); const p = toBoard(ev);
+    if (S.phase === "setup") return setupTap(p);
+    if (S.mode === "ai" && S.turn === 2) return;
+    const f = foldOf(S);
+    if (!onSide(f, p, S.turn, 0.015) || !inSheet(p, 0.02)) { toast(t("wrongSide"), "#e9962b"); buzz(20); return; }
+    const need = S.ink === "double" ? 2 : 1;
+    if (S.drops.length < need) { S.drops.push(p); dragI = S.drops.length - 1; play("drop"); buzz(12); }
+    else { let bi = 0, bd = 9; S.drops.forEach((d, i) => { const dd = dist(d, p); if (dd < bd) { bd = dd; bi = i; } }); S.drops[bi] = p; dragI = bi; }
+    try { board.setPointerCapture(ev.pointerId); } catch (e) {}
+    refresh(); render();
+  });
+  board.addEventListener("pointermove", (ev) => {
+    if (dragI < 0 || S.phase !== "battle") return;
+    const p = toBoard(ev), f = foldOf(S);
+    if (onSide(f, p, S.turn, 0.015) && inSheet(p, 0.02)) { S.drops[dragI] = p; render(); }
+  });
+  const end = () => { dragI = -1; }; board.addEventListener("pointerup", end); board.addEventListener("pointercancel", end);
+
+  function setupTap(p) {
+    const me = S.turn, mine = S.soldiers.filter((s) => s.p === me);
+    const hi = S.soldiers.findIndex((s) => s.p === me && dist(s, p) < SR * 1.3);
+    if (hi >= 0) { S.soldiers.splice(hi, 1); play("miss"); const n = mine.length - 1; setStatus(() => t("remaining", num(S.N - n))); refresh(); render(); return; }
+    if (mine.length >= S.N) { toast(t("full"), "#e9ecf3", "#161d2c"); return; }
+    if (!onSide(baseFold(), p, me, SAFE) || p.x < EDGE || p.x > 1 - EDGE || (me === 1 ? p.y > H - EDGE : p.y < EDGE)) { toast(t("badSpot"), "#e9962b"); buzz(20); return; }
+    if (mine.some((s) => dist(s, p) < 0.15)) { toast(t("tooClose"), "#e9962b"); buzz(20); return; }
+    S.soldiers.push({ p: me, x: p.x, y: p.y, alive: true, tape: false }); play("place"); buzz(12);
+    const n = mine.length + 1; setStatus(() => (n < S.N ? t("remaining", num(S.N - n)) : t("allPlaced")));
+    refresh(); render();
+  }
+
+  $("foldBtn").onclick = () => { ac(); if (S.phase === "setup") { if (S.soldiers.filter((s) => s.p === S.turn).length >= S.N) { play("tap"); finishSetup(S.turn); } return; } doFold(); };
+  document.querySelectorAll(".ink").forEach((b) => (b.onclick = () => { S.ink = b.dataset.ink; const need = S.ink === "double" ? 2 : 1; if (S.drops.length > need) S.drops.length = need; play("tap"); refresh(); render(); }));
+  addEventListener("keydown", (e) => { if ((e.key === " " || e.key === "Enter") && inGame() && document.activeElement === document.body) { e.preventDefault(); $("foldBtn").click(); } });
+
+  // timer + pulse loop
+  let lastTick = 0, lastSec = -1;
+  function loop(now) {
+    if (inGame()) {
+      if (S.drops.length && !S.anim && now - lastTick > 50) { S.pulse = (Math.sin(now / 260) + 1) / 2; render(); lastTick = now; }
+      if (S.deadline && S.phase === "battle" && !S.busy && $("curtain").hidden) {
+        const left = S.deadline - now; $("timerFill").style.transform = `scaleX(${Math.max(0, left / 10000)})`;
+        $("timerFill").style.background = left < 3000 ? "#e9962b" : "var(--marker)";
+        const sec = Math.ceil(left / 1000); if (sec !== lastSec && sec <= 3 && sec > 0) play("tick"); lastSec = sec;
+        if (left <= 0) {
+          S.deadline = 0; const f = foldOf(S);
+          const need = S.ink === "double" ? 2 : 1;
+          while (S.drops.length < need) { let p, g = 0; do { p = { x: rnd(0.1, 0.9), y: S.turn === 1 ? rnd(MID, H - 0.05) : rnd(0.05, MID) }; } while (g++ < 50 && !onSide(f, p, S.turn, 0.03)); S.drops.push(p); }
+          toast(t("timeUp"), "#e9962b"); doFold();
+        }
+      }
+    }
+    requestAnimationFrame(loop);
+  }
+  requestAnimationFrame(loop);
+
+  // ---------------- screens, sheets, settings ----------------
+  function paintBackdrop() { drawDesk($("desk")); if (!$("v-home").hidden) drawDecor($("decor")); }
+  function show(view) {
+    $("v-home").hidden = view !== "home"; $("v-game").hidden = view !== "game"; $("decor").hidden = view !== "home";
+    if (view === "home") drawDecor($("decor"));
+  }
+  const startMode = (m) => { ac(); play("tap"); S.mode = m; show("game"); newGame(); };
+  let pick = "ai";
+  function syncModes() {
+    const rec = dailyLog()[today()], st = streak();
+    $("dailyInfo").textContent = rec ? t("dailyDone", num(rec.h), num(st)) : t("dailyReady", num(puzzleNo()));
+    $("dailyBadge").textContent = rec ? t("badgeDone") : t("badgeNew"); $("dailyBadge").classList.toggle("done", !!rec);
+    document.querySelectorAll(".mode").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.m === pick)));
+    $("diffLbl").hidden = $("diffSeg").hidden = pick !== "ai";
+    $("soldiersRow").hidden = pick === "daily";
+    $("dailyNote").hidden = pick !== "daily"; $("dailyNote").textContent = rec ? t("dailyPractice") : t("dailyRules");
+    $("playHint").textContent = rec ? (st > 1 ? t("playHintStreak", num(st)) : t("dailyDone", num(rec.h), num(st))) : t("playHintNew");
+  }
+  const closeSheets = () => document.querySelectorAll(".sheet").forEach((x) => (x.hidden = true));
+  $("playBtn").onclick = () => { ac(); play("tap"); if (!dailyLog()[today()]) pick = "daily"; syncModes(); $("modes").hidden = false; };
+  document.querySelectorAll(".mode").forEach((b) => (b.onclick = () => { pick = b.dataset.m; play("tap"); syncModes(); }));
+  $("goBtn").onclick = () => { closeSheets(); startMode(pick); };
+  $("openKit").onclick = () => { play("tap"); $("kit").hidden = false; drawSwatches(); };
+  const toHome = () => { game++; syncModes(); show("home"); $("result").hidden = true; $("curtain").hidden = true; S.phase = "over"; S.deadline = 0; S.busy = false; S.anim = null; S.fx = null; play("tap"); };
+  $("backBtn").onclick = toHome; $("homeBtn").onclick = toHome; $("againBtn").onclick = () => { play("tap"); newGame(); };
+  $("openSettings").onclick = () => { play("tap"); $("settings").hidden = false; };
+  $("openHelp").onclick = () => { play("tap"); $("help").hidden = false; };
+  document.querySelectorAll("[data-close]").forEach((b) => (b.onclick = () => { play("tap"); closeSheets(); }));
+  document.querySelectorAll(".sheet").forEach((s) => s.addEventListener("click", (e) => { if (e.target === s) s.hidden = true; }));
+  addEventListener("keydown", (e) => { if (e.key === "Escape") closeSheets(); });
+  document.querySelectorAll("#diffSeg button").forEach((b) => (b.onclick = () => { S.diff = b.dataset.d; play("tap"); syncControls(); saveSettings(); }));
+  $("nMinus").onclick = () => { S.N = Math.max(3, S.N - 1); play("tap"); syncControls(); saveSettings(); };
+  $("nPlus").onclick = () => { S.N = Math.min(5, S.N + 1); play("tap"); syncControls(); saveSettings(); };
+  const sw = (id, key) => { $(id).onclick = () => { S[key] = !S[key]; play("tap"); syncControls(); saveSettings(); }; };
+  sw("swTimer", "timerOn"); sw("swShift", "shiftOn"); sw("swHaz", "hazOn"); sw("swSound", "sound");
+  document.querySelectorAll(".sound-btn").forEach((b) => (b.onclick = () => { S.sound = !S.sound; syncControls(); saveSettings(); play("tap"); }));
+  const setLang = (l) => { lang = l; applyLang(); saveSettings(); play("tap"); };
+  document.querySelectorAll("#langSeg button").forEach((b) => (b.onclick = () => setLang(b.dataset.l)));
+  $("langBtn").onclick = () => setLang(lang === "ar" ? "en" : "ar");
+
+  function syncControls() {
+    document.querySelectorAll(".sound-btn .wave").forEach((w) => (w.style.opacity = S.sound ? 1 : 0.15));
+    document.querySelectorAll(".sound-btn").forEach((b) => b.setAttribute("aria-pressed", String(S.sound)));
+    $("swSound").setAttribute("aria-checked", String(S.sound)); $("swTimer").setAttribute("aria-checked", String(S.timerOn));
+    $("swShift").setAttribute("aria-checked", String(S.shiftOn)); $("swHaz").setAttribute("aria-checked", String(S.hazOn));
+    document.querySelectorAll("#diffSeg button").forEach((x) => { x.setAttribute("aria-pressed", String(x.dataset.d === S.diff)); x.textContent = t(x.dataset.d); });
+    document.querySelectorAll("#langSeg button").forEach((x) => x.setAttribute("aria-pressed", String(x.dataset.l === lang)));
+    $("nOut").textContent = num(S.N);
+    syncModes();
+  }
+  function applyLang() {
+    const app = $("app"); app.dir = lang === "ar" ? "rtl" : "ltr"; app.lang = lang; document.documentElement.lang = lang;
+    document.querySelectorAll("[data-t]").forEach((el) => (el.textContent = t(el.dataset.t)));
+    document.querySelectorAll("[data-aria]").forEach((el) => el.setAttribute("aria-label", TEXT[lang].aria[el.dataset.aria]));
+    $("homeName").textContent = t("appName"); $("homeTag").textContent = t("tagline");
+    $("langBtn").textContent = lang === "ar" ? "EN" : "ع"; $("langBtn").setAttribute("aria-label", lang === "ar" ? "English" : "العربية");
+    document.querySelector("#backBtn .chev").setAttribute("d", lang === "ar" ? "M9 6l6 6-6 6" : "M15 6l-6 6 6 6");
+    $("helpList").innerHTML = t("helpSteps").map(([b, s]) => `<div><b>${b}</b> ${s}</div>`).join("");
+    document.querySelectorAll(".sw").forEach((b) => { const item = (b.dataset.kind === "paper" ? PAPERS : INKS).find((x) => x.id === b.dataset.id); b.querySelector("span").textContent = lang === "ar" ? item.name : item.en; });
+    if (curtainKeys && !$("curtain").hidden) { $("curtainTitle").textContent = t(curtainKeys[0]); $("curtainText").textContent = t(curtainKeys[1]); }
+    if (!$("result").hidden) showResult();
+    $("status").innerHTML = statusFn();
+    syncControls(); if (inGame()) { refresh(); render(); }
+  }
+
+  // swatches: tiny preview of paper + ink
+  function swatch(canvas, pp, ii) {
+    const r = canvas.getBoundingClientRect(), dpr = Math.min(devicePixelRatio || 1, 2), w = Math.max(40, r.width);
+    canvas.width = w * dpr; canvas.height = w * dpr; const ctx = canvas.getContext("2d"); ctx.scale(dpr, dpr);
+    const savedP = paper, savedI = inkSet; paper = pp; inkSet = ii;
+    ctx.save(); ctx.scale(1 / 4, 1 / (4 * H)); drawPaper(ctx, w * 4, null); ctx.restore();
+    blob(ctx, w * 0.35, w * 0.62, w * 0.14, 5, penC(1), 0.95); blob(ctx, w * 0.66, w * 0.32, w * 0.12, 9, penC(2), 0.9);
+    paper = savedP; inkSet = savedI;
+  }
+  function buildSwatches(el, list, kind) {
+    el.innerHTML = "";
+    list.forEach((item) => {
+      const b = document.createElement("button"); b.type = "button"; b.className = "sw"; b.dataset.id = item.id; b.dataset.kind = kind;
+      b.innerHTML = "<canvas></canvas><span></span>";
+      b.onclick = () => { if (kind === "paper") paper = item; else inkSet = item; play("tap"); saveSettings(); drawSwatches(); if (inGame()) { refresh(); render(); } };
+      el.append(b);
+    });
+  }
+  function drawSwatches() {
+    document.querySelectorAll("#paperSw .sw").forEach((b) => swatch(b.querySelector("canvas"), PAPERS.find((p) => p.id === b.dataset.id), inkSet));
+    document.querySelectorAll("#inkSw .sw").forEach((b) => swatch(b.querySelector("canvas"), paper, INKS.find((p) => p.id === b.dataset.id)));
+    document.querySelectorAll("#paperSw .sw").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.id === paper.id)));
+    document.querySelectorAll("#inkSw .sw").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.id === inkSet.id)));
+  }
+  buildSwatches($("paperSw"), PAPERS, "paper"); buildSwatches($("inkSw"), INKS, "ink");
+
+  let rsT = 0;
+  addEventListener("resize", () => { clearTimeout(rsT); rsT = setTimeout(() => { paintBackdrop(); if (!$("kit").hidden) drawSwatches(); }, 80); });
+  new ResizeObserver(() => { if (inGame()) resize(); }).observe(wrap);
+
+  loadSettings();
+  applyLang();
+  const boot = () => { drawHomeLogo($("homeLogo")); paintBackdrop(); if (!$("kit").hidden) drawSwatches(); };
+  boot();
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(boot);
+
+})();
+</script>
+
+</body>
+</html>
