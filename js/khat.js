@@ -224,6 +224,7 @@ ROOM_GAMES.khat = {
     const t = Object.values(S.teams || {});
     if (!t.includes("b") || !t.includes("r") || S.picks.length < 3) $("start").disabled = true;
   },
+  resume(S) { if (!(H.usedQ instanceof Set)) H.usedQ = new Set(); if (S.phase === "ask") kFinish(); },
   start() { Object.assign(H.S, { wins: { b: 0, r: 0 }, boardNo: 0 }); H.kst = {}; H.usedQ = new Set(); kNewBoard(); },
   views: { pick: kvPick, ask: kvAsk, res: kvRes, end: kvEnd },
 };

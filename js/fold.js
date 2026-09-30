@@ -78,6 +78,17 @@ ROOM_GAMES.foldit = {
     if (S.duo.length < 2) $("start").disabled = true;
   },
   start() { H.S.wins = [0, 0]; H.S.match = 0; fSetup(); },
+  // the host came back mid-match: a fold that was showing finishes, and the turn starts again
+  resume(S) {
+    if (S.phase !== "aim" && S.phase !== "shot") return;
+    fArm();
+    if (S.phase === "shot" && S.last && S.last.results) {
+      const foe = 1 - S.last.by;
+      if (!H.army[foe].some((s) => s.alive)) return fOver(S.last.by);
+      if (!S.last.results.some((r) => r.res === "hit")) S.turn = foe;
+    }
+    fAim();
+  },
   views: { setup: fvSetup, aim: fvPlay, shot: fvPlay, over: fvOver },
 };
 
@@ -119,9 +130,11 @@ function fBattle() {
     do { c = { p: i, x: rnd(0.15, 0.85), y: i === 0 ? rnd(FMID + 0.12, FH - 0.1) : rnd(0.1, FMID - 0.12), r: rnd(0.06, 0.085), seed: Math.floor(Math.random() * 1e9) }; } while (g++ < 200 && mine.some((s) => fDist(s, c) < c.r + FSR * 1.4));
     S.coffee.push(c);
   }
-  hEvery(() => { if (S.phase === "aim" && now() >= H.deadline) { S.turn = 1 - S.turn; S.last = { skipped: true }; fAim(); } }, 300);
+  fArm();
   fAim();
 }
+// the turn clock: a player who doesn't fold in time passes the turn
+function fArm() { const S = H.S; hEvery(() => { if (S.phase === "aim" && now() >= H.deadline) { S.turn = 1 - S.turn; S.last = { skipped: true }; fAim(); } }, 300); }
 function fShoot(drops, ink) {
   const S = H.S, f = foldGeo(S.fold), by = S.turn, foe = 1 - by, size = ink === "big" ? "big" : "normal";
   if (ink !== "normal") S.special[by][ink] = 0;

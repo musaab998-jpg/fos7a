@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>فسحة · الخصوصية</title>
+<meta name="theme-color" content="#fff6dc">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;600;700&family=Lalezar&display=swap" rel="stylesheet">
+<style>
+  :root { --yard: #ffc933; --cream: #fff6dc; --navy: #1b2a4a; --red: #c8232c; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--cream); color: var(--navy); font-family: "IBM Plex Sans Arabic", sans-serif; line-height: 1.8; }
+  main { max-width: 680px; margin: 0 auto; padding: calc(24px + env(safe-area-inset-top)) 16px calc(40px + env(safe-area-inset-bottom)); }
+  h1, h2 { font-family: "Lalezar", sans-serif; font-weight: 400; line-height: 1.2; }
+  h1 { font-size: 42px; margin: 0 0 4px; }
+  h2 { font-size: 26px; margin: 28px 0 6px; }
+  .lead { font-size: 17px; }
+  .card { background: #fff; border: 2px solid #eadcae; border-radius: 18px; padding: 16px 18px; margin-top: 16px; }
+  ul { padding-inline-start: 20px; margin: 6px 0; }
+  a { color: var(--red); font-weight: 700; }
+  .date { color: #5d6887; font-size: 14px; }
+</style>
+</head>
+<body>
+<main>
+  <a href="./">← رجوع لفسحة</a>
+  <h1>الخصوصية في فسحة</h1>
+  <p class="date">آخر تحديث: ٣٠ سبتمبر ٢٠٢٦</p>
+  <p class="lead">باختصار: فسحة ما تطلب منك حساب، وما تخزن اسمك ولا إجاباتك على أي سيرفر. اللعب يمر بين جوالات اللي في الغرفة ويروح.</p>
+
+  <div class="card">
+    <h2>وش يبقى في جوالك</h2>
+    <ul>
+      <li>اسمك وشكل شخصيتك، عشان ما تعيد تختارهم كل مرة.</li>
+      <li>رقم عشوائي يعرّف جوالك في الغرفة، عشان لو انقطع النت ترجع لنفس مكانك.</li>
+      <li>إذا كنت أنت المضيف: حالة الغرفة لمدة ٤٥ دقيقة، عشان تقدر ترجّعها لو قفلت الصفحة بالغلط.</li>
+      <li>اختيارك لتشغيل الصوت أو كتمه، وأرقام اللغز اليومي في «اطوِها!».</li>
+    </ul>
+    <p>كل هذا محفوظ في جوالك بس، وتقدر تمسحه من إعدادات المتصفح أو بحذف التطبيق.</p>
+  </div>
+
+  <div class="card">
+    <h2>وش يمر عبر النت وقت اللعب</h2>
+    <p>لما تدخل غرفة، جوالك يرسل للي معك في نفس الغرفة: اسمك وشكل شخصيتك وإجاباتك وتصويتك وحركاتك في اللعبة. الرسائل تمر عبر خدمة <b>Supabase Realtime</b> وتوصل للجوالات الثانية على طول، وما نحفظها في قاعدة بيانات.</p>
+    <p>أي أحد عنده رمز الغرفة يقدر يدخلها، فلا تكتب في اسمك أو إجاباتك شي خاص.</p>
+  </div>
+
+  <div class="card">
+    <h2>اللي ما نسويه</h2>
+    <ul>
+      <li>ما نطلب رقم جوال ولا إيميل ولا حساب.</li>
+      <li>ما نبيع ولا نشارك بياناتك، وما فيه إعلانات تتبعك.</li>
+      <li>ما نستخدم الكاميرا ولا المايكروفون ولا موقعك.</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h2>تطبيق الأندرويد</h2>
+    <p>التطبيق نفس الموقع داخل غلاف. يطلب إذن الإنترنت عشان الغرف، والاهتزاز عشان يرجّ الجوال في اللعب، وما يطلب غيرها.</p>
+  </div>
+
+  <div class="card">
+    <h2>تواصل معنا</h2>
+    <p>لأي سؤال عن الخصوصية، راسلنا عبر صفحة المشروع على <a href="https://github.com/musaab998-jpg/fos7a/issues">GitHub</a>.</p>
+  </div>
+</main>
+</body>
+</html>

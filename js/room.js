@@ -27,13 +27,70 @@ const shuffled = (a) => a.map((x) => [Math.random(), x]).sort((p, q) => p[0] - q
 const THEME_COLOR = { khallast: "#fbf8ef", khat: "#22402f", fold: "#151c2d" };
 
 function leaveRoom(tell = true) {
-  clearKL(); hClear(); clearInterval(KL.alive); yardQuiet(0.5); KL.rang = false;
+  clearKL(); hClear(); clearInterval(KL.alive); yardQuiet(0.5); KL.rang = false; keepAwake(false); hostBanner(false);
+  if (tell && isHost()) forgetRoom(); // closed on purpose: nothing to come back to
   if (KL.net) {
     if (tell) isHost() ? KL.net.send({ t: "state", s: { phase: "closed" } }) : KL.net.send({ t: "bye", id: PID });
     const n = KL.net; setTimeout(() => n.close(), 300);
   }
   Object.assign(KL, { role: null, code: "", net: null, S: null, view: "", my: {}, fv: null });
 }
+
+// ---------------- keeping the room alive ----------------
+// The screen stays on while you're in a room, so the host's phone doesn't sleep and freeze the game.
+let wakeLock = null;
+async function keepAwake(on) {
+  try {
+    if (!on) { if (wakeLock) await wakeLock.release(); wakeLock = null; return; }
+    if ("wakeLock" in navigator && !wakeLock && document.visibilityState === "visible") { wakeLock = await navigator.wakeLock.request("screen"); wakeLock.addEventListener("release", () => (wakeLock = null)); }
+  } catch (e) {}
+}
+// The host's game is saved on the phone after every change, so if the page is closed or the phone
+// restarts, the host can open فسحة again and bring the same room back, with everyone still in it.
+const ROOM_KEY = "fos7a.room.v1", ROOM_KEEP = 45 * 60 * 1000;
+function saveRoom() {
+  try {
+    const keep = {};
+    for (const [k, v] of Object.entries(H)) if (!["timers", "soon", "lastHello"].includes(k)) keep[k] = v instanceof Set ? { __set: [...v] } : v;
+    localStorage.setItem(ROOM_KEY, JSON.stringify({ at: now(), code: KL.code, H: keep }));
+  } catch (e) {}
+}
+function savedRoom() {
+  try { const r = JSON.parse(localStorage.getItem(ROOM_KEY) || "null"); return r && now() - r.at < ROOM_KEEP && r.H && r.H.S ? r : null; } catch (e) { return null; }
+}
+function forgetRoom() { try { localStorage.removeItem(ROOM_KEY); } catch (e) {} }
+function resumeRoom() {
+  const r = savedRoom(); if (!r) return;
+  leaveRoom(false);
+  Object.assign(KL, { role: "host", code: r.code, my: {} });
+  for (const k of Object.keys(H)) delete H[k];
+  for (const [k, v] of Object.entries(r.H)) H[k] = v && v.__set ? new Set(v.__set) : v;
+  H.timers = [];
+  current = H.S.game; view("game");
+  setTop("");
+  show(`<div class="paper"><h2 style="font-size:26px">نرجّع الغرفة ${esc(r.code)}…</h2></div>`);
+  KL.net = openRoom(r.code, (m) => hostOn(m, false), (st) => {
+    if (st === "SUBSCRIBED" && !KL.resumed) { KL.resumed = true; ROOM_GAMES[H.S.game].resume?.(H.S); hostSend(); }
+    else if (st === "CHANNEL_ERROR" || st === "TIMED_OUT") offline();
+  });
+  KL.resumed = false;
+  keepAwake(true);
+}
+// players: a note on top when the host has gone quiet, so nobody thinks the game is broken
+function hostBanner(on) {
+  let el = $("hostGone");
+  if (!on) { if (el) el.remove(); return; }
+  if (el) return;
+  el = document.createElement("div"); el.id = "hostGone"; el.className = "hostgone";
+  el.textContent = "المضيف انقطع… ننتظره يرجع";
+  document.querySelector(".gshell")?.prepend(el);
+}
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState !== "visible" || !KL.role) return;
+  keepAwake(true);
+  if (isHost()) hostSend(); // catch everyone up after the phone was in the background
+  else if (KL.net) KL.net.send({ t: "hello", id: PID });
+});
 
 // ---------------- hosting ----------------
 function hostRoom(game) {
@@ -47,6 +104,7 @@ function hostRoom(game) {
   show(`<div class="paper"><h2 style="font-size:26px">نجهّز الغرفة…</h2></div>`);
   KL.net = openRoom(code, (m) => hostOn(m, false), (st) => { if (st === "SUBSCRIBED") hostSend(); else if (st === "CHANNEL_ERROR" || st === "TIMED_OUT") offline(); });
   klLater(() => { if (!KL.S) hostSend(); }, 2500);
+  keepAwake(true);
 }
 // the host switches the room to a game (or back to its «وينكم!») and keeps everyone in it
 function roomGame(game) {
@@ -70,6 +128,8 @@ function hostSend() {
   S.seq++;
   const snap = JSON.parse(JSON.stringify(S));
   if (KL.net) KL.net.send({ t: "state", s: snap });
+  H.lastSend = now();
+  saveRoom();
   apply(snap);
 }
 // many small changes at once (joins, votes) go out as one snapshot
@@ -86,7 +146,7 @@ function hostOn(m, local) {
       else if (H.players.length < MAX_PLAYERS) { H.players.push({ id: m.p.id, name, av: m.p.av }); beep(620, 0.06); ROOM_GAMES[S.game].joined?.(m.p.id); }
       return hostSendSoon();
     }
-    case "hello": return hostSendSoon();
+    case "hello": return now() - (H.lastSend || 0) > 4000 && hostSendSoon(); // one catch-up for everyone, not one per phone
     case "bye":
       if (S.phase === "lobby" && m.id !== PID) { H.players = H.players.filter((p) => p.id !== m.id); ROOM_GAMES[S.game].left?.(m.id); }
       return hostSend();
@@ -115,8 +175,14 @@ function joinRoom(code) {
     $("retry").onclick = () => joinRoom(code);
     $("back").onclick = () => { leaveRoom(); renderHub(); view("hub"); };
   }, 8000);
-  // players who were away catch up
-  KL.alive = setInterval(() => { if (KL.S && KL.net && document.visibilityState === "visible" && now() - KL.gotAt > 15000) KL.net.send({ t: "hello", id: PID }); }, 5000);
+  // players who were away catch up; if the host stays silent, say so
+  KL.alive = setInterval(() => {
+    if (!KL.S || !KL.net || document.visibilityState !== "visible") return;
+    const quiet = now() - KL.gotAt;
+    if (quiet > 15000) KL.net.send({ t: "hello", id: PID });
+    hostBanner(quiet > 30000);
+  }, 5000);
+  keepAwake(true);
 }
 
 // ---------------- what every phone shows ----------------
@@ -128,6 +194,7 @@ function apply(S) {
   if (!g) return;
   const prev = KL.S;
   KL.S = S; KL.gotAt = now();
+  if (!isHost()) hostBanner(false);
   $("roomCode").textContent = S.code || "";
   $("gTitle").textContent = g.name;
   current = S.game;

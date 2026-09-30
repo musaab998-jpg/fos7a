@@ -26,6 +26,7 @@
           <h1>فسحة</h1>
           <p class="lead">دق الجرس! المضيف يفتح غرفة، والكل يدخل من جواله برمز. بدون تحميل ولا تسجيل، والتلفزيون اختياري.</p>
           <div class="hero-btns"><button type="button" class="hbtn bellbtn" id="heroBell">${BELL}دق الجرس</button><a class="hbtn" href="#games">اختاروا لعبة</a><button type="button" class="hbtn alt" id="heroMe">شخصيتك</button></div>
+          ${(() => { const r = savedRoom(); return r ? `<div class="resume pop"><span>غرفتك <b dir="ltr">${esc(r.code)}</b> للحين مفتوحة</span><button type="button" class="hbtn" id="resumeBtn">رجّعها</button><button type="button" class="hbtn alt" id="dropRoom">قفلها</button></div>` : ""; })()}
           <form class="joinbox" id="joinForm"><input id="joinCode" maxlength="4" placeholder="رمز الغرفة" aria-label="رمز الغرفة" autocomplete="off" autocapitalize="characters"><button type="submit" class="hbtn">ادخل</button></form>
         </div>
         <div class="crew" aria-hidden="true">${crew.map((p) => avatar(p.av, 74)).join("")}</div>
@@ -52,10 +53,12 @@
           <details><summary>كم لاعب؟</summary><p>لين ٣٠ في الغرفة. «خط ثلاثة» يتقسمون فيها فريقين، و«اطوِها!» يلعبها اثنين والباقي يتفرجون.</p></details>
           <details><summary>نقدر نغيّر اللعبة بدون ما نطلع؟</summary><p>إيه. المضيف يختار اللعبة من شاشة «وينكم!»، والكل يبقى في نفس الغرفة.</p></details>
           <details><summary>كم تكلف؟</summary><p>مجانية وقت التجربة.</p></details>
+          <details><summary>وش تحفظون عني؟</summary><p>ولا شي على سيرفر. اسمك وشخصيتك في جوالك بس، واللعب يمر بين جوالات الغرفة ويروح. التفاصيل في <a href="privacy.html">صفحة الخصوصية</a>.</p></details>
         </div>
       </section>
-      <footer class="foot"><span>فسحة</span><span>ألعاب جماعية من جوالاتكم</span></footer>
+      <footer class="foot"><span>فسحة · <a href="privacy.html">الخصوصية</a></span><span>ألعاب جماعية من جوالاتكم</span></footer>
     </div>`;
+    if ($("resumeBtn")) { $("resumeBtn").onclick = () => { beep(700, 0.05); resumeRoom(); }; $("dropRoom").onclick = () => { const r = savedRoom(); forgetRoom(); if (r) { const n = openRoom(r.code, () => {}, (st) => { if (st === "SUBSCRIBED") { n.send({ t: "state", s: { phase: "closed" } }); setTimeout(() => n.close(), 400); } }); } renderHub(); }; }
     $("joinForm").onsubmit = (e) => { e.preventDefault(); const c = cleanCode($("joinCode").value); if (c.length === 4) { beep(700, 0.05); openJoin(c); } else $("joinCode").focus(); };
     $("ringBell").onclick = $("heroBell").onclick = () => { if (!soundOn) setSound(true); recess(); const b = $("hub"); b.classList.remove("ring"); void b.offsetWidth; b.classList.add("ring"); };
     document.querySelectorAll("[data-sound]").forEach((b) => (b.onclick = () => setSound(!soundOn)));

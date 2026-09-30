@@ -300,6 +300,10 @@ button.logo { background: none; border: 0; padding: 0; cursor: pointer; }
 .bellbtn svg path, .bellbtn svg circle { fill: currentColor; }
 .hub.ring .logo svg, .hub.ring .bellbtn svg, .hub.ring .crew .av { animation: ring .12s linear 12; }
 @keyframes ring { 0%, 100% { transform: rotate(0); } 25% { transform: rotate(-9deg); } 75% { transform: rotate(9deg); } }
+.hostgone { background: #e9962b; color: #1b1405; text-align: center; font-weight: 700; border-radius: 12px; padding: 6px 10px; margin-bottom: 8px; animation: pop .35s ease-out; }
+.resume { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; background: var(--white); border: 2px dashed var(--navy); border-radius: 16px; padding: 8px 12px; margin-top: 12px; font-weight: 700; }
+.resume span { flex: 1 1 100%; }
+.foot a { color: inherit; }
 /* one room for every game */
 .modes.three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 .modes.three .mode { padding: 8px; }

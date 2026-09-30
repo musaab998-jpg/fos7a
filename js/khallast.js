@@ -30,6 +30,8 @@ ROOM_GAMES.khallast = {
     }
   },
   direct(m) { if (m.t === "peekRes") showPeek(m); },
+  // the host came back: a round that was running is collected as it stands
+  resume(S) { if (["letter", "write", "collect"].includes(S.phase)) hostCollect(); else if (S.phase === "vote") hostReveal(); },
   lobby(S) {
     const need = S.mode === "quick" ? 1 : 4;
     return `<p class="muted" style="font-weight:700;color:var(--soft)">طريقة اللعب</p>
@@ -269,6 +271,7 @@ function vCollect(S, fresh) {
   show(`<div class="paper" style="text-align:center;display:grid;gap:8px;padding-block:24px"><h2 style="font-size:30px">قلم فوق!</h2><p class="pmuted">نجمع الأوراق…</p></div>`);
 }
 function vVote(S, fresh) {
+  if (KL.my.round !== S.round || !KL.my.votes) KL.my = { round: S.round, ans: KL.my.round === S.round ? KL.my.ans || [] : [], votes: {}, lols: {}, peeked: true, final: false }; // e.g. a host who just came back
   const mine = (g) => KL.my.round === S.round && norm(KL.my.ans[g.ci] || "") === g.key.slice(g.key.indexOf(":") + 1);
   const doubt = S.groups.filter((g) => g.doubt);
   const autoN = S.groups.length - doubt.length;

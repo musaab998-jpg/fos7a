@@ -20,7 +20,10 @@ function openJoin(code) {
   if (!me.name) return openProfile(() => { current = "khallast"; view("game"); go(); });
   go();
 }
-$("quit").onclick = () => { clearTimers(); leaveRoom(); renderHub(); view("hub"); };
+$("quit").onclick = () => {
+  if (isHost() && KL.S && KL.S.players.length > 1 && !confirm("تقفل الغرفة على الكل؟")) return;
+  clearTimers(); leaveRoom(); renderHub(); view("hub");
+};
 addEventListener("pagehide", () => { if (KL.net && !isHost()) KL.net.send({ t: "bye", id: PID }); });
 
 // the Android app sends its back button here: leave the game first, then let the app close
