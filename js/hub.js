@@ -60,6 +60,7 @@
           <div class="hero-btns"><button type="button" class="hbtn bellbtn" id="heroBell">${BELL}دق الجرس</button><a class="hbtn" href="#games">اختاروا لعبة</a><button type="button" class="hbtn alt" id="heroMe">شخصيتك</button></div>
           ${(() => { const r = savedRoom(); return r ? `<div class="resume pop"><span>غرفتك <b dir="ltr">${esc(r.code)}</b> للحين مفتوحة</span><button type="button" class="hbtn" id="resumeBtn">رجّعها</button><button type="button" class="hbtn alt" id="dropRoom">قفلها</button></div>` : ""; })()}
           <form class="joinbox" id="joinForm"><input id="joinCode" maxlength="4" placeholder="رمز الغرفة" aria-label="رمز الغرفة" autocomplete="off" autocapitalize="characters"><button type="submit" class="hbtn">ادخل</button></form>
+          <p style="margin-top:10px">${passActive() ? `<button type="button" class="passchip" data-pass="">✓ تذكرتك فعالة</button>` : `<button type="button" class="passnote" data-pass="" style="font-size:14px">عندك كود؟</button>`}</p>
         </div>
         <div class="crew" aria-hidden="true">${crew.map((p) => avatar(p.av, 74)).join("")}</div>
       </section>
@@ -67,6 +68,7 @@
         <div class="sec-h"><i></i><h2>ألعابنا</h2></div>
         <div class="games">${GAMES.map((g) => `<article class="gcard">${art(g)}<div class="gbody"><h3>${ROOM_GAMES[g.id].name}</h3><p>${g.line}</p><div class="tags">${g.tags.map((t) => `<span>${t}</span>`).join("")}</div>
           <div class="gbtns"><button type="button" class="play" data-play="${g.id}">افتح غرفة</button><button type="button" class="info" data-info="${g.id}" aria-label="طريقة ${ROOM_GAMES[g.id].name}">؟</button></div>
+          ${!canHost(g.id) ? `<button type="button" class="passnote" data-pass="${g.id}">خلصت جلستها المجانية · عندك كود؟</button>` : ""}
           ${g.solo ? `<a class="solo" href="${g.solo}">أو العبها على نفس الجوال، ولها لغز يومي</a>` : ""}</div></article>`).join("")}</div>
       </section>
       <section class="sec">
@@ -84,7 +86,7 @@
           <details><summary>نحتاج تلفزيون أو بروجكتر؟</summary><p>لا. كل شي يطلع في جوال كل لاعب: الأسئلة والتصويت والنتائج. التلفزيون عرض إضافي بس.</p></details>
           <details><summary>كم لاعب؟</summary><p>لين ٣٠ في الغرفة. «خط ثلاثة» يتقسمون فيها فريقين، و«ترابيع» لين أربع فرق، و«اطوِها!» يلعبها اثنين والباقي يتفرجون.</p></details>
           <details><summary>نقدر نغيّر اللعبة بدون ما نطلع؟</summary><p>إيه. المضيف يختار اللعبة من شاشة «وينكم!»، والكل يبقى في نفس الغرفة.</p></details>
-          <details><summary>كم تكلف؟</summary><p>مجانية وقت التجربة.</p></details>
+          <details><summary>كم تكلف؟</summary><p>كل لعبة لها جلسة مجانية. بعدها يفتح المضيف كل الألعاب بكود، تاخذه من حسابنا في انستقرام <a href="https://instagram.com/musaab998" target="_blank" rel="noopener">@musaab998</a>. واللي يدخلون الغرفة يلعبون مجاناً دائماً.</p></details>
           <details><summary>وش تحفظون عني؟</summary><p>ولا شي على سيرفر. اسمك وشخصيتك في جوالك بس، واللعب يمر بين جوالات الغرفة ويروح. التفاصيل في <a href="privacy.html">صفحة الخصوصية</a>.</p></details>
         </div>
       </section>
@@ -95,7 +97,8 @@
     $("ringBell").onclick = $("heroBell").onclick = () => { if (!soundOn) setSound(true); recess(); const b = $("hub"); b.classList.remove("ring"); void b.offsetWidth; b.classList.add("ring"); };
     document.querySelectorAll("[data-sound]").forEach((b) => (b.onclick = () => setSound(!soundOn)));
     $("meChip").onclick = $("heroMe").onclick = () => openProfile(() => { renderHub(); view("hub"); });
-    document.querySelectorAll("[data-play]").forEach((b) => (b.onclick = () => { beep(700, 0.05); openGame(b.dataset.play); }));
+    document.querySelectorAll("[data-play]").forEach((b) => (b.onclick = () => { beep(700, 0.05); const id = b.dataset.play; if (!canHost(id)) return openPass(id, () => openGame(id)); openGame(id); }));
+    document.querySelectorAll("[data-pass]").forEach((b) => (b.onclick = () => openPass(b.dataset.pass || null)));
     document.querySelectorAll("[data-info]").forEach((b) => (b.onclick = () => { const g = ROOM_GAMES[b.dataset.info]; $("modalCard").innerHTML = `<h3>${g.name}</h3><ol>${g.rules.map((r) => `<li>${r}</li>`).join("")}</ol><button type="button" class="pbtn" id="mClose">فهمت</button>`; $("modal").hidden = false; $("mClose").onclick = () => ($("modal").hidden = true); }));
   }
   $("modal").addEventListener("click", (e) => { if (e.target === $("modal")) $("modal").hidden = true; });

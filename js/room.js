@@ -211,7 +211,7 @@ function yardMoment(S, prev) {
     if (!KL.rang) { KL.rang = true; recess(); setTimeout(() => { if (KL.S && KL.S.phase === "lobby") yardAmbient(); }, 3800); }
     else yardAmbient();
   } else if (prev && prev.phase === "lobby") classStarts();
-  else if (S.phase === END_PHASE[S.game] && (S.game !== "khat" || S.over)) yardCheer();
+  else if (S.phase === END_PHASE[S.game] && (!("over" in S) || S.over)) { yardCheer(); if (isHost()) markPlayed(S.game); }
 }
 function renderPhase(S, fresh) {
   if (S.phase === "lobby") return vLobby(S, fresh);
@@ -234,7 +234,7 @@ function vLobby(S, fresh) {
       ${isHost() ? `<button type="button" class="btn btn-ghost" id="shareLink" style="width:auto;padding:6px 16px;font-size:14px">أرسل الرابط</button>` : ""}
     </div>
     ${isHost() ? `<p class="muted" style="font-weight:700;color:var(--soft)">وش نلعب؟</p>
-      <div class="modes gamepick">${Object.entries(ROOM_GAMES).map(([id, x]) => `<button type="button" class="mode" data-game="${id}" aria-pressed="${S.game === id}"><b>${x.name}</b><small>${x.who}</small></button>`).join("")}</div>`
+      <div class="modes gamepick">${Object.entries(ROOM_GAMES).map(([id, x]) => `<button type="button" class="mode" data-game="${id}" aria-pressed="${S.game === id}"><b>${x.name}</b><small>${canHost(id) ? x.who : "خلصت جلستها المجانية"}</small></button>`).join("")}</div>`
       : `<div class="paper" style="padding-block:12px"><h3 style="font-size:24px">${g.name}</h3><ol class="rules">${g.rules.map((r) => `<li>${r}</li>`).join("")}</ol></div>`}
     ${g.lobbyPlayers ? g.lobbyPlayers(S) : `<p class="muted" style="font-weight:700;color:var(--soft)">اللاعبين (${AR(n)})</p><div class="players">${S.players.map(plCard).join("")}</div>`}
     ${isHost() ? `${g.lobby ? g.lobby(S) : ""}
@@ -244,6 +244,6 @@ function vLobby(S, fresh) {
   $("shareLink").onclick = async () => { const text = `تعال العب معنا في فسحة، ادخل الغرفة ${S.code}: ${url}`; try { if (window.Fos7aApp) window.Fos7aApp.share(text); else if (navigator.share) await navigator.share({ text }); else { await navigator.clipboard.writeText(text); $("shareLink").textContent = "انسخ الرابط"; } } catch (e) {} };
   screen.querySelectorAll("[data-game]").forEach((b) => (b.onclick = () => { if (b.dataset.game === S.game) return; beep(700, 0.04); roomGame(b.dataset.game); hostSend(); }));
   if (g.bindLobby) g.bindLobby(S);
-  $("start").onclick = () => { beep(880, 0.08); g.start(); };
+  $("start").onclick = () => { if (!canHost(S.game)) return openPass(S.game, () => g.start()); beep(880, 0.08); g.start(); };
 }
 const plCard = (p) => `<div class="pl ${p.id === PID ? "me" : ""}">${face(p, 36)}<div class="grow"><div class="name">${esc(p.name)}</div><div class="tag">${p.host ? "المضيف" : p.id === PID ? "أنت" : "جاهز"}</div></div></div>`;

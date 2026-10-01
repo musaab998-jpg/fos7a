@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>أكواد فسحة</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lalezar&family=IBM+Plex+Sans+Arabic:wght@400;600;700&display=swap">
+<style>
+/* Layout: the owner's page for making and switching off codes; same yard colours as فسحة. */
+:root { --yard: #ffc933; --cream: #fff6dc; --navy: #1b2a4a; --soft: #5d6887; --ok: #1f8a53; --red: #c8232c; color-scheme: light; }
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--cream); color: var(--navy); font-family: "IBM Plex Sans Arabic", Tahoma, sans-serif; }
+main { max-width: 720px; margin: 0 auto; padding: 20px 16px 48px; display: grid; gap: 16px; }
+h1 { font-family: Lalezar, sans-serif; font-weight: 400; font-size: 40px; margin: 0; }
+h2 { font-family: Lalezar, sans-serif; font-weight: 400; font-size: 24px; margin: 0; }
+.box { background: #fff; border: 2px solid var(--navy); border-radius: 16px; padding: 14px; box-shadow: 0 4px 0 var(--navy); display: grid; gap: 10px; }
+label { display: grid; gap: 4px; font-weight: 700; font-size: 14px; }
+input, select, button { font: inherit; }
+input, select { border: 2px solid var(--navy); border-radius: 10px; padding: 8px 10px; background: #fff; color: var(--navy); width: 100%; }
+.row { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; }
+button { border: 2px solid var(--navy); border-radius: 12px; padding: 9px 14px; font-weight: 700; background: var(--navy); color: var(--yard); cursor: pointer; }
+button.alt { background: #fff; color: var(--navy); }
+button:disabled { opacity: .5; }
+.msg { min-height: 1.4em; font-weight: 700; }
+.msg.bad { color: var(--red); }
+.codes { display: flex; flex-wrap: wrap; gap: 8px; }
+.code { font-family: ui-monospace, monospace; font-size: 18px; letter-spacing: .08em; direction: ltr; background: var(--yard); border: 2px solid var(--navy); border-radius: 10px; padding: 4px 10px; }
+table { width: 100%; border-collapse: collapse; font-size: 14px; }
+th, td { text-align: start; padding: 6px 4px; border-bottom: 1px dashed #d9d3c7; vertical-align: middle; }
+td.c { font-family: ui-monospace, monospace; direction: ltr; text-align: end; }
+.off td { opacity: .45; }
+.wrap { overflow-x: auto; }
+.muted { color: var(--soft); font-size: 13px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>أكواد فسحة</h1>
+
+  <section class="box" id="keyBox">
+    <label>مفتاح الإدارة<input id="key" type="password" autocomplete="off" dir="ltr"></label>
+    <p class="muted">ينحفظ في هذا الجهاز بس. لا ترسله لأحد.</p>
+    <button type="button" id="saveKey">ادخل</button>
+    <p class="msg bad" id="keyMsg"></p>
+  </section>
+
+  <section class="box" id="makeBox" hidden>
+    <h2>أكواد جديدة</h2>
+    <div class="row">
+      <label>المدة بعد التفعيل<select id="hours"><option value="24">٢٤ ساعة (تذكرة جمعة)</option><option value="168">أسبوع</option><option value="720" selected>شهر</option><option value="8760">سنة</option></select></label>
+      <label>كم جوال يقدر يستخدم الكود<input id="uses" type="number" min="1" max="10000" value="1"></label>
+      <label>كم كود<input id="count" type="number" min="1" max="200" value="1"></label>
+      <label>يلزم يتفعّل خلال (أيام، ٠ = بدون)<input id="days" type="number" min="0" max="3650" value="0"></label>
+    </div>
+    <label>ملاحظة (لمين؟)<input id="note" maxlength="80" placeholder="مثلاً: فلان، أو حملة رمضان"></label>
+    <button type="button" id="make">طلّع الأكواد</button>
+    <p class="msg" id="makeMsg"></p>
+    <div class="codes" id="newCodes"></div>
+    <button type="button" class="alt" id="copyAll" hidden>انسخ الكل</button>
+  </section>
+
+  <section class="box" id="listBox" hidden>
+    <h2>كل الأكواد</h2>
+    <div class="wrap"><table><thead><tr><th>الكود</th><th>المدة</th><th>الاستخدام</th><th>ملاحظة</th><th></th></tr></thead><tbody id="list"></tbody></table></div>
+  </section>
+</main>
+<script src="vendor/supabase.js"></script>
+<script>
+"use strict";
+const sb = supabase.createClient("https://vgumebaadauvgfuepfyp.supabase.co", "sb_publishable_QKX3qRkeJM3DwXlBcDjRMQ_yLuSQ4vq", { auth: { persistSession: false, autoRefreshToken: false } });
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const KEY = "fos7a.admin.v1";
+let key = ""; try { key = localStorage.getItem(KEY) || ""; } catch (e) {}
+const dur = (h) => ({ 24: "٢٤ ساعة", 168: "أسبوع", 720: "شهر", 8760: "سنة" }[h] || `${h} ساعة`);
+const pretty = (c) => c.slice(0, 4) + "-" + c.slice(4);
+
+async function load() {
+  const { data, error } = await sb.rpc("fos7a_admin_list", { p_key: key });
+  if (error) { $("keyBox").hidden = false; $("makeBox").hidden = $("listBox").hidden = true; $("keyMsg").textContent = key ? "المفتاح غلط، أو ما فيه نت." : ""; return; }
+  $("keyBox").hidden = true; $("makeBox").hidden = $("listBox").hidden = false;
+  $("list").innerHTML = data.map((c) => `<tr class="${c.active ? "" : "off"}"><td class="c">${pretty(c.code)}</td><td>${dur(c.hours)}</td><td>${c.uses} من ${c.max_uses}</td><td>${esc(c.note)}</td><td><button type="button" class="alt" data-t="${c.code}" data-a="${c.active ? 0 : 1}">${c.active ? "أوقفه" : "شغّله"}</button></td></tr>`).join("") || '<tr><td colspan="5" class="muted">ما فيه أكواد للحين.</td></tr>';
+  document.querySelectorAll("[data-t]").forEach((b) => (b.onclick = async () => { b.disabled = true; await sb.rpc("fos7a_admin_toggle", { p_key: key, p_code: b.dataset.t, p_active: b.dataset.a === "1" }); load(); }));
+}
+$("saveKey").onclick = () => { key = $("key").value.trim(); try { localStorage.setItem(KEY, key); } catch (e) {} load(); };
+$("make").onclick = async () => {
+  $("make").disabled = true; $("makeMsg").textContent = "لحظة…"; $("makeMsg").className = "msg";
+  const { data, error } = await sb.rpc("fos7a_admin_make", { p_key: key, p_count: +$("count").value, p_hours: +$("hours").value, p_max_uses: +$("uses").value, p_note: $("note").value, p_valid_days: +$("days").value });
+  $("make").disabled = false;
+  if (error) { $("makeMsg").textContent = "ما ضبط، تأكد من الأرقام والنت."; $("makeMsg").className = "msg bad"; return; }
+  $("makeMsg").textContent = `طلعت ${data.length} كود:`;
+  $("newCodes").innerHTML = data.map((c) => `<span class="code">${pretty(c)}</span>`).join("");
+  $("copyAll").hidden = false;
+  $("copyAll").onclick = async () => { try { await navigator.clipboard.writeText(data.map(pretty).join("\n")); $("copyAll").textContent = "انسخت ✓"; } catch (e) {} };
+  load();
+};
+if (key) load();
+</script>
+</body>
+</html>
