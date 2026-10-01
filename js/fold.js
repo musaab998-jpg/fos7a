@@ -5,7 +5,7 @@
 // the sheet so its owner's half is at the bottom. A drop of ink is mirrored across the fold line: if it
 // lands on an enemy soldier, he's crossed out and the shooter goes again.
 
-const FH = 1.4, FMID = FH / 2, FSR = 0.052, FINK = { normal: 0.036, big: 0.072 }, FSAFE = FSR * 1.8, FEDGE = FSR, FGAP = 0.17, FTURN = 15000;
+const FH = 1.4, FMID = FH / 2, FSR = 0.052, FINK = { normal: 0.036, big: 0.072 }, FSAFE = FSR * 1.8, FEDGE = FSR, FGAP = 0.17;
 const PCOL = ["#1d3fb8", "#c8232c"];
 const PAPER = { bg: "#fbfbf5", line: "#9dbee2", gap: 0.042, margin: "#e46b6b", fold: "#7c93b3", back: "#e9e9e1" };
 const foldGeo = (fold) => { const a = fold.ang; return { c: { x: 0.5, y: fold.cy }, n: { x: -Math.sin(a), y: Math.cos(a) }, t: { x: Math.cos(a), y: Math.sin(a) } }; };
@@ -15,6 +15,16 @@ const fOwn = (f, p, i, pad = 0) => (i === 0 ? fSide(f, p) > pad : fSide(f, p) < 
 const fIn = (p, pad = 0) => p.x > pad && p.x < 1 - pad && p.y > pad && p.y < FH - pad;
 const fDist = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
 const fBase = { cy: FMID, ang: 0 };
+const fTurn = (S) => (S.ttime || 15) * 1000;
+// While a player aims, the fold line sways: up and down and tilting, on a rhythm the host picks each turn.
+// Every phone draws it from the same numbers, and the fold happens where the line was when «اطوِها!» was pressed.
+function foldAt(S, tau) {
+  const b = S.fold || fBase, w = S.sway;
+  if (!w || !Number.isFinite(tau)) return b;
+  const k = (2 * Math.PI * tau) / w.per;
+  return { cy: b.cy + w.acy * Math.sin(k), ang: b.ang + w.aang * Math.sin(k + w.ph) };
+}
+const fTau = (S) => Math.max(0, fTurn(S) - leftOf(S.left)); // ms since this turn started, on this phone
 // a spot where a soldier may stand: inside own half, away from the middle, the edges and the other soldiers
 const fOkSpot = (p, i, others) => fIn(p, FEDGE) && fOwn(foldGeo(fBase), p, i, FSAFE) && others.every((o) => fDist(o, p) > FGAP);
 function fRandom(i, n) {
@@ -26,7 +36,7 @@ const fSeat = (S, id) => (S.duo || []).indexOf(id); // 0, 1, or -1 for someone w
 
 ROOM_GAMES.foldit = {
   name: "اطوِها!", theme: "fold", min: 2, need: "يحتاج لاعبين", who: "لاعبين · والباقي يتفرجون",
-  rules: ["كل لاعب يوزّع جنوده في نصفه من الورقة، وخصمه ما يشوفهم.", "في دورك تحط نقطة حبر في نصفك وتضغط «اطوِها!».", "تنطوي الورقة، والحبر ينطبع على الجهة الثانية ويشطب أي جندي تحته.", "إذا صبت يستمر دورك، وخط الطي يتحرك ويميل كل دور.", "عندك نقطة كبيرة ونقطتين مرة وحدة بس. جندي عليه لزقة يتحمل ضربة، وبقعة القهوة تشرب الحبر.", "أول واحد يشطب كل جنود خصمه يفوز، والباقين يتفرجون على الورقة كاملة."],
+  rules: ["كل لاعب يوزّع جنوده في نصفه من الورقة، والجنود واضحين للكل.", "في دورك تحط نقطة حبر في نصفك وتضغط «اطوِها!» في اللحظة المناسبة.", "خط الطي يتمايل وأنت تصوّب، والطي يصير على مكان الخط لحظة الضغط.", "تنطوي الورقة، والحبر ينطبع على الجهة الثانية ويشطب أي جندي تحته.", "إذا صبت يستمر دورك، وخط الطي يتحرك ويميل كل دور.", "عندك نقطة كبيرة ونقطتين مرة وحدة بس. جندي عليه لزقة يتحمل ضربة، وبقعة القهوة تشرب الحبر.", "أول واحد يشطب كل جنود خصمه يفوز، والباقين يتفرجون على الورقة كاملة."],
   setup(S) {
     Object.assign(S, { duo: H.players.map((p) => p.id).slice(0, 2), n: 4, best: 1, wins: [0, 0], match: 0 });
     H.army = [[], []];
@@ -52,9 +62,11 @@ ROOM_GAMES.foldit = {
       if (ink !== "normal" && !S.special[seat][ink]) return;
       const drops = (Array.isArray(m.drops) ? m.drops : []).slice(0, 2).map((d) => ({ x: +d.x, y: +d.y }));
       if (drops.length !== (ink === "double" ? 2 : 1)) return;
-      const f = foldGeo(S.fold);
+      const late = now() - (H.deadline - fTurn(S)); // how long this turn has run on the host
+      const tau = Math.max(0, Math.min(Number.isFinite(+m.tau) ? +m.tau : late, late + 1500));
+      const fold = foldAt(S, tau), f = foldGeo(fold);
       if (!drops.every((d) => Number.isFinite(d.x) && Number.isFinite(d.y) && fIn(d) && fOwn(f, d, seat))) return;
-      fShoot(drops, ink);
+      fShoot(drops, ink, fold);
     }
   },
   lobbyPlayers(S) {
@@ -65,7 +77,9 @@ ROOM_GAMES.foldit = {
     return `<p class="muted" style="font-weight:700;color:var(--soft)">كم جندي؟</p>
       <div class="chips pick">${[3, 4, 5].map((n) => `<button type="button" class="chip" data-fn="${n}" aria-pressed="${S.n === n}">${AR(n)}</button>`).join("")}</div>
       <p class="muted" style="font-weight:700;color:var(--soft)">كم مباراة؟</p>
-      <div class="chips pick"><button type="button" class="chip" data-fb="1" aria-pressed="${S.best === 1}">وحدة</button><button type="button" class="chip" data-fb="3" aria-pressed="${S.best === 3}">أفضل من ٣</button></div>`;
+      <div class="chips pick"><button type="button" class="chip" data-fb="1" aria-pressed="${S.best === 1}">وحدة</button><button type="button" class="chip" data-fb="3" aria-pressed="${S.best === 3}">أفضل من ٣</button><button type="button" class="chip" data-fb="5" aria-pressed="${S.best === 5}">أفضل من ٥</button></div>
+      <p class="muted" style="font-weight:700;color:var(--soft)">وقت الدور</p>
+      <div class="chips pick">${[10, 15, 25].map((n) => `<button type="button" class="chip" data-ft="${n}" aria-pressed="${(S.ttime || 15) === n}">${AR(n)} ثانية</button>`).join("")}</div>`;
   },
   bindLobby(S) {
     screen.querySelectorAll("[data-duo]").forEach((b) => (b.onclick = () => {
@@ -74,6 +88,7 @@ ROOM_GAMES.foldit = {
       beep(640, 0.04); hostSend();
     }));
     screen.querySelectorAll("[data-fn]").forEach((b) => (b.onclick = () => { H.S.n = +b.dataset.fn; beep(700, 0.04); hostSend(); }));
+    screen.querySelectorAll("[data-ft]").forEach((b) => (b.onclick = () => { H.S.ttime = +b.dataset.ft; beep(700, 0.04); hostSend(); }));
     screen.querySelectorAll("[data-fb]").forEach((b) => (b.onclick = () => { H.S.best = +b.dataset.fb; beep(700, 0.04); hostSend(); }));
     if (S.duo.length < 2) $("start").disabled = true;
   },
@@ -115,10 +130,21 @@ function fMoveFold() {
   }
   S.fold = { ...fBase };
 }
+function fPickSway() {
+  const S = H.S, live = [0, 1].flatMap((i) => H.army[i].filter((s) => s.alive).map((s) => ({ ...s, i })));
+  for (let scale = 1, k = 0; k < 5; k++, scale *= 0.6) {
+    const sway = { acy: rnd(0.025, 0.06) * scale, aang: (rnd(4, 10) * scale * Math.PI) / 180, per: rnd(2600, 4200), ph: rnd(0, 6.28) };
+    let ok = true;
+    for (let j = 0; j < 24 && ok; j++) { const f = foldGeo(foldAt({ fold: S.fold, sway }, (j / 24) * sway.per)); ok = live.every((s) => fOwn(f, s, s.i, FSR * 1.05)); }
+    if (ok) return (S.sway = sway);
+  }
+  S.sway = null;
+}
 function fAim() {
   const S = H.S;
   fMoveFold();
-  S.phase = "aim"; H.deadline = now() + FTURN;
+  fPickSway();
+  S.phase = "aim"; H.deadline = now() + fTurn(S);
   hostSend();
 }
 function fBattle() {
@@ -135,8 +161,8 @@ function fBattle() {
 }
 // the turn clock: a player who doesn't fold in time passes the turn
 function fArm() { const S = H.S; hEvery(() => { if (S.phase === "aim" && now() >= H.deadline) { S.turn = 1 - S.turn; S.last = { skipped: true }; fAim(); } }, 300); }
-function fShoot(drops, ink) {
-  const S = H.S, f = foldGeo(S.fold), by = S.turn, foe = 1 - by, size = ink === "big" ? "big" : "normal";
+function fShoot(drops, ink, fold) {
+  const S = H.S, f = foldGeo(fold), by = S.turn, foe = 1 - by, size = ink === "big" ? "big" : "normal";
   if (ink !== "normal") S.special[by][ink] = 0;
   S.stats[by].f++;
   const results = drops.map((d) => {
@@ -152,7 +178,7 @@ function fShoot(drops, ink) {
     return st;
   });
   S.stamps.push(...results);
-  S.last = { by, ink, results, fold: { ...S.fold } };
+  S.last = { by, ink, results, fold: { ...fold } };
   S.phase = "shot"; H.deadline = 0;
   hostSend();
   hLater(() => {
@@ -166,7 +192,7 @@ function fOver(w) {
   const S = H.S;
   S.wins[w]++;
   S.winner = w;
-  S.over = S.best === 1 || S.wins[w] >= 2;
+  S.over = S.wins[w] >= Math.ceil(S.best / 2);
   S.phase = "over";
   hostSend();
 }
@@ -301,7 +327,7 @@ function fContent(ctx, u, S, side, v) {
   for (const st of stamps) if (st.p !== side && st.res !== "off") fPrint(ctx, u, st, seat === 1 ? -1 : 1);
   // your own soldiers always; the other side's only when crossed out, when watching, or at the end
   const army = v.draft && side === seat ? v.draft.map((p) => ({ ...p, alive: true })) : ((S.army || [[], []])[side] || []);
-  for (const s of army) if (seat < 0 || side === seat || !s.alive || S.phase === "over") fSoldier(ctx, u, s, side, seat === 1);
+  for (const s of army) if (seat < 0 || side === seat || S.phase !== "setup") fSoldier(ctx, u, s, side, seat === 1);
   for (const d of v.drops || []) if (v.dropSide === side) fDropDot(ctx, u, d, side, v.size, v.pulse);
 }
 function fRender(S, v) {
@@ -340,7 +366,7 @@ function fPoint(S, ev) {
   return fSeat(S, PID) === 1 ? { x: 1 - x, y: FH - y } : { x, y };
 }
 const fName = (S, i) => esc(who(S.duo[i]).name);
-const fHead = (S) => `<div class="row" style="justify-content:space-between"><span class="row" style="gap:6px;color:#8fb0ff;font-weight:700">${face(who(S.duo[0]), 30)}${fName(S, 0)}${S.best === 3 ? ` · ${AR(S.wins[0])}` : ""}</span><span class="row" style="gap:6px;color:#ff9aa0;font-weight:700">${S.best === 3 ? `${AR(S.wins[1])} · ` : ""}${fName(S, 1)}${face(who(S.duo[1]), 30)}</span></div>`;
+const fHead = (S) => `<div class="row" style="justify-content:space-between"><span class="row" style="gap:6px;color:#8fb0ff;font-weight:700">${face(who(S.duo[0]), 30)}${fName(S, 0)}${S.best > 1 ? ` · ${AR(S.wins[0])}` : ""}</span><span class="row" style="gap:6px;color:#ff9aa0;font-weight:700">${S.best > 1 ? `${AR(S.wins[1])} · ` : ""}${fName(S, 1)}${face(who(S.duo[1]), 30)}</span></div>`;
 const fBoard = () => `<div class="fwrap"><canvas id="fcv" class="fcv"></canvas><div id="ftoast" class="ftoast" hidden></div></div>`;
 function fToast(msg, bg, fg = "#fff") {
   const el = $("ftoast"); if (!el) return;
@@ -348,11 +374,20 @@ function fToast(msg, bg, fg = "#fff") {
   clearTimeout(fToast.t); fToast.t = setTimeout(() => { if ($("ftoast")) $("ftoast").hidden = true; }, 1500);
 }
 // the room is dark around the paper, like a desk at night
-function fKeepDrawing(S, v) { const loop = () => { if (KL.fv !== v || !$("fcv")) return; v.pulse = (Math.sin(now() / 260) + 1) / 2; fRender(KL.S || S, v); requestAnimationFrame(loop); }; KL.fv = v; requestAnimationFrame(loop); }
+function fKeepDrawing(S, v) {
+  const loop = () => {
+    if (KL.fv !== v || !$("fcv")) return;
+    const s = KL.S || S;
+    v.pulse = (Math.sin(now() / 260) + 1) / 2;
+    if (s.phase === "aim") v.fold = foldAt(s, fTau(s));
+    fRender(s, v); requestAnimationFrame(loop);
+  };
+  KL.fv = v; requestAnimationFrame(loop);
+}
 
 function fvSetup(S, fresh) {
   const seat = fSeat(S, PID);
-  if (fresh) { clearKL(); KL.my.draft = []; setTop(S.best === 3 ? `المباراة ${AR(S.match)}` : "رتّب جنودك"); }
+  if (fresh) { clearKL(); KL.my.draft = []; setTop(S.best > 1 ? `المباراة ${AR(S.match)}` : "رتّب جنودك"); }
   const mineReady = seat >= 0 && S.ready[seat];
   if (seat < 0 || mineReady) {
     KL.fv = null;
@@ -367,7 +402,7 @@ function fvSetup(S, fresh) {
     <div class="row"><button type="button" class="btn btn-ghost" id="fRand" style="flex:1">وزّعهم عشوائي</button><button type="button" class="btn btn-marker" id="fReady" style="flex:1.3"></button></div>`);
   const sync = () => {
     const d = KL.my.draft; v.draft = d;
-    $("fHint").textContent = `اضغط في نصفك (تحت) تحط ${AR(S.n)} جنود، واضغط على جندي تشيله. خصمك ما يشوفهم.`;
+    $("fHint").textContent = `اضغط في نصفك (تحت) تحط ${AR(S.n)} جنود، واضغط على جندي تشيله. بعد ما يجهز الاثنين، الكل يشوف الجنود.`;
     $("fReady").disabled = d.length !== S.n; $("fReady").textContent = d.length === S.n ? "جاهز" : `باقي ${AR(S.n - d.length)}`;
   };
   $("fcv").onpointerdown = (ev) => {
@@ -397,7 +432,7 @@ function fvPlay(S, fresh) {
         <button type="button" class="fink" data-ink="big" ${sp.big ? "" : "disabled"} aria-pressed="false">نقطة كبيرة${sp.big ? "" : " ✓"}</button>
         <button type="button" class="fink" data-ink="double" ${sp.double ? "" : "disabled"} aria-pressed="false">نقطتين${sp.double ? "" : " ✓"}</button>
         <button type="button" class="btn btn-marker" id="fGo" style="flex:1.4" disabled>اطوِها!</button>
-      </div>` : `<p class="muted" style="text-align:center">${seat < 0 ? "تشوف جنود الاثنين. لا تفضح أحد 🤫" : "خط الطي يتحرك ويميل كل دور."}</p>`}`);
+      </div>` : `<p class="muted" style="text-align:center">${S.phase === "aim" ? "خط الطي يتمايل… والطي يصير على مكانه لحظة الضغط." : ""}</p>`}`);
   const v = { stampsShown: (S.stamps || []).length, drops: [], dropSide: S.turn, size: "normal", pulse: 0 };
   if (S.phase === "shot") fAnimate(S, v); else fKeepDrawing(S, v);
   if (S.phase === "aim") {
@@ -409,16 +444,21 @@ function fvPlay(S, fresh) {
   const sync = () => { v.drops = KL.my.drops; v.size = KL.my.ink === "big" ? "big" : "normal"; $("fGo").disabled = KL.my.drops.length < need(); screen.querySelectorAll(".fink").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.ink === KL.my.ink))); };
   $("fcv").onpointerdown = (ev) => {
     const p = fPoint(S, ev);
-    if (!fOwn(foldGeo(S.fold), p, seat) || !fIn(p)) { fToast("الحبر يكون في نصفك بس", "#e9ecf3", "#161d2c"); return; }
+    if (!fOwn(foldGeo(foldAt(KL.S, fTau(KL.S))), p, seat) || !fIn(p)) { fToast("الحبر يكون في نصفك بس", "#e9ecf3", "#161d2c"); return; }
     const d = KL.my.drops; if (d.length >= need()) d.shift(); d.push(p);
     fPlay("drop"); buzz(10); sync();
   };
   screen.querySelectorAll(".fink").forEach((b) => (b.onclick = () => { KL.my.ink = KL.my.ink === b.dataset.ink ? "normal" : b.dataset.ink; if (KL.my.drops.length > need()) KL.my.drops = KL.my.drops.slice(-need()); fPlay("place"); sync(); }));
-  $("fGo").onclick = () => { if (KL.my.drops.length < need()) return; $("fGo").disabled = true; act({ t: "fdrop", id: PID, drops: KL.my.drops, ink: KL.my.ink }); };
+  $("fGo").onclick = () => {
+    if (KL.my.drops.length < need()) return;
+    const tau = fTau(KL.S), f = foldGeo(foldAt(KL.S, tau));
+    if (!KL.my.drops.every((d) => fOwn(f, d, seat))) { KL.my.drops = KL.my.drops.filter((d) => fOwn(f, d, seat)); sync(); fToast("الخط عدّى نقطتك! حطها من جديد", "#e9962b"); return; }
+    $("fGo").disabled = true; act({ t: "fdrop", id: PID, drops: KL.my.drops, ink: KL.my.ink, tau });
+  };
   let lastSec = 99;
   klEvery(() => {
     const s = KL.S; if (!s || s.phase !== "aim") return;
-    const left = leftOf(s.left), b = $("fbar"); if (b) b.style.transform = `scaleX(${left / FTURN})`;
+    const left = leftOf(s.left), b = $("fbar"); if (b) b.style.transform = `scaleX(${left / fTurn(s)})`;
     const sec = Math.ceil(left / 1000); if (sec <= 3 && sec < lastSec && sec > 0) { fPlay("tick"); buzz(15); } lastSec = sec;
   }, 150);
   sync();
@@ -466,7 +506,7 @@ function fAfter(S, v) {
 function fvOver(S, fresh) {
   if (!fresh) return;
   clearKL(); setTop(S.over ? "انتهت" : `بعد المباراة ${AR(S.match)}`);
-  const seat = fSeat(S, PID), w = S.over && S.best === 3 ? (S.wins[0] > S.wins[1] ? 0 : 1) : S.winner;
+  const seat = fSeat(S, PID), w = S.over && S.best > 1 ? (S.wins[0] > S.wins[1] ? 0 : 1) : S.winner;
   fPlay(seat === w || seat < 0 ? "win" : "lose"); buzz([80, 60, 160]);
   const st = S.stats;
   show(`${fHead(S)}

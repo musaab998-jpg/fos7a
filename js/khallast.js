@@ -4,13 +4,15 @@
 
 const LETTERS = "أبتجحخدرزسشصطعفقكلمنهوي".split("");
 const hStat = (id) => (H.stats[id] ||= { first: 0, laughs: 0, rejected: 0, peeks: 0, accepted: 0, unique: 0, shared: 0 });
-const KH_ROUNDS = { classic: [2, 3, 4], quick: [3, 6, 9] };
+const KH_ROUNDS = { classic: [1, 2, 3, 4, 5], quick: [3, 6, 9, 12] };
+const KH_WRITE = { classic: [40, 60, 90], quick: [10, 15, 25] }, KH_VOTE = [15, 25, 40]; // seconds
+const khWrite = (S) => (S.wtime || (S.cats.length === 1 ? 15 : 60)) * 1000;
 
 ROOM_GAMES.khallast = {
   name: "خلّصت!", theme: "khallast", min: 2, need: "ينتظر لاعب واحد على الأقل", who: "٢ إلى ٣٠ · كتابة",
   rules: ["يطلع حرف، وكل واحد يكتب في جواله كلمة تبدأ فيه لكل خانة.", "أول واحد يعبّي كل الخانات يضغط «خلّصت!»، والباقين عندهم ٥ ثواني.", "الإجابات المعروفة تنقبل تلقائياً، والغريبة تنعرض للتصويت بدون أسماء.", "الإجابة اللي ما كتبها غيرك ١٠ نقاط، المكررة ٥، وأضحك إجابة تاخذ ٥ زيادة.", "بعد آخر جولة كل لاعب ياخذ شهادة بلقب."],
   setup(S) {
-    Object.assign(S, { mode: "classic", rounds: 2, picks: CATS.slice(0, 8).map((c) => c.id), letter: "", cats: [], done: [], stop: null, groups: [], score: {}, gain: {}, funniest: null, awards: {}, voted: [] });
+    Object.assign(S, { mode: "classic", rounds: 2, wtime: 60, vtime: 25, picks: CATS.slice(0, 8).map((c) => c.id), letter: "", cats: [], done: [], stop: null, groups: [], score: {}, gain: {}, funniest: null, awards: {}, voted: [] });
     Object.assign(H, { answers: {}, votes: {}, stats: {}, score: {}, gain: {}, used: [], deadline: 0, stopAt: 0, voteEnds: 0 });
   },
   joined(id) { H.score[id] ||= 0; },
@@ -41,12 +43,18 @@ ROOM_GAMES.khallast = {
       </div>
       <p class="muted" style="font-weight:700;color:var(--soft)">كم جولة؟</p>
       <div class="chips pick">${KH_ROUNDS[S.mode].map((n) => `<button type="button" class="chip" data-rounds="${n}" aria-pressed="${S.rounds === n}">${AR(n)}</button>`).join("")}</div>
+      <p class="muted" style="font-weight:700;color:var(--soft)">وقت الكتابة</p>
+      <div class="chips pick">${KH_WRITE[S.mode].map((n) => `<button type="button" class="chip" data-wtime="${n}" aria-pressed="${S.wtime === n}">${AR(n)} ثانية</button>`).join("")}</div>
+      <p class="muted" style="font-weight:700;color:var(--soft)">وقت التصويت</p>
+      <div class="chips pick">${KH_VOTE.map((n) => `<button type="button" class="chip" data-vtime="${n}" aria-pressed="${S.vtime === n}">${AR(n)} ثانية</button>`).join("")}</div>
       <p class="muted" style="font-weight:700;color:var(--soft)">الخانات (${S.mode === "quick" ? "اختر وحدة على الأقل" : "اختر ٤ على الأقل"})</p>
       <div class="chips pick">${CATS.map((c) => `<button type="button" class="chip" data-cat="${c.id}" aria-pressed="${S.picks.includes(c.id)}">${c.n}</button>`).join("")}</div>
       ${S.picks.length < need ? `<p class="muted" style="color:var(--ink-red)">اختر ${AR(need)} خانات على الأقل.</p>` : ""}`;
   },
   bindLobby(S) {
-    screen.querySelectorAll("[data-mode]").forEach((b) => (b.onclick = () => { S.mode = b.dataset.mode; H.S.mode = S.mode; H.S.rounds = KH_ROUNDS[S.mode][S.mode === "quick" ? 1 : 0]; beep(700, 0.04); hostSend(); }));
+    screen.querySelectorAll("[data-mode]").forEach((b) => (b.onclick = () => { S.mode = b.dataset.mode; H.S.mode = S.mode; H.S.rounds = S.mode === "quick" ? 6 : 2; H.S.wtime = S.mode === "quick" ? 15 : 60; H.S.vtime = S.mode === "quick" ? 15 : 25; beep(700, 0.04); hostSend(); }));
+    screen.querySelectorAll("[data-wtime]").forEach((b) => (b.onclick = () => { H.S.wtime = +b.dataset.wtime; beep(700, 0.04); hostSend(); }));
+    screen.querySelectorAll("[data-vtime]").forEach((b) => (b.onclick = () => { H.S.vtime = +b.dataset.vtime; beep(700, 0.04); hostSend(); }));
     screen.querySelectorAll("[data-rounds]").forEach((b) => (b.onclick = () => { H.S.rounds = +b.dataset.rounds; beep(700, 0.04); hostSend(); }));
     screen.querySelectorAll("[data-cat]").forEach((b) => (b.onclick = () => { const p = H.S.picks, id = b.dataset.cat; H.S.picks = p.includes(id) ? p.filter((x) => x !== id) : [...p, id]; beep(660, 0.04); hostSend(); }));
     if (S.picks.length < (S.mode === "quick" ? 1 : 4)) $("start").disabled = true;
@@ -79,7 +87,7 @@ function hostRound() {
   hLater(hostWrite, 2200);
 }
 function hostWrite() {
-  const S = H.S, quick = S.cats.length === 1, T = quick ? 15000 : 55000;
+  const S = H.S, T = khWrite(S);
   S.phase = "write"; H.deadline = now() + T;
   hostSend();
   hEvery(() => { const t = now(); if ((H.stopAt && t >= H.stopAt) || t >= H.deadline) hostCollect(); }, 250);
@@ -123,7 +131,7 @@ function hostGroups() {
   S.groups = groups.map((g) => ({ key: g.key, ci: g.ci, text: g.text, n: g.who.length, doubt: g.doubt, auto: g.auto, wrong: g.wrong, bad: !!g.bad }));
   if (!groups.some((g) => g.doubt)) return hostReveal();
   S.phase = "vote"; S.voted = []; H.votes = {};
-  H.voteEnds = now() + (S.cats.length === 1 ? 12000 : 25000);
+  H.voteEnds = now() + (S.vtime || 25) * 1000;
   hEvery(() => { if (now() >= H.voteEnds) hostReveal(); }, 300);
   hostSend();
 }
@@ -244,7 +252,7 @@ function vWrite(S, fresh) {
     if (!quick) $("peekBtn").onclick = () => { if (KL.my.peeked) return; KL.my.peeked = true; $("peekBtn").disabled = true; act({ t: "peek", id: PID }); };
     klEvery(() => {
       const s = KL.S; if (!s || s.phase !== "write") return;
-      const T = quick ? 15000 : 55000, left = leftOf(s.left);
+      const T = khWrite(s), left = leftOf(s.left);
       const l = $("left"), b = $("bar"); if (l) l.textContent = AR(Math.ceil(left / 1000)); if (b) b.style.transform = `scaleX(${left / T})`;
       const f = $("five"); if (f && s.stop) { const sec = Math.ceil(leftOf(s.stop.left) / 1000); if (f.textContent !== AR(sec)) { f.textContent = AR(sec); if (sec > 0) beep(880, 0.05, "square", 0.06); } }
     }, 200);

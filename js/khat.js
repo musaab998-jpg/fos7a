@@ -184,7 +184,7 @@ ROOM_GAMES.khat = {
   name: "خط ثلاثة", theme: "khat", min: 2, need: "يحتاج لاعب في كل فريق", who: "فريقين · أسئلة",
   rules: ["اللاعبين يتقسمون فريقين، أزرق وأحمر.", "الفريق اللي عليه الدور يختار مربع، وكل مربع فئة.", "السؤال يطلع عند الكل، والفريق يصوّت خلال ١٥ ثانية، وجواب الأغلبية هو جواب الفريق.", "صح؟ المربع لكم. غلط؟ الفريق الثاني ياخذ فرصة يسرقه.", "في مربع «وش يقول الأغلبية؟» الصح هو اللي اختاره أكثر الحاضرين.", "أول فريق يكمل خط ثلاثة يفوز باللوحة."],
   setup(S) {
-    Object.assign(S, { picks: KCATS.slice(), best: 1, wins: { b: 0, r: 0 }, boardNo: 0 });
+    Object.assign(S, { picks: KCATS.slice(), best: 1, qtime: 15, wins: { b: 0, r: 0 }, boardNo: 0 });
     H.team ||= {};
     H.players.forEach((p) => { if (!H.team[p.id]) ROOM_GAMES.khat.joined(p.id); });
     H.kst = {};
@@ -213,18 +213,21 @@ ROOM_GAMES.khat = {
   },
   lobby(S) {
     return `<p class="muted" style="font-weight:700;color:var(--soft)">كم لوحة؟</p>
-      <div class="chips pick"><button type="button" class="chip" data-best="1" aria-pressed="${S.best === 1}">لوحة وحدة</button><button type="button" class="chip" data-best="3" aria-pressed="${S.best === 3}">أفضل من ٣</button></div>
+      <div class="chips pick"><button type="button" class="chip" data-best="1" aria-pressed="${S.best === 1}">لوحة وحدة</button><button type="button" class="chip" data-best="3" aria-pressed="${S.best === 3}">أفضل من ٣</button><button type="button" class="chip" data-best="5" aria-pressed="${S.best === 5}">أفضل من ٥</button></div>
+      <p class="muted" style="font-weight:700;color:var(--soft)">وقت الإجابة</p>
+      <div class="chips pick">${[10, 15, 25].map((n) => `<button type="button" class="chip" data-qt="${n}" aria-pressed="${(S.qtime || 15) === n}">${AR(n)} ثانية</button>`).join("")}</div>
       <p class="muted" style="font-weight:700;color:var(--soft)">فئات المربعات (اختر ٣ على الأقل)</p>
       <div class="chips pick">${KCATS.map((c) => `<button type="button" class="chip" data-kc="${c}" aria-pressed="${S.picks.includes(c)}">${KLABEL(c)}</button>`).join("")}</div>`;
   },
   bindLobby(S) {
     screen.querySelectorAll("[data-sw]").forEach((b) => (b.onclick = () => { const id = b.dataset.sw; H.team[id] = kOther(H.team[id] || "b"); beep(640, 0.04); hostSend(); }));
+    screen.querySelectorAll("[data-qt]").forEach((b) => (b.onclick = () => { H.S.qtime = +b.dataset.qt; beep(700, 0.04); hostSend(); }));
     screen.querySelectorAll("[data-best]").forEach((b) => (b.onclick = () => { H.S.best = +b.dataset.best; beep(700, 0.04); hostSend(); }));
     screen.querySelectorAll("[data-kc]").forEach((b) => (b.onclick = () => { const c = b.dataset.kc, p = H.S.picks; H.S.picks = p.includes(c) ? p.filter((x) => x !== c) : [...p, c]; beep(660, 0.04); hostSend(); }));
     const t = Object.values(S.teams || {});
     if (!t.includes("b") || !t.includes("r") || S.picks.length < 3) $("start").disabled = true;
   },
-  resume(S) { if (!(H.usedQ instanceof Set)) H.usedQ = new Set(); if (S.phase === "ask") kFinish(); },
+  resume(S) { if (!(H.usedQ instanceof Set)) H.usedQ = new Set(); if (S.phase === "ask") kFinish(); else if (S.phase === "res" && S.res.stealNext) kNext(); },
   start() { Object.assign(H.S, { wins: { b: 0, r: 0 }, boardNo: 0 }); H.kst = {}; H.usedQ = new Set(); kNewBoard(); },
   views: { pick: kvPick, ask: kvAsk, res: kvRes, end: kvEnd },
 };
@@ -251,7 +254,7 @@ function hostAsk(i, team, steal, q0, excluded = -1) {
   let q = q0;
   if (!q) { const bank = KQB[cat]; q = bank.find((x) => !H.usedQ.has(x.q)) || pickOne(bank); H.usedQ.add(q.q); q = { ...q, cat }; }
   H.q = q; H.votes = {};
-  const maj = q.a < 0, T = maj ? 12000 : steal ? 10000 : 15000;
+  const qt = S.qtime || 15, maj = q.a < 0, T = (maj ? Math.max(8, qt - 3) : steal ? Math.max(8, qt - 5) : qt) * 1000;
   S.ask = { i, team, steal, excluded, maj, T, q: { q: q.q, o: q.o, cat } };
   S.phase = "ask"; H.deadline = now() + T;
   kTally(); hostSend();
@@ -277,9 +280,14 @@ function kFinish() {
   }
   S.win = kWinner(S.board);
   const counts = maj ? tally(allIds) : tally(teamIds);
-  S.res = { ok, right, teamAns, told, note, counts, total: Math.max(1, maj ? allIds.length : teamIds.length), stealNext: !ok && !a.steal && !maj, answer: q.o[right] ?? "" };
+  const stealNext = !ok && !a.steal && !maj;
+  // a wrong answer passes the question to the other team, so the right one stays hidden until they've had their go
+  S.res = stealNext
+    ? { ok, right: -1, teamAns, told: [], note, counts, total: Math.max(1, teamIds.length), stealNext, answer: "" }
+    : { ok, right, teamAns, told, note, counts, total: Math.max(1, maj ? allIds.length : teamIds.length), stealNext, answer: q.o[right] ?? "" };
   S.phase = "res";
   hostSend();
+  if (stealNext) hLater(() => { if (S.phase === "res" && S.res.stealNext) kNext(); }, 2600);
 }
 function kNext() {
   const S = H.S, a = S.ask;
@@ -297,9 +305,9 @@ function kBoardEnd() {
   const S = H.S, b = kCount(S.board, "b"), r = kCount(S.board, "r");
   const w = S.win ? S.win.t : b > r ? "b" : r > b ? "r" : null;
   if (w) S.wins[w]++;
-  const need = S.best === 3 ? 2 : 1;
+  const need = Math.ceil(S.best / 2);
   S.boardWin = w;
-  S.over = S.wins.b >= need || S.wins.r >= need || S.boardNo >= (S.best === 3 ? 5 : 1);
+  S.over = S.wins.b >= need || S.wins.r >= need || S.boardNo >= S.best + 2;
   const st = H.kst, top = (key) => { const id = Object.keys(st).sort((x, y) => st[y][key] - st[x][key])[0]; return id && st[id][key] > 0 ? { id, n: st[id][key] } : null; };
   S.honor = { right: top("right"), told: top("told"), mine: {} };
   Object.keys(st).forEach((id) => (S.honor.mine[id] = st[id]));
@@ -314,7 +322,7 @@ function kBoardHTML(S, pickable) {
     ? `<div class="k-sq ${m} ${w.includes(i) ? "win" : ""}"><span class="m">${m === "b" ? "X" : "O"}</span></div>`
     : `<button type="button" class="k-sq open" data-sq="${i}" ${pickable ? "" : "disabled"}>${KLABEL(S.sq[i])}</button>`).join("")}</div></div>`;
 }
-const kScore = (S) => `<div class="k-score"><span class="b">الأزرق ${AR(kCount(S.board, "b"))}</span><span class="k-dim" style="font-family:var(--f-body)">${S.best === 3 ? `لوحة ${AR(S.boardNo)} · ${AR(S.wins.b)}-${AR(S.wins.r)}` : "أول خط ثلاثة يفوز"}</span><span class="r">${AR(kCount(S.board, "r"))} الأحمر</span></div>`;
+const kScore = (S) => `<div class="k-score"><span class="b">الأزرق ${AR(kCount(S.board, "b"))}</span><span class="k-dim" style="font-family:var(--f-body)">${S.best > 1 ? `لوحة ${AR(S.boardNo)} · ${AR(S.wins.b)}-${AR(S.wins.r)}` : "أول خط ثلاثة يفوز"}</span><span class="r">${AR(kCount(S.board, "r"))} الأحمر</span></div>`;
 function kvPick(S, fresh) {
   if (!fresh) return;
   clearKL(); setTop(`الدور ${AR(S.turns + 1)}`);
@@ -359,11 +367,11 @@ function kvRes(S, fresh) {
       <span class="k-cat">${KLABEL(q.cat)}</span>
       <div class="k-q">${esc(q.q)}</div>
       ${q.o.map((o, k) => `<div class="k-opt ${k === r.right ? "right" : k === r.teamAns || k === a.excluded ? "wrong" : ""}"><i style="width:${Math.round((r.counts[k] / r.total) * 100)}%"></i><span><b>${esc(o)}</b><small>${r.counts[k] ? AR(r.counts[k]) : ""}</small></span></div>`).join("")}
-      <p class="k-dim">${a.maj ? `اختيار أغلب الحاضرين: «${esc(r.answer)}».` : `جواب الفريق: «${r.teamAns >= 0 ? esc(q.o[r.teamAns]) : "ما جاوبوا"}».`} ${r.note}</p>
+      <p class="k-dim">${a.maj ? `اختيار أغلب الحاضرين: «${esc(r.answer)}».` : `جواب الفريق: «${r.teamAns >= 0 ? esc(q.o[r.teamAns]) : "ما جاوبوا"}».`} ${r.stealNext ? `الجواب الصح ينكشف بعد محاولة الفريق ${TN[other]}.` : !a.maj && !r.ok ? `الصح: «${esc(r.answer)}».` : ""} ${r.note}</p>
     </div>
     ${r.told.length ? `<div class="k-told pop">${r.told.map((id) => face(who(id), 28)).join("")}<span>«قلت لكم!» ${r.told.map((id) => esc(who(id).name)).join(" و")} صوّت صح</span></div>` : ""}
-    ${isHost() ? `<button type="button" class="k-btn" id="kNext">${r.stealNext ? `فرصة الفريق ${TN[other]}` : last ? "النتيجة" : "كمّل"}</button>` : '<p class="k-dim" style="text-align:center">بانتظار المضيف…</p>'}`);
-  if (isHost()) $("kNext").onclick = () => kNext();
+    ${r.stealNext ? `<p class="k-dim" style="text-align:center">السؤال ينتقل للفريق ${TN[other]}…</p>` : isHost() ? `<button type="button" class="k-btn" id="kNext">${last ? "النتيجة" : "كمّل"}</button>` : '<p class="k-dim" style="text-align:center">بانتظار المضيف…</p>'}`);
+  if (isHost() && $("kNext")) $("kNext").onclick = () => kNext();
 }
 function kvEnd(S, fresh) {
   if (!fresh) return;
