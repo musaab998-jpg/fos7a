@@ -16,7 +16,7 @@ ROOM_GAMES.khat = {
   name: "خط ثلاثة", theme: "khat", min: 2, need: "يحتاج لاعب في كل فريق", who: "فريقين · أسئلة",
   rules: ["اللاعبين يتقسمون فريقين، أزرق وأحمر.", "الفريق اللي عليه الدور يختار مربع، وكل مربع فئة.", "السؤال يطلع عند الكل، والفريق يصوّت خلال ١٥ ثانية، وجواب الأغلبية هو جواب الفريق.", "صح؟ المربع لكم. غلط؟ الفريق الثاني ياخذ فرصة يسرقه.", "في مربع «وش يقول الأغلبية؟» الصح هو اللي اختاره أكثر الحاضرين.", "أول فريق يكمل خط ثلاثة يفوز باللوحة.", "مع «الاختفاء»: كل فريق له ٣ علامات بس، والرابعة تمسح أقدم علامة له، فاللوحة ما تتقفل أبداً."],
   setup(S) {
-    Object.assign(S, { picks: KCATS.slice(), best: 1, qtime: 15, fade: true, wins: { b: 0, r: 0 }, boardNo: 0 });
+    Object.assign(S, { picks: KCATS.slice(), best: 1, qtime: 15, fade: true, maxT: 0, wins: { b: 0, r: 0 }, boardNo: 0 });
     H.team ||= {};
     H.players.forEach((p) => { if (!H.team[p.id]) ROOM_GAMES.khat.joined(p.id); });
     H.kst = {};
@@ -48,6 +48,8 @@ ROOM_GAMES.khat = {
       <div class="chips pick"><button type="button" class="chip" data-best="1" aria-pressed="${S.best === 1}">لوحة وحدة</button><button type="button" class="chip" data-best="3" aria-pressed="${S.best === 3}">أفضل من ٣</button><button type="button" class="chip" data-best="5" aria-pressed="${S.best === 5}">أفضل من ٥</button></div>
       <p class="muted" style="font-weight:700;color:var(--soft)">لا تتقفل اللوحة</p>
       <div class="modes"><button type="button" class="mode" data-fade="1" aria-pressed="${S.fade !== false}"><b>الاختفاء</b><small>كل فريق له ٣ علامات، والرابعة تمسح أقدم وحدة</small></button><button type="button" class="mode" data-fade="0" aria-pressed="${S.fade === false}"><b>عادي</b><small>إذا امتلت بدون خط، اللي معه مربعات أكثر يفوز</small></button></div>
+      ${S.fade !== false ? `<p class="muted" style="font-weight:700;color:var(--soft)">حد الأدوار في اللوحة</p>
+      <div class="chips pick">${[0, 20, 30].map((n) => `<button type="button" class="chip" data-maxt="${n}" aria-pressed="${(S.maxT || 0) === n}">${n ? `${AR(n)} دور` : "بدون حد، لين أحد يفوز"}</button>`).join("")}</div>` : ""}
       <p class="muted" style="font-weight:700;color:var(--soft)">وقت الإجابة</p>
       <div class="chips pick">${[10, 15, 25].map((n) => `<button type="button" class="chip" data-qt="${n}" aria-pressed="${(S.qtime || 15) === n}">${AR(n)} ثانية</button>`).join("")}</div>
       <p class="muted" style="font-weight:700;color:var(--soft)">فئات المربعات (اختر ٣ على الأقل)</p>
@@ -57,6 +59,7 @@ ROOM_GAMES.khat = {
     screen.querySelectorAll("[data-sw]").forEach((b) => (b.onclick = () => { const id = b.dataset.sw; H.team[id] = kOther(H.team[id] || "b"); beep(640, 0.04); hostSend(); }));
     screen.querySelectorAll("[data-qt]").forEach((b) => (b.onclick = () => { H.S.qtime = +b.dataset.qt; beep(700, 0.04); hostSend(); }));
     screen.querySelectorAll("[data-fade]").forEach((b) => (b.onclick = () => { H.S.fade = b.dataset.fade === "1"; beep(700, 0.04); hostSend(); }));
+    screen.querySelectorAll("[data-maxt]").forEach((b) => (b.onclick = () => { H.S.maxT = +b.dataset.maxt; beep(700, 0.04); hostSend(); }));
     screen.querySelectorAll("[data-best]").forEach((b) => (b.onclick = () => { H.S.best = +b.dataset.best; beep(700, 0.04); hostSend(); }));
     screen.querySelectorAll("[data-kc]").forEach((b) => (b.onclick = () => { const c = b.dataset.kc, p = H.S.picks; H.S.picks = p.includes(c) ? p.filter((x) => x !== c) : [...p, c]; beep(660, 0.04); hostSend(); }));
     const t = Object.values(S.teams || {});
@@ -145,7 +148,8 @@ function kPlace(i, t) {
   o.push(i);
   if (o.length > 3) { const old = o.shift(); S.board[old] = null; S.sq[old] = pickOne(S.picks); S.gone = old; }
 }
-const kMaxTurns = (S) => (S.fade === false ? 16 : 30);
+// «الاختفاء» goes on until someone makes a line, unless the host set a limit
+const kMaxTurns = (S) => (S.fade === false ? 16 : S.maxT || Infinity);
 function kBoardEnd() {
   const S = H.S, b = kCount(S.board, "b"), r = kCount(S.board, "r");
   const w = S.win ? S.win.t : b > r ? "b" : r > b ? "r" : null;
