@@ -24,7 +24,7 @@ const hEvery = (fn, ms) => (H.timers ||= []).push(setInterval(fn, ms));
 const face = (p, s) => avatar(p.av || me.av, s);
 const hostOnly = (html, wait = "بانتظار المضيف…") => (isHost() ? html : `<p class="muted" style="text-align:center">${wait}</p>`);
 const shuffled = (a) => a.map((x) => [Math.random(), x]).sort((p, q) => p[0] - q[0]).map((p) => p[1]);
-const THEME_COLOR = { khallast: "#fbf8ef", khat: "#22402f", fold: "#151c2d" };
+const THEME_COLOR = { khallast: "#fbf8ef", khat: "#22402f", fold: "#151c2d", trabee: "#e6e0d4" };
 
 function leaveRoom(tell = true) {
   clearKL(); hClear(); clearInterval(KL.alive); yardQuiet(0.5); KL.rang = false; keepAwake(false); hostBanner(false);
@@ -205,7 +205,7 @@ function apply(S) {
   if (viewKey !== KL.view) { KL.view = viewKey; renderPhase(S, true); yardMoment(S, prev); } else renderPhase(S, false);
 }
 // recess in «وينكم!», the bell when a game starts, and a cheer at the end
-const END_PHASE = { khallast: "cert", khat: "end", foldit: "over" };
+const END_PHASE = { khallast: "cert", khat: "end", foldit: "over", trabee: "end" };
 function yardMoment(S, prev) {
   if (S.phase === "lobby") {
     if (!KL.rang) { KL.rang = true; recess(); setTimeout(() => { if (KL.S && KL.S.phase === "lobby") yardAmbient(); }, 3800); }
@@ -234,7 +234,7 @@ function vLobby(S, fresh) {
       ${isHost() ? `<button type="button" class="btn btn-ghost" id="shareLink" style="width:auto;padding:6px 16px;font-size:14px">أرسل الرابط</button>` : ""}
     </div>
     ${isHost() ? `<p class="muted" style="font-weight:700;color:var(--soft)">وش نلعب؟</p>
-      <div class="modes three">${Object.entries(ROOM_GAMES).map(([id, x]) => `<button type="button" class="mode" data-game="${id}" aria-pressed="${S.game === id}"><b>${x.name}</b><small>${x.who}</small></button>`).join("")}</div>`
+      <div class="modes gamepick">${Object.entries(ROOM_GAMES).map(([id, x]) => `<button type="button" class="mode" data-game="${id}" aria-pressed="${S.game === id}"><b>${x.name}</b><small>${x.who}</small></button>`).join("")}</div>`
       : `<div class="paper" style="padding-block:12px"><h3 style="font-size:24px">${g.name}</h3><ol class="rules">${g.rules.map((r) => `<li>${r}</li>`).join("")}</ol></div>`}
     ${g.lobbyPlayers ? g.lobbyPlayers(S) : `<p class="muted" style="font-weight:700;color:var(--soft)">اللاعبين (${AR(n)})</p><div class="players">${S.players.map(plCard).join("")}</div>`}
     ${isHost() ? `${g.lobby ? g.lobby(S) : ""}
