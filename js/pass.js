@@ -2,7 +2,7 @@
 // ================= one free session of every game, then a code =================
 // Only the host is ever asked: joining a room is always free. The free sessions are counted on this
 // phone; codes are checked by the server (Supabase functions fos7a_*), which counts how many phones used each.
-const TRIAL_KEY = "fos7a.trial.v1", PASS_KEY = "fos7a.pass.v1", INSTA = "musaab998";
+const TRIAL_KEY = "fos7a.trial.v1", PASS_KEY = "fos7a.pass.v1", INSTA = "fos7a.games";
 const readJSON = (k) => { try { return JSON.parse(localStorage.getItem(k) || "null"); } catch (e) { return null; } };
 const writeJSON = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} };
 const passUntil = () => { const p = readJSON(PASS_KEY); return p && p.until ? Date.parse(p.until) || 0 : 0; };
