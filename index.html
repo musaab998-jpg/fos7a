@@ -252,6 +252,14 @@ body[data-theme="khat"] .gtop .gt { color: var(--chalk-y); }
 .k-sq .m { font-family: var(--f-display); font-size: 64px; line-height: 1; }
 .k-sq.b .m { color: var(--tb); } .k-sq.r .m { color: var(--tr); }
 .k-sq.win { background: rgba(255,226,122,.18); }
+.k-board { position: relative; }
+.k-strike { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; overflow: visible; }
+.k-strike line { stroke: var(--chalk-y); stroke-width: .11; stroke-linecap: round; stroke-dasharray: 1; stroke-dashoffset: 1; filter: drop-shadow(0 0 .04px rgba(0,0,0,.4)); animation: kstrike .7s .25s ease-out forwards; opacity: .95; }
+@keyframes kstrike { to { stroke-dashoffset: 0; } }
+@media (prefers-reduced-motion: reduce) { .k-strike line { stroke-dashoffset: 0; } }
+.k-sq.old .m { opacity: .38; animation: kfade 1.6s ease-in-out infinite; }
+@keyframes kfade { 50% { opacity: .18; } }
+.k-sq.gone { animation: pop .5s ease-out; }
 .k-sq small { display: block; color: var(--chalk-dim); font-weight: 500; font-size: 11px; }
 .k-q { font-size: 20px; font-weight: 700; }
 .k-cat { display: inline-block; font-size: 13px; font-weight: 700; color: var(--board); background: var(--chalk-y); border-radius: 999px; padding: 1px 10px; }

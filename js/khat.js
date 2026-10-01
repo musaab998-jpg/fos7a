@@ -14,9 +14,9 @@ const myTeam = (S) => (S.teams || {})[PID];
 
 ROOM_GAMES.khat = {
   name: "خط ثلاثة", theme: "khat", min: 2, need: "يحتاج لاعب في كل فريق", who: "فريقين · أسئلة",
-  rules: ["اللاعبين يتقسمون فريقين، أزرق وأحمر.", "الفريق اللي عليه الدور يختار مربع، وكل مربع فئة.", "السؤال يطلع عند الكل، والفريق يصوّت خلال ١٥ ثانية، وجواب الأغلبية هو جواب الفريق.", "صح؟ المربع لكم. غلط؟ الفريق الثاني ياخذ فرصة يسرقه.", "في مربع «وش يقول الأغلبية؟» الصح هو اللي اختاره أكثر الحاضرين.", "أول فريق يكمل خط ثلاثة يفوز باللوحة."],
+  rules: ["اللاعبين يتقسمون فريقين، أزرق وأحمر.", "الفريق اللي عليه الدور يختار مربع، وكل مربع فئة.", "السؤال يطلع عند الكل، والفريق يصوّت خلال ١٥ ثانية، وجواب الأغلبية هو جواب الفريق.", "صح؟ المربع لكم. غلط؟ الفريق الثاني ياخذ فرصة يسرقه.", "في مربع «وش يقول الأغلبية؟» الصح هو اللي اختاره أكثر الحاضرين.", "أول فريق يكمل خط ثلاثة يفوز باللوحة.", "مع «الاختفاء»: كل فريق له ٣ علامات بس، والرابعة تمسح أقدم علامة له، فاللوحة ما تتقفل أبداً."],
   setup(S) {
-    Object.assign(S, { picks: KCATS.slice(), best: 1, qtime: 15, wins: { b: 0, r: 0 }, boardNo: 0 });
+    Object.assign(S, { picks: KCATS.slice(), best: 1, qtime: 15, fade: true, wins: { b: 0, r: 0 }, boardNo: 0 });
     H.team ||= {};
     H.players.forEach((p) => { if (!H.team[p.id]) ROOM_GAMES.khat.joined(p.id); });
     H.kst = {};
@@ -46,6 +46,8 @@ ROOM_GAMES.khat = {
   lobby(S) {
     return `<p class="muted" style="font-weight:700;color:var(--soft)">كم لوحة؟</p>
       <div class="chips pick"><button type="button" class="chip" data-best="1" aria-pressed="${S.best === 1}">لوحة وحدة</button><button type="button" class="chip" data-best="3" aria-pressed="${S.best === 3}">أفضل من ٣</button><button type="button" class="chip" data-best="5" aria-pressed="${S.best === 5}">أفضل من ٥</button></div>
+      <p class="muted" style="font-weight:700;color:var(--soft)">لا تتقفل اللوحة</p>
+      <div class="modes"><button type="button" class="mode" data-fade="1" aria-pressed="${S.fade !== false}"><b>الاختفاء</b><small>كل فريق له ٣ علامات، والرابعة تمسح أقدم وحدة</small></button><button type="button" class="mode" data-fade="0" aria-pressed="${S.fade === false}"><b>عادي</b><small>إذا امتلت بدون خط، اللي معه مربعات أكثر يفوز</small></button></div>
       <p class="muted" style="font-weight:700;color:var(--soft)">وقت الإجابة</p>
       <div class="chips pick">${[10, 15, 25].map((n) => `<button type="button" class="chip" data-qt="${n}" aria-pressed="${(S.qtime || 15) === n}">${AR(n)} ثانية</button>`).join("")}</div>
       <p class="muted" style="font-weight:700;color:var(--soft)">فئات المربعات (اختر ٣ على الأقل)</p>
@@ -54,6 +56,7 @@ ROOM_GAMES.khat = {
   bindLobby(S) {
     screen.querySelectorAll("[data-sw]").forEach((b) => (b.onclick = () => { const id = b.dataset.sw; H.team[id] = kOther(H.team[id] || "b"); beep(640, 0.04); hostSend(); }));
     screen.querySelectorAll("[data-qt]").forEach((b) => (b.onclick = () => { H.S.qtime = +b.dataset.qt; beep(700, 0.04); hostSend(); }));
+    screen.querySelectorAll("[data-fade]").forEach((b) => (b.onclick = () => { H.S.fade = b.dataset.fade === "1"; beep(700, 0.04); hostSend(); }));
     screen.querySelectorAll("[data-best]").forEach((b) => (b.onclick = () => { H.S.best = +b.dataset.best; beep(700, 0.04); hostSend(); }));
     screen.querySelectorAll("[data-kc]").forEach((b) => (b.onclick = () => { const c = b.dataset.kc, p = H.S.picks; H.S.picks = p.includes(c) ? p.filter((x) => x !== c) : [...p, c]; beep(660, 0.04); hostSend(); }));
     const t = Object.values(S.teams || {});
@@ -70,7 +73,7 @@ function kNewBoard() {
   const S = H.S;
   S.boardNo++;
   let deck = []; while (deck.length < 9) deck = deck.concat(shuffled(S.picks));
-  Object.assign(S, { phase: "pick", board: Array(9).fill(null), sq: deck.slice(0, 9), team: S.boardNo % 2 ? "b" : "r", turns: 0, win: null, ask: null, res: null });
+  Object.assign(S, { phase: "pick", board: Array(9).fill(null), sq: deck.slice(0, 9), team: S.boardNo % 2 ? "b" : "r", turns: 0, win: null, ask: null, res: null, order: { b: [], r: [] }, gone: -1 });
   H.deadline = 0;
   hostSend();
 }
@@ -104,10 +107,11 @@ function kFinish() {
   const told = !ok && !maj ? teamIds.filter((id) => H.votes[id] === right) : [];
   told.forEach((id) => kStat(id).told++);
   let note = "";
-  if (ok) S.board[a.i] = team;
+  S.gone = -1;
+  if (ok) kPlace(a.i, team);
   else if (maj) { // no steal round here: the other team's guess is already in
     const oIds = allIds.filter((id) => H.team[id] === other);
-    if (oIds.length && argmax(tally(oIds)) === right) { S.board[a.i] = other; note = `بس الفريق ${TN[other]} توقّع صح، والمربع راح لهم!`; }
+    if (oIds.length && argmax(tally(oIds)) === right) { kPlace(a.i, other); note = `بس الفريق ${TN[other]} توقّع صح، والمربع راح لهم!`; }
   }
   S.win = kWinner(S.board);
   const counts = maj ? tally(allIds) : tally(teamIds);
@@ -125,13 +129,23 @@ function kNext() {
   if (S.phase === "res") {
     if (S.res.stealNext) return hostAsk(a.i, kOther(a.team), true, H.q, S.res.teamAns);
     S.turns++;
-    if (S.win || !S.board.includes(null) || S.turns >= 16) return kBoardEnd();
+    if (S.win || !S.board.includes(null) || S.turns >= kMaxTurns(S)) return kBoardEnd();
     S.team = a.steal ? a.team : kOther(a.team); // after a steal the turn goes to the team that stole
     S.phase = "pick"; S.ask = null; S.res = null;
     return hostSend();
   }
   if (S.phase === "end" && !S.over) return kNewBoard();
 }
+// with «الاختفاء» each team keeps its last three marks: a fourth wipes its oldest, so the board never fills up
+function kPlace(i, t) {
+  const S = H.S;
+  S.board[i] = t;
+  if (S.fade === false) return;
+  const o = (S.order ||= { b: [], r: [] })[t];
+  o.push(i);
+  if (o.length > 3) { const old = o.shift(); S.board[old] = null; S.sq[old] = pickOne(S.picks); S.gone = old; }
+}
+const kMaxTurns = (S) => (S.fade === false ? 16 : 30);
 function kBoardEnd() {
   const S = H.S, b = kCount(S.board, "b"), r = kCount(S.board, "r");
   const w = S.win ? S.win.t : b > r ? "b" : r > b ? "r" : null;
@@ -149,9 +163,16 @@ function kBoardEnd() {
 // ---------------- every phone ----------------
 function kBoardHTML(S, pickable) {
   const w = S.win ? S.win.line : [];
+  const old = new Set(S.win || S.fade === false ? [] : ["b", "r"].map((t) => ((S.order || {})[t] || []).length === 3 ? S.order[t][0] : -1));
   return `<div class="k-frame"><div class="k-board">${S.board.map((m, i) => m
-    ? `<div class="k-sq ${m} ${w.includes(i) ? "win" : ""}"><span class="m">${m === "b" ? "X" : "O"}</span></div>`
-    : `<button type="button" class="k-sq open" data-sq="${i}" ${pickable ? "" : "disabled"}>${KLABEL(S.sq[i])}</button>`).join("")}</div></div>`;
+    ? `<div class="k-sq ${m} ${w.includes(i) ? "win" : ""} ${old.has(i) ? "old" : ""}"><span class="m">${m === "b" ? "X" : "O"}</span></div>`
+    : `<button type="button" class="k-sq open ${i === S.gone ? "gone" : ""}" data-sq="${i}" ${pickable ? "" : "disabled"}>${KLABEL(S.sq[i])}</button>`).join("")}${S.win ? kStrike(S.win) : ""}</div></div>`;
+}
+// a chalk line through the three: square i sits at column i % 3 counted from the right (the page is RTL)
+function kStrike(win) {
+  const at = (i) => [2 - (i % 3) + 0.5, Math.floor(i / 3) + 0.5], [x1, y1] = at(win.line[0]), [x2, y2] = at(win.line[2]);
+  const dx = x2 - x1, dy = y2 - y1, len = Math.hypot(dx, dy), ex = (dx / len) * 0.38, ey = (dy / len) * 0.38;
+  return `<svg class="k-strike ${win.t}" viewBox="0 0 3 3" aria-hidden="true"><line x1="${x1 - ex}" y1="${y1 - ey}" x2="${x2 + ex}" y2="${y2 + ey}" pathLength="1"/></svg>`;
 }
 const kScore = (S) => `<div class="k-score"><span class="b">الأزرق ${AR(kCount(S.board, "b"))}</span><span class="k-dim" style="font-family:var(--f-body)">${S.best > 1 ? `لوحة ${AR(S.boardNo)} · ${AR(S.wins.b)}-${AR(S.wins.r)}` : "أول خط ثلاثة يفوز"}</span><span class="r">${AR(kCount(S.board, "r"))} الأحمر</span></div>`;
 function kvPick(S, fresh) {
@@ -191,14 +212,14 @@ function kvRes(S, fresh) {
   const a = S.ask, r = S.res, q = a.q, other = kOther(a.team), t = myTeam(S);
   const good = r.ok ? t === a.team : r.note ? t === other : t !== a.team;
   if (good) { beep(784, 0.1); setTimeout(() => beep(1047, 0.18), 110); buzz(60); } else { beep(200, 0.3, "sawtooth", 0.08); buzz([40, 30, 40]); }
-  const last = S.win || !S.board.includes(null) || S.turns + 1 >= 16;
+  const last = S.win || !S.board.includes(null) || S.turns + 1 >= kMaxTurns(S);
   show(`
     <div class="k-turn ${a.team}">${r.ok ? `صح! المربع للفريق ${TN[a.team]}` : a.maj ? `الفريق ${TN[a.team]} ما توقّع الأغلبية` : `غلط! ${a.steal ? "والسرقة ما نجحت" : `فرصة سرقة للفريق ${TN[other]}`}`}</div>
     <div class="k-card" style="display:grid;gap:10px">
       <span class="k-cat">${KLABEL(q.cat)}</span>
       <div class="k-q">${esc(q.q)}</div>
       ${q.o.map((o, k) => `<div class="k-opt ${k === r.right ? "right" : k === r.teamAns || k === a.excluded ? "wrong" : ""}"><i style="width:${Math.round((r.counts[k] / r.total) * 100)}%"></i><span><b>${esc(o)}</b><small>${r.counts[k] ? AR(r.counts[k]) : ""}</small></span></div>`).join("")}
-      <p class="k-dim">${a.maj ? `اختيار أغلب الحاضرين: «${esc(r.answer)}».` : `جواب الفريق: «${r.teamAns >= 0 ? esc(q.o[r.teamAns]) : "ما جاوبوا"}».`} ${r.stealNext ? `الجواب الصح ينكشف بعد محاولة الفريق ${TN[other]}.` : !a.maj && !r.ok ? `الصح: «${esc(r.answer)}».` : ""} ${r.note}</p>
+      <p class="k-dim">${a.maj ? `اختيار أغلب الحاضرين: «${esc(r.answer)}».` : `جواب الفريق: «${r.teamAns >= 0 ? esc(q.o[r.teamAns]) : "ما جاوبوا"}».`} ${r.stealNext ? `الجواب الصح ينكشف بعد محاولة الفريق ${TN[other]}.` : !a.maj && !r.ok ? `الصح: «${esc(r.answer)}».` : ""} ${r.note}${S.gone >= 0 ? " واختفت أقدم علامة لهم." : ""}</p>
     </div>
     ${r.told.length ? `<div class="k-told pop">${r.told.map((id) => face(who(id), 28)).join("")}<span>«قلت لكم!» ${r.told.map((id) => esc(who(id).name)).join(" و")} صوّت صح</span></div>` : ""}
     ${r.stealNext ? `<p class="k-dim" style="text-align:center">السؤال ينتقل للفريق ${TN[other]}…</p>` : isHost() ? `<button type="button" class="k-btn" id="kNext">${last ? "النتيجة" : "كمّل"}</button>` : '<p class="k-dim" style="text-align:center">بانتظار المضيف…</p>'}`);
