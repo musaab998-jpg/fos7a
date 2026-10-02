@@ -1,5 +1,5 @@
 "use strict";
-// ================= الألقاب: the class roll-call, every name hidden under a nickname sticker =================
+// ================= انكشف!: the class roll-call, every name hidden under a nickname sticker =================
 // Everyone (or every pair / trio) hides behind a secret nickname. Questions come, the results are read
 // out by nickname, fastest first, and every result is a clue. The fastest right answer earns one
 // accusation: name the people behind a sticker. Right, the sticker peels off; wrong, the accused gains.
@@ -34,7 +34,7 @@ const aqMine = () => KL.my.aq && KL.S && KL.my.aq.sid === KL.S.sid ? KL.my.aq : 
 const aqStk = (t, extra = "") => (t ? `<span class="aq-stk ${t.wolf ? "wolf" : ""} ${extra}" style="--c:${AQ_COLORS[t.c % AQ_COLORS.length]}">${t.wolf ? "🐺 " : ""}${esc(t.n || "…")}</span>` : "");
 
 ROOM_GAMES.alqab = {
-  name: "الألقاب", theme: "alqab", min: 4, need: "يحتاج ٤ لاعبين على الأقل", who: "٤ إلى ٢٠ · أسئلة وتخمين",
+  name: "انكشف!", theme: "alqab", min: 4, need: "يحتاج ٤ لاعبين على الأقل", who: "٤ إلى ٢٠ · أسئلة وتخمين",
   rules: ["كل واحد يختار لقب سري، ومحد يعرف لقب غيره.", "تطلع أسئلة، والنتائج تنكتب بالألقاب بس، مرتبة بالسرعة.", "أسرع واحد يجاوب صح ياخذ فرصة يتهم: يختار لقب ويقول مين صاحبه.", "صح؟ الملصق ينقشر وتاخذ نقاط. غلط؟ اللي اتهمته ياخذ نقاط وأنت ينخصم منك.", "أسئلة «وش تفضل؟» ما لها جواب صح، بس تكشف مين يحب وش.", "في الثنائيات والثلاثيات: شريكك سري، وتتهمون الفريق كامل.", "آخر لقب ما ينكشف صاحبه هو «الشبح» 👻 وياخذ نقاط كبيرة."],
   setup(S) { Object.assign(S, { mode: "auto", qn: 12, qtime: 15, picks: ["السعودية", "الخليج والعرب", "جغرافيا", "أكل", "كورة", "ألغاز", "عامة", "حيوانات"] }); },
   snap(S) {
@@ -77,7 +77,7 @@ ROOM_GAMES.alqab = {
     set("aqm", "mode", false); set("aqn", "qn", true); set("aqt", "qtime", true);
     screen.querySelectorAll("[data-aqc]").forEach((b) => (b.onclick = () => { const c = b.dataset.aqc, p = H.S.picks; H.S.picks = p.includes(c) ? p.filter((x) => x !== c) : [...p, c]; beep(660, 0.04); hostSend(); }));
     const st = $("start");
-    if (S.players.length > AQ_MAX) { st.disabled = true; st.textContent = `الألقاب لين ${AR(AQ_MAX)} لاعب`; }
+    if (S.players.length > AQ_MAX) { st.disabled = true; st.textContent = `انكشف! لين ${AR(AQ_MAX)} لاعب`; }
     else if (!S.picks.length) { st.disabled = true; st.textContent = "اختر فئة وحدة على الأقل"; }
   },
   start: () => aqStart(),
