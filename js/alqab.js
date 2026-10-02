@@ -399,9 +399,77 @@ function aqvEnd(S, fresh) {
     <div class="aq-roll end">${S.rank.map((x, k) => { const t = aqTag(S, x.tag); return `<div class="aq-r ${x.id === PID ? "me" : ""}"><span class="n">${AR(k + 1)}</span><span class="aq-rank">${face(who(x.id), 28)}<b>${esc(who(x.id).name)}</b>${aqStk(t)}${t.out ? "" : " 👻"}</span><span class="t">${AR(x.pts)}</span></div>`; }).join("")}</div>
     ${aw.sleuth ? `<div class="aq-aw"><span>أشطر محقق</span><b>${face(who(aw.sleuth.id), 24)}${esc(who(aw.sleuth.id).name)} · ${AR(aw.sleuth.n)}</b></div>` : ""}
     ${aw.framed ? `<div class="aq-aw"><span>أكثر واحد انتهم ظلم</span><b>${face(who(aw.framed.id), 24)}${esc(who(aw.framed.id).name)} · ${AR(aw.framed.n)}</b></div>` : ""}
-    <p class="muted" style="text-align:center">صوّر شهادتك وانشرها ستوري 📸</p>
+    ${myTag ? '<button type="button" class="btn btn-marker" id="aqStory">احفظ شهادتي للستوري 📸</button><p class="muted" id="aqStoryMsg" style="text-align:center"></p>' : ""}
     ${isHost() ? '<button type="button" class="btn btn-marker" id="aqAgain">جلسة جديدة بنفس الربع</button>' : '<p class="muted" style="text-align:center">المضيف يقدر يبدأ جلسة جديدة.</p>'}
     <button type="button" class="btn btn-ghost" id="aqHome">رجوع لفسحة</button>`);
   if ($("aqAgain")) $("aqAgain").onclick = () => hostAgain();
+  if ($("aqStory")) $("aqStory").onclick = () => aqShareStory({ p, fem, tag: myTag, pts: mine ? mine.pts : 0, ghost });
   $("aqHome").onclick = () => { leaveRoom(); renderHub(); view("hub"); };
+}
+
+// ---------------- the certificate as a story picture ----------------
+// Drawn on a 1080×1920 canvas in the page's own fonts, then handed to the phone's share sheet
+// (straight to Instagram where the browser allows it), the app's share bridge, or a download.
+async function aqStoryCanvas({ p, fem, tag, pts, ghost }) {
+  const W = 1080, Hh = 1920, cv = document.createElement("canvas"); cv.width = W; cv.height = Hh;
+  const c = cv.getContext("2d"), tt = (m, f) => (fem ? f : m);
+  try { await Promise.all(["700 60px Lalezar", "700 40px 'IBM Plex Sans Arabic'", "500 40px 'IBM Plex Sans Arabic'", "700 60px 'Aref Ruqaa'"].map((f) => document.fonts.load(f))); } catch (e) {}
+  const D = "Lalezar, 'IBM Plex Sans Arabic', sans-serif", B = "'IBM Plex Sans Arabic', Tahoma, sans-serif", PEN = "'Aref Ruqaa', Lalezar, serif";
+  const NAVY = "#1b2a4a", RED = "#c8232c";
+  c.direction = "rtl"; c.textAlign = "center"; c.textBaseline = "alphabetic";
+  const rr = (x, y, w, h, r) => { c.beginPath(); c.moveTo(x + r, y); c.arcTo(x + w, y, x + w, y + h, r); c.arcTo(x + w, y + h, x, y + h, r); c.arcTo(x, y + h, x, y, r); c.arcTo(x, y, x + w, y, r); c.closePath(); };
+  const text = (t, x, y, font, color) => { c.font = font; c.fillStyle = color; c.fillText(t, x, y); };
+  // the roll-call paper
+  c.fillStyle = "#fffdf6"; c.fillRect(0, 0, W, Hh);
+  c.strokeStyle = "#c9d6e6"; c.lineWidth = 3; for (let y = 120; y < Hh; y += 68) { c.beginPath(); c.moveTo(0, y); c.lineTo(W, y); c.stroke(); }
+  c.strokeStyle = "rgba(200,35,44,.45)"; c.lineWidth = 4; c.beginPath(); c.moveTo(W - 70, 0); c.lineTo(W - 70, Hh); c.stroke();
+  // فسحة and the game's name at the top
+  rr(W / 2 - 150, 150, 300, 96, 48); c.fillStyle = "#ffc933"; c.fill(); c.lineWidth = 7; c.strokeStyle = NAVY; c.stroke();
+  text("فسحة", W / 2, 222, `400 66px ${D}`, NAVY);
+  text("انكشف!", W / 2, 360, `700 104px ${PEN}`, RED);
+  // the certificate
+  const X = 100, Y = 430, CW = W - 200, CH = 1150;
+  c.fillStyle = "#fff"; rr(X, Y, CW, CH, 10); c.fill();
+  c.strokeStyle = NAVY; c.lineWidth = 6; rr(X, Y, CW, CH, 10); c.stroke();
+  c.lineWidth = 3; rr(X + 22, Y + 22, CW - 44, CH - 44, 6); c.stroke();
+  text("مدرسة فسحة · كشف الألقاب", W / 2, Y + 110, `700 38px ${B}`, "#5d6887");
+  text("شهادة تقدير", W / 2, Y + 220, `400 104px ${D}`, NAVY);
+  // the player's own character
+  const svg = face(p, 340).replace("<svg ", '<svg xmlns="http://www.w3.org/2000/svg" ').replace(/(<svg[^>]*>)/, `$1<defs>${typeof PEOPLE_DEFS === "string" ? PEOPLE_DEFS : ""}</defs>`);
+  try {
+    const img = new Image(); img.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg);
+    await img.decode(); c.drawImage(img, W / 2 - 170, Y + 260, 340, 340);
+  } catch (e) {}
+  text(p.name, W / 2, Y + 690, `400 96px ${D}`, NAVY);
+  text(`${tt("حمل", "حملت")}${tag.size > 1 ? tt(" مع فريقه", " مع فريقها") : ""} طوال الجلسة ${tag.size > 1 ? "اسم" : "لقب"}`, W / 2, Y + 770, `500 42px ${B}`, "#5d6887");
+  // the sticker
+  const label = ghost ? `الشبح 👻 · ${tag.n}` : tag.n;
+  c.font = `700 54px ${B}`; const tw = Math.min(CW - 140, c.measureText(label).width + 90);
+  c.save(); c.translate(W / 2, Y + 860); c.rotate(-0.05);
+  c.shadowColor = "rgba(27,42,74,.25)"; c.shadowBlur = 16; c.shadowOffsetY = 6;
+  rr(-tw / 2 - 8, -58, tw + 16, 116, 18); c.fillStyle = "#fff"; c.fill(); c.shadowColor = "transparent";
+  rr(-tw / 2, -50, tw, 100, 14); c.fillStyle = AQ_COLORS[tag.c % AQ_COLORS.length]; c.fill();
+  c.fillStyle = NAVY; c.fillText(label, 0, 18, tw - 40); c.restore();
+  text(ghost ? tt("ولم يكتشفه أحد", "ولم يكتشفها أحد") : `${tt("وانكشف", "وانكشفت")} في السؤال ${AR(tag.outQ || 0)}`, W / 2, Y + 975, `500 42px ${B}`, "#5d6887");
+  // signatures in the teacher's red pen
+  text("المعلم", X + CW - 150, Y + 1050, `500 34px ${B}`, "#5d6887"); text("فسحة", X + CW - 150, Y + 1110, `700 58px ${PEN}`, RED);
+  text("النقاط", X + 150, Y + 1050, `500 34px ${B}`, "#5d6887"); text(AR(pts), X + 150, Y + 1110, `700 58px ${PEN}`, RED);
+  // the stamp
+  if (!ghost) { c.save(); c.translate(W / 2 + 250, Y + 330); c.rotate(-0.16); c.strokeStyle = RED; c.lineWidth = 7; rr(-150, -62, 300, 112, 16); c.stroke(); text("انكشف!", 0, 22, `700 74px ${PEN}`, RED); c.restore(); }
+  text("العبوها من جوالاتكم", W / 2, 1700, `700 46px ${B}`, NAVY);
+  c.direction = "ltr"; text("@fos7a.games", W / 2, 1775, `700 44px ${B}`, "#5d6887");
+  return cv;
+}
+async function aqShareStory(d) {
+  const msg = $("aqStoryMsg"), btn = $("aqStory");
+  if (btn) btn.disabled = true; if (msg) msg.textContent = "نجهز الصورة…";
+  try {
+    const cv = await aqStoryCanvas(d);
+    const blob = await new Promise((r) => cv.toBlob(r, "image/png"));
+    const file = new File([blob], "fos7a-inkashaf.png", { type: "image/png" });
+    if (navigator.canShare && navigator.canShare({ files: [file] })) { await navigator.share({ files: [file], text: "انكشفت في فسحة 😄 @fos7a.games" }); if (msg) msg.textContent = ""; }
+    else if (window.Fos7aApp && window.Fos7aApp.shareImage) { window.Fos7aApp.shareImage(cv.toDataURL("image/png")); if (msg) msg.textContent = ""; }
+    else { const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = file.name; document.body.appendChild(a); a.click(); a.remove(); if (msg) msg.textContent = "انحفظت الصورة، انشرها ستوري 📸"; }
+  } catch (e) { if (msg) msg.textContent = e && e.name === "AbortError" ? "" : "ما قدرنا نجهز الصورة، صوّر الشاشة بدالها 📸"; }
+  if (btn) btn.disabled = false;
 }
