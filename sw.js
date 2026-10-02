@@ -1,5 +1,5 @@
 // Keeps فسحة playable offline: the pages come from the cache and refresh in the background.
-const CACHE = "fos7a-v23";
+const CACHE = "fos7a-v24";
 const SHELL = ["./", "index.html", "foldit/", "foldit/index.html", "manifest.webmanifest", "privacy.html", "vendor/supabase.js", "vendor/591.supabase.js", "vendor/qrcode.js", "js/people.js", "js/common.js", "js/yard.js", "js/clean.js", "js/net.js", "js/pass.js", "js/hub.js", "js/room.js", "js/khallast.js", "js/questions.js", "js/khat.js", "js/fold.js", "js/trabee.js", "js/alqab.js", "js/hisn.js", "js/ghash.js", "js/shell.js", "icons/apple-touch-icon.png", "icons/icon-192.png", "icons/icon-512.png"];
 
 self.addEventListener("install", (e) => {
