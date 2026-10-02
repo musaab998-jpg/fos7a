@@ -30,20 +30,21 @@
       </svg></div>`;
     }
     if (g.art === "treasure") {
-      // a sand island in isometric, a trail of footprints, team flags, the locked chest, and a scanned card
-      const P = (x, y) => [110 + (x - y) * 0.9, 18 + (x + y) * 0.46];
-      const d = (a) => a.map(([x, y]) => P(x, y).join(",")).join(" ");
-      const trail = [[10, 100], [40, 60], [80, 90], [70, 30], [110, 50], [95, 95]];
-      const flag = (x, y, c) => { const [X, Y] = P(x, y); return `<g transform="translate(${X} ${Y})"><rect x="-1.2" y="-22" width="2.4" height="22" fill="#3a2810"/><path d="M1 -22 h14 l-4 5 l4 5 h-14z" fill="${c}" stroke="#fff" stroke-width="1"/></g>`; };
-      const [cx, cy] = P(95, 95);
-      return `<div class="gart treasure"><svg viewBox="0 0 220 150" width="250" height="170" aria-hidden="true">
-        <polygon points="${d([[0, 0], [120, 0], [120, 120], [0, 120]])}" fill="#ecd193"/><polygon points="${P(0, 120).join(",")} ${P(120, 120).join(",")} ${P(120, 120)[0]},${P(120, 120)[1] + 8} ${P(0, 120)[0]},${P(0, 120)[1] + 8}" fill="#b98a4a"/><polygon points="${P(120, 0).join(",")} ${P(120, 120).join(",")} ${P(120, 120)[0]},${P(120, 120)[1] + 8} ${P(120, 0)[0]},${P(120, 0)[1] + 8}" fill="#9a6f36"/>
-        <polygon points="${d([[60, 10], [100, 10], [100, 40], [60, 40]])}" fill="#2fb0d3"/><polygon points="${d([[10, 20], [40, 20], [40, 45], [10, 45]])}" fill="#3d9a4a"/>
-        <polyline points="${trail.map(([x, y]) => P(x, y).join(",")).join(" ")}" fill="none" stroke="#b3261e" stroke-width="2.4" stroke-dasharray="1 5" stroke-linecap="round"/>
-        <circle cx="${cx}" cy="${cy - 6}" r="22" fill="#ffe08a" opacity=".35"/><g transform="translate(${cx} ${cy - 6})"><rect x="-12" y="-5" width="24" height="14" rx="2" fill="#8a5427"/><path d="M-12 -5 Q0 -16 12 -5Z" fill="#a8672f"/><rect x="-12" y="-1" width="24" height="3" fill="#d4a330"/><rect x="-2" y="-3" width="4" height="6" fill="#f2c94c"/></g>
-        ${flag(40, 60, "#2f6fe0")}${flag(70, 30, "#e0442f")}${flag(110, 50, "#1f9a5a")}
-        <g transform="translate(176 92) rotate(8)"><rect x="-18" y="-24" width="36" height="46" rx="4" fill="#fff" stroke="#2f6fe0" stroke-width="3"/>${[0, 1, 2, 3, 4].map((r) => [0, 1, 2, 3, 4].map((c) => ((r * 7 + c * 3) % 3 ? `<rect x="${-12 + c * 5}" y="${-18 + r * 5}" width="5" height="5" fill="#1b2a4a"/>` : "")).join("")).join("")}<rect x="-12" y="10" width="24" height="5" rx="2" fill="#1b2a4a"/></g>
-        <g transform="translate(30 128)"><rect x="-16" y="-10" width="32" height="20" rx="4" fill="#fff4dc"/><text y="5" text-anchor="middle" font-family="IBM Plex Sans Arabic, sans-serif" font-weight="700" font-size="11" fill="#b3261e">٣-٦-٣</text></g>
+      // the card itself is an old treasure map: an island, a dotted route past team flags, the X with the chest, a compass and a scanned code card
+      const palm = (x, y, s) => `<g transform="translate(${x} ${y}) scale(${s})"><path d="M0 0 q2 -14 -2 -26" stroke="#7a4f22" stroke-width="3" fill="none" stroke-linecap="round"/><g fill="#3f8a3a"><path d="M-2 -26 q-12 -6 -20 2 q10 -2 20 -2z"/><path d="M-2 -26 q12 -8 20 0 q-10 -3 -20 0z"/><path d="M-2 -26 q-4 -12 -14 -14 q8 6 14 14z"/><path d="M-2 -26 q6 -12 16 -12 q-9 5 -16 12z"/></g></g>`;
+      const flag = (x, y, c) => `<g transform="translate(${x} ${y})"><rect x="-1" y="-20" width="2" height="20" fill="#5a3a18"/><path d="M1 -20 h13 l-4 4.5 l4 4.5 h-13z" fill="${c}"/></g>`;
+      return `<div class="gart treasure"><svg viewBox="0 0 320 190" width="320" height="190" aria-hidden="true">
+        <path d="M58 104 C40 70 70 36 120 40 C150 20 205 24 236 44 C276 50 292 86 272 116 C262 150 214 166 168 156 C124 168 74 150 58 104Z" fill="none" stroke="#4f9db0" stroke-width="10" opacity=".25"/>
+        <path d="M58 104 C40 70 70 36 120 40 C150 20 205 24 236 44 C276 50 292 86 272 116 C262 150 214 166 168 156 C124 168 74 150 58 104Z" fill="#f4e2b2" stroke="#4f9db0" stroke-width="2.5"/>
+        <path d="M150 70 q20 -14 40 0 q-6 14 -20 12 q-14 2 -20 -12z" fill="#7fc3cf" stroke="#4f9db0" stroke-width="1.5"/>
+        <path d="M92 70 l14 -16 l14 16z M108 72 l12 -12 l12 12z" fill="#b48a52" stroke="#7a5428" stroke-width="1.2"/>
+        ${palm(196, 136, 0.9)}${palm(214, 128, 0.7)}${palm(86, 118, 0.8)}
+        <path d="M78 132 C100 120 96 96 124 98 S150 124 176 112 S196 82 226 92" fill="none" stroke="#b3261e" stroke-width="2.6" stroke-dasharray="2 6" stroke-linecap="round"/>
+        ${flag(124, 98, "#2f6fe0")}${flag(176, 112, "#1f9a5a")}${flag(160, 64, "#e0442f")}
+        <g transform="translate(238 92)"><circle r="20" fill="#ffd36b" opacity=".35"/><path d="M-9 -9 L9 9 M9 -9 L-9 9" stroke="#b3261e" stroke-width="4.5" stroke-linecap="round"/></g>
+        <g transform="translate(244 72)"><rect x="-13" y="-6" width="26" height="15" rx="2" fill="#8a5427" stroke="#4a2a10" stroke-width="1.2"/><path d="M-13 -6 q13 -12 26 0z" fill="#a8672f" stroke="#4a2a10" stroke-width="1.2"/><rect x="-13" y="-1" width="26" height="3" fill="#d4a330"/><rect x="-2.5" y="-3" width="5" height="7" rx="1" fill="#f2c94c" stroke="#4a2a10" stroke-width=".8"/></g>
+        <g transform="translate(40 40)" stroke="#7a5428" stroke-width="1.2"><circle r="17" fill="#f4e2b2"/><path d="M0 -22 L4 0 L0 22 L-4 0Z" fill="#b3261e"/><path d="M-22 0 L0 -4 L22 0 L0 4Z" fill="#7a5428"/><text y="-25" text-anchor="middle" font-family="IBM Plex Sans Arabic, sans-serif" font-size="9" font-weight="700" fill="#7a5428" stroke="none">ش</text></g>
+        <g transform="translate(286 150) rotate(10)"><rect x="-20" y="-26" width="40" height="50" rx="5" fill="#fff" stroke="#1b2a4a" stroke-width="2.5"/>${[[-14, -20], [4, -20], [-14, -2]].map(([x, y]) => `<rect x="${x + 1}" y="${y + 1}" width="8" height="8" fill="none" stroke="#1b2a4a" stroke-width="2"/><rect x="${x + 3.5}" y="${y + 3.5}" width="3" height="3" fill="#1b2a4a"/>`).join("")}${[[0, -18], [0, -12], [-4, -8], [2, -6], [6, -2], [10, 0], [0, 2], [6, 4], [12, -6]].map(([x, y]) => `<rect x="${x}" y="${y}" width="3" height="3" fill="#1b2a4a"/>`).join("")}<rect x="-13" y="12" width="26" height="6" rx="2" fill="#b3261e"/></g>
       </svg></div>`;
     }
     if (g.art === "cork") {
