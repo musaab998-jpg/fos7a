@@ -9,6 +9,7 @@
     { id: "alqab", line: "كل واحد يتخبى ورا لقب سري، والأسئلة تفضحه. أسرع جواب صح يتهم: مين صاحب «ملك الأعذار»؟", tags: ["٤ إلى ٢٠ لاعب", "فردي أو ثنائيات", "تخمين"], art: "stage" },
     { id: "hisn", line: "لعبة السفن على ورق الكراسة: كل فريق يخبي قائده وجنوده، وكل جواب صح قذيفة على حصن الخصم. آخر حصن يصمد يفوز.", tags: ["٢ إلى ٥ فرق", "حتى ٣٠ لاعب", "تصويب"], art: "squared" },
     { id: "ghash", line: "اختبار جماعي وفي كل فصل غشاش معه ورقة الغش. يعرف الجواب ويبيكم تغلطون. كل ٣ أسئلة تفتيش: مين الغشاش؟", tags: ["٤ إلى ٣٠ لاعب", "فصل أو أكثر", "شك وأسئلة"], art: "cork" },
+    { id: "kanz", line: "مطاردة كنز في المكان نفسه: فكّوا الشفرة، دوّروا البطاقة، امسحوها، وتنفتح الشفرة اللي بعدها. والخريطة على التلفزيون.", tags: ["٢ إلى ٤ فرق", "استراحة · مخيم · مدرسة · بيت", "حركة وشفرات"], art: "treasure" },
     { id: "foldit", line: "لعبة الدفتر القديمة: نقطة حبر في نصفك، تنطوي الورقة، وتنطبع على جنود خصمك.", tags: ["لاعبين", "والباقي يتفرجون", "مهارة"], art: "desk", solo: FOLD_IT },
   ];
   function art(g) {
@@ -26,6 +27,23 @@
       return `<div class="gart squared"><svg viewBox="0 0 220 150" width="250" height="170" aria-hidden="true"><rect x="${ox - 4}" y="${oy - 4}" width="${cell * 5 + 8}" height="${cell * 5 + 8}" rx="4" fill="#fff" stroke="#1d3fb8" stroke-width="2.5"/>${g2}
         <g transform="rotate(-8 200 40)"><rect x="170" y="22" width="50" height="22" rx="5" fill="#fff" stroke="#c8232c" stroke-width="2"/><text x="195" y="38" text-anchor="middle" font-family="Aref Ruqaa, Lalezar, serif" font-weight="700" font-size="13" fill="#c8232c">إصابة!</text></g>
         <path d="M14 120q14-30 34-42" stroke="#1b2a4a" stroke-width="2" stroke-dasharray="4 4" fill="none"/><circle cx="14" cy="122" r="5" fill="#1b2a4a"/>
+      </svg></div>`;
+    }
+    if (g.art === "treasure") {
+      // a sand island in isometric, a trail of footprints, team flags, the locked chest, and a scanned card
+      const P = (x, y) => [110 + (x - y) * 0.9, 18 + (x + y) * 0.46];
+      const d = (a) => a.map(([x, y]) => P(x, y).join(",")).join(" ");
+      const trail = [[10, 100], [40, 60], [80, 90], [70, 30], [110, 50], [95, 95]];
+      const flag = (x, y, c) => { const [X, Y] = P(x, y); return `<g transform="translate(${X} ${Y})"><rect x="-1.2" y="-22" width="2.4" height="22" fill="#3a2810"/><path d="M1 -22 h14 l-4 5 l4 5 h-14z" fill="${c}" stroke="#fff" stroke-width="1"/></g>`; };
+      const [cx, cy] = P(95, 95);
+      return `<div class="gart treasure"><svg viewBox="0 0 220 150" width="250" height="170" aria-hidden="true">
+        <polygon points="${d([[0, 0], [120, 0], [120, 120], [0, 120]])}" fill="#ecd193"/><polygon points="${P(0, 120).join(",")} ${P(120, 120).join(",")} ${P(120, 120)[0]},${P(120, 120)[1] + 8} ${P(0, 120)[0]},${P(0, 120)[1] + 8}" fill="#b98a4a"/><polygon points="${P(120, 0).join(",")} ${P(120, 120).join(",")} ${P(120, 120)[0]},${P(120, 120)[1] + 8} ${P(120, 0)[0]},${P(120, 0)[1] + 8}" fill="#9a6f36"/>
+        <polygon points="${d([[60, 10], [100, 10], [100, 40], [60, 40]])}" fill="#2fb0d3"/><polygon points="${d([[10, 20], [40, 20], [40, 45], [10, 45]])}" fill="#3d9a4a"/>
+        <polyline points="${trail.map(([x, y]) => P(x, y).join(",")).join(" ")}" fill="none" stroke="#b3261e" stroke-width="2.4" stroke-dasharray="1 5" stroke-linecap="round"/>
+        <circle cx="${cx}" cy="${cy - 6}" r="22" fill="#ffe08a" opacity=".35"/><g transform="translate(${cx} ${cy - 6})"><rect x="-12" y="-5" width="24" height="14" rx="2" fill="#8a5427"/><path d="M-12 -5 Q0 -16 12 -5Z" fill="#a8672f"/><rect x="-12" y="-1" width="24" height="3" fill="#d4a330"/><rect x="-2" y="-3" width="4" height="6" fill="#f2c94c"/></g>
+        ${flag(40, 60, "#2f6fe0")}${flag(70, 30, "#e0442f")}${flag(110, 50, "#1f9a5a")}
+        <g transform="translate(176 92) rotate(8)"><rect x="-18" y="-24" width="36" height="46" rx="4" fill="#fff" stroke="#2f6fe0" stroke-width="3"/>${[0, 1, 2, 3, 4].map((r) => [0, 1, 2, 3, 4].map((c) => ((r * 7 + c * 3) % 3 ? `<rect x="${-12 + c * 5}" y="${-18 + r * 5}" width="5" height="5" fill="#1b2a4a"/>` : "")).join("")).join("")}<rect x="-12" y="10" width="24" height="5" rx="2" fill="#1b2a4a"/></g>
+        <g transform="translate(30 128)"><rect x="-16" y="-10" width="32" height="20" rx="4" fill="#fff4dc"/><text y="5" text-anchor="middle" font-family="IBM Plex Sans Arabic, sans-serif" font-weight="700" font-size="11" fill="#b3261e">٣-٦-٣</text></g>
       </svg></div>`;
     }
     if (g.art === "cork") {
@@ -137,7 +155,7 @@
         <div class="faq">
           <details><summary>لازم أحمّل تطبيق؟</summary><p>لا. تدخلون من متصفح الجوال بالرمز، واللي يبي التطبيق يقدر ينزله.</p></details>
           <details><summary>نحتاج تلفزيون أو بروجكتر؟</summary><p>لا. كل شي يطلع في جوال كل لاعب: الأسئلة والتصويت والنتائج. التلفزيون عرض إضافي بس.</p></details>
-          <details><summary>كم لاعب؟</summary><p>لين ٣٠ في الغرفة. «خط ثلاثة» يتقسمون فيها فريقين، و«ترابيع» لين أربع فرق، و«انكشف!» لين ٢٠ لاعب، و«حرب الكراريس» لين ٥ فرق، و«مين الغشاش؟» لين ٣٠ لاعب، و«اطوِها!» يلعبها اثنين والباقي يتفرجون.</p></details>
+          <details><summary>كم لاعب؟</summary><p>لين ٣٠ في الغرفة. «خط ثلاثة» يتقسمون فيها فريقين، و«ترابيع» لين أربع فرق، و«انكشف!» لين ٢٠ لاعب، و«حرب الكراريس» لين ٥ فرق، و«مين الغشاش؟» لين ٣٠ لاعب، و«الكنز» لين ٤ فرق، و«اطوِها!» يلعبها اثنين والباقي يتفرجون.</p></details>
           <details><summary>نقدر نغيّر اللعبة بدون ما نطلع؟</summary><p>إيه. المضيف يختار اللعبة من شاشة «وينكم!»، والكل يبقى في نفس الغرفة.</p></details>
           <details><summary>كم تكلف؟</summary><p>كل لعبة لها جلسة مجانية. بعدها يفتح المضيف كل الألعاب بكود، تاخذه من حسابنا في انستقرام <a href="https://instagram.com/fos7a.games" target="_blank" rel="noopener">@fos7a.games</a>. واللي يدخلون الغرفة يلعبون مجاناً دائماً.</p></details>
           <details><summary>وش تحفظون عني؟</summary><p>ولا شي على سيرفر. اسمك وشخصيتك في جوالك بس، واللعب يمر بين جوالات الغرفة ويروح. التفاصيل في <a href="privacy.html">صفحة الخصوصية</a>.</p></details>

@@ -666,6 +666,123 @@ body[data-theme="ghash"] .gtop .gt { color: #ffd36b; font-size: 19px; }
 .gh-aw { display: flex; justify-content: space-between; align-items: center; gap: 8px; border-bottom: 1.5px dashed rgba(43,26,14,.4); padding: 6px 0; }
 .gh-aw b { display: inline-flex; align-items: center; gap: 6px; color: #7d0d14; }
 .gart.cork { background-color: #c08a52; background-image: radial-gradient(rgba(92,56,24,.5) 1px, transparent 1.6px), radial-gradient(rgba(255,236,200,.38) 1px, transparent 1.5px); background-size: 7px 7px, 11px 11px; background-position: 0 0, 3px 5px; }
+/* ---- الكنز lives on a treasure map at dusk: deep pool-water night, sand-coloured cards, gold for what matters ---- */
+body[data-theme="kanz"] {
+  --desk: #0d2630; --desk-2: #143542; --desk-3: #1c4252; --line: #2d5a6a; --chalk: #fff6e4; --muted: #b9cfca; --soft: #d7e6e2;
+  --marker: #f2b230; --marker-deep: #b07a12; --marker-ink: #2a1d10; --paper: #fffaf0; --ink: #2a1d10; --ok: #5fd38d; --gain: #5fd38d; --sel: #f2b230;
+  --sand: #f2e1b6; --gold: #f2b230; --red: #d2402f;
+  background: radial-gradient(ellipse 80% 50% at 50% 0%, rgba(242,178,48,.12), transparent 70%), #0d2630; color: var(--chalk);
+}
+body[data-theme="kanz"] .gtop .gt { color: var(--gold); }
+.kz-h { font-family: var(--f-display); font-size: 28px; line-height: 1.15; color: var(--gold); }
+.kz-row2 { display: flex; gap: 8px; flex-wrap: wrap; } .kz-row2 > * { flex: 1 1 140px; }
+.kz-chip { display: inline-flex; align-items: center; gap: 5px; font-weight: 700; font-size: 13px; color: #fff; background: var(--c); border-radius: 999px; padding: 1px 10px; white-space: nowrap; }
+.kz-beads { display: inline-flex; gap: 4px; } .kz-beads i { width: 12px; height: 12px; border-radius: 50%; border: 2px solid var(--c); } .kz-beads i.on { background: var(--c); }
+.kz-team { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.kz-clock { margin-inline-start: auto; font-family: var(--f-display); font-size: 22px; color: var(--gold); font-variant-numeric: tabular-nums; }
+.kz-card-big { background: var(--desk-2); border-radius: 18px; padding: 16px; display: grid; gap: 12px; border-top: 5px solid var(--c, var(--gold)); }
+.kz-big { font-size: 56px; text-align: center; line-height: 1; }
+/* lobby places */
+.kz-places { display: grid; gap: 6px; }
+.kz-pl { display: grid; gap: 4px; background: var(--desk-2); border-radius: 12px; padding: 6px; border: 1.5px solid transparent; }
+.kz-pl.on { border-color: var(--gold); }
+.kz-pt { display: flex; align-items: center; gap: 8px; background: none; border: 0; color: var(--chalk); font: 700 15px var(--f-body); text-align: start; cursor: pointer; padding: 2px 4px; }
+.kz-pt span { font-size: 20px; } .kz-pt[aria-pressed="false"] { opacity: .55; }
+.kz-pl small { color: var(--muted); padding-inline: 32px 4px; }
+.kz-hide { width: 100%; border: 1.5px solid var(--line); background: var(--desk); color: var(--chalk); border-radius: 10px; padding: 7px 10px; font: 600 14px var(--f-body); }
+/* printing step */
+.kz-groups { display: grid; gap: 10px; }
+.kz-group { background: var(--sand); color: var(--ink); border-radius: 14px; padding: 10px; display: grid; gap: 8px; }
+.kz-gh { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; } .kz-gh span { font-size: 22px; } .kz-gh b { font-size: 16px; } .kz-gh small { color: #6d5a3f; flex-basis: 100%; }
+.kz-gc { display: flex; gap: 8px; flex-wrap: wrap; }
+.kz-card { background: #fff; border-radius: 10px; border-top: 6px solid var(--c); padding: 6px; display: grid; justify-items: center; gap: 2px; width: 92px; font-size: 11px; font-weight: 700; color: var(--c); }
+.kz-card .kz-qr svg { width: 72px; height: 72px; display: block; }
+.kz-card b { font-family: ui-monospace, monospace; color: var(--ink); direction: ltr; letter-spacing: .08em; }
+.kz-roles { display: grid; gap: 6px; }
+.kz-rl { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; background: rgba(255,255,255,.05); border-radius: 12px; padding: 6px 8px; border-inline-start: 4px solid var(--c); }
+.kz-rl span { display: inline-flex; align-items: center; gap: 2px; }
+.kz-role-pick { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.kz-role-pick button { display: grid; gap: 4px; justify-items: center; text-align: center; background: var(--desk); border: 2px solid var(--line); border-radius: 14px; padding: 12px 8px; color: var(--chalk); font: 700 15px var(--f-body); cursor: pointer; }
+.kz-role-pick button span { font-size: 30px; } .kz-role-pick button small { font-weight: 500; font-size: 12px; color: var(--muted); }
+.kz-role-pick button[aria-pressed="true"] { border-color: var(--gold); background: rgba(242,178,48,.12); }
+/* the hunt */
+.kz-tabs { display: grid; grid-template-columns: repeat(3, 1fr); background: var(--desk-2); border-radius: 12px; padding: 3px; }
+.kz-tabs button { border: 0; background: none; border-radius: 9px; padding: 8px 4px; font: 700 14px var(--f-body); color: var(--muted); cursor: pointer; }
+.kz-tabs button[aria-selected="true"] { background: var(--sand); color: var(--ink); }
+.kz-cipher { background: var(--paper); color: var(--ink); border-radius: 16px; padding: 12px; display: grid; gap: 10px; text-align: center; }
+.kz-cipher small { color: #6d5a3f; font-size: 12.5px; }
+.kz-kind { justify-self: center; font-size: 12px; font-weight: 700; border-radius: 999px; padding: 1px 10px; background: var(--ink); color: var(--gold); }
+.kz-ctext { font-size: 28px; font-weight: 700; line-height: 1.6; word-break: break-word; }
+.kz-lens { display: flex; justify-content: center; gap: 6px; } .kz-lens i { width: 18px; height: 4px; border-radius: 2px; background: var(--ink); } .kz-lens b { width: 14px; }
+.kz-pad { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; }
+.kz-cell { display: grid; gap: 2px; justify-items: center; }
+.kz-cell button { min-width: 40px; height: 40px; padding: 0 4px; border-radius: 10px; border: 2px solid var(--ink); background: #fff; font: 700 18px var(--f-body); color: var(--ink); cursor: pointer; }
+.kz-cell button[aria-pressed="true"] { background: var(--gold); }
+.kz-cell span { width: 40px; height: 32px; border-bottom: 3px solid var(--ink); display: grid; place-items: center; font-size: 22px; font-weight: 700; color: #1d3fb8; }
+.kz-gap { width: 14px; }
+.kz-kbd { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+.kz-kbd button { border: 1px solid #d9c8a3; background: #fff; border-radius: 8px; padding: 7px 0; font: 700 17px var(--f-body); color: var(--ink); cursor: pointer; }
+.kz-hint { background: rgba(242,178,48,.14); color: var(--gold); border-radius: 12px; padding: 8px 12px; font-weight: 700; font-size: 18px; text-align: center; letter-spacing: .1em; }
+.kz-ans { display: flex; gap: 6px; } .kz-ans input { flex: 1; min-width: 0; border: 2px solid var(--sand); border-radius: 12px; padding: 10px 12px; font: 700 17px var(--f-body); background: var(--paper); color: var(--ink); } .kz-ans .btn { width: auto; padding-inline: 18px; }
+.kz-lock { background: rgba(242,178,48,.16); color: var(--gold); border-radius: 12px; padding: 8px 12px; font-weight: 700; text-align: center; } .kz-lock b { font-family: var(--f-display); font-size: 20px; font-weight: 400; }
+.kz-bad { background: rgba(210,64,47,.18); color: #ffb3a8; border-radius: 12px; padding: 8px 12px; font-weight: 700; text-align: center; }
+.kz-solved { display: flex; align-items: center; gap: 12px; background: var(--sand); color: var(--ink); border-radius: 16px; padding: 12px 14px; }
+.kz-solved > span { font-size: 40px; } .kz-solved small { display: block; color: #6d5a3f; } .kz-solved b { font-family: var(--f-display); font-size: 30px; font-weight: 400; display: block; line-height: 1.2; } .kz-solved em { display: block; font-style: normal; color: var(--red); font-weight: 700; }
+.kz-seg { display: flex; gap: 6px; } .kz-seg button { flex: 1; border: 1.5px solid var(--sand); background: transparent; color: var(--sand); border-radius: 999px; padding: 5px; font: 700 13px var(--f-body); cursor: pointer; } .kz-seg button[aria-pressed="true"] { background: var(--sand); color: var(--ink); }
+.kz-g28 { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+.kz-g28 span { display: grid; justify-items: center; background: var(--paper); color: var(--ink); border-radius: 8px; padding: 4px 0; font-size: 16px; font-weight: 700; line-height: 1.2; } .kz-g28 small { font-size: 12px; color: #6d5a3f; } .kz-g28 .lock { background: #3a5560; color: #9fb7b5; } .kz-g28 .lock small { color: #9fb7b5; }
+.kz-wheel { display: grid; justify-items: center; gap: 8px; } .kz-wheel svg { width: 100%; max-width: 300px; height: auto; }
+.kz-wctl { display: flex; gap: 12px; align-items: center; font-weight: 700; } .kz-wctl button { width: 44px; height: 44px; border-radius: 50%; border: 2px solid var(--sand); background: transparent; color: var(--sand); font-size: 20px; cursor: pointer; }
+.kz-cam { position: relative; aspect-ratio: 1; max-width: 100%; border-radius: 18px; overflow: hidden; background: radial-gradient(circle at 50% 45%, #3c4b4f, #121a1d); display: grid; place-items: center; }
+.kz-cam video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; } .kz-cam.on video { opacity: 1; }
+.kz-cam .kz-frame { position: absolute; inset: 18%; border: 4px solid var(--gold); border-radius: 18px; box-shadow: 0 0 0 999px rgba(0,0,0,.3); opacity: 0; } .kz-cam.on .kz-frame { opacity: 1; }
+.kz-cam.on .btn { display: none; } .kz-cam .btn { width: auto; position: relative; }
+.kz-cam p { position: absolute; bottom: 8px; inset-inline: 10px; text-align: center; font-size: 13px; color: #ffd0c8; }
+/* the TV */
+.kz-tv { background: #05141a; border-radius: 16px; overflow: hidden; }
+.kz-tv:fullscreen { border-radius: 0; display: grid; grid-template-rows: auto 1fr; }
+.kz-tvbar { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 8px 14px; background: #0d2630; }
+.kz-tvbar b { font-family: var(--f-display); font-weight: 400; font-size: 22px; color: var(--gold); } .kz-tvbar span { font-family: var(--f-display); font-size: 22px; font-variant-numeric: tabular-nums; }
+.kz-tvbody { display: grid; grid-template-columns: minmax(0, 1fr); background: #1a120a; }
+@media (min-width: 760px) { .kz-tvbody { grid-template-columns: minmax(0, 1fr) 220px; } }
+.kz-map { display: block; width: 100%; height: auto; } .kz-map text { font-family: var(--f-body); }
+.kz-board { background: linear-gradient(#2a1b0e, #1a120a); color: #f6e7c8; padding: 12px; display: grid; gap: 8px; align-content: start; }
+.kz-rb { display: grid; grid-template-columns: 28px 1fr; gap: 8px; align-items: center; background: rgba(255,255,255,.06); border-inline-start: 5px solid var(--c); border-radius: 10px; padding: 7px; }
+.kz-rb .rk { font-family: var(--f-display); font-size: 24px; color: var(--gold); text-align: center; } .kz-rb b { font-size: 15px; } .kz-rb small { display: block; color: #cdb98f; font-size: 11.5px; }
+.kz-feed { border-top: 1px dashed rgba(246,231,200,.3); padding-top: 6px; display: grid; gap: 3px; font-size: 12.5px; color: #e8d7b0; } .kz-feed p { margin: 0; }
+@media (prefers-reduced-motion: no-preference) {
+  .kz-pawn { animation: kzbob 2.4s ease-in-out infinite; } @keyframes kzbob { 50% { transform: translateY(-4px); } }
+  .kz-map .flame { animation: kzflick .35s ease-in-out infinite alternate; transform-box: fill-box; transform-origin: bottom center; } @keyframes kzflick { to { transform: scaleY(1.12); opacity: .85; } }
+  .kz-map .bulb { animation: kztw 2s ease-in-out infinite; } @keyframes kztw { 50% { opacity: .35; } }
+  .kz-map .rayset { animation: kzspin 18s linear infinite; transform-box: fill-box; transform-origin: center; } @keyframes kzspin { to { transform: rotate(360deg); } }
+  .kz-map .flagw { animation: kzwave 2s ease-in-out infinite alternate; transform-box: fill-box; transform-origin: left center; } @keyframes kzwave { to { transform: skewY(-6deg) scaleX(.94); } }
+}
+.kz-map .bulb { filter: drop-shadow(0 0 4px #ffd25a); }
+/* the end */
+.kz-end { background: radial-gradient(ellipse at 50% 20%, #3a2a0e, #0d1316 70%); border-radius: 18px; padding: 20px 14px; display: grid; gap: 12px; }
+.kz-treasure { background: var(--paper); color: var(--ink); border-radius: 14px; padding: 10px 14px; font-weight: 700; text-align: center; } .kz-treasure b { font-family: "Aref Ruqaa", var(--f-display); color: var(--red); font-size: 22px; }
+.kz-ranks { display: grid; gap: 6px; }
+.kz-rk { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; background: rgba(255,255,255,.06); border-inline-start: 5px solid var(--c); border-radius: 10px; padding: 8px 10px; }
+.kz-rk .rk { font-family: var(--f-display); font-size: 24px; color: var(--gold); width: 24px; } .kz-rk small { color: var(--muted); margin-inline-start: auto; }
+.kz-clock, .kz-tvbar span, .kz-rk small { direction: ltr; unicode-bidi: isolate; }
+/* pocket-printer labels */
+.kz-overlay { position: fixed; inset: 0; z-index: 50; background: rgba(5,20,26,.94); overflow-y: auto; padding: 16px; padding-top: calc(16px + env(safe-area-inset-top, 0px)); }
+.kz-ov-in { max-width: 560px; margin: 0 auto; display: grid; gap: 12px; color: #fff6e4; }
+.kz-labels { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; } .kz-labels img { width: 100%; border-radius: 6px; background: #fff; }
+/* A4 printing: only the cards go to paper */
+#kzPrintArea { display: none; }
+@media print {
+  body.kz-printing > *:not(#kzPrintArea) { display: none !important; }
+  body.kz-printing { background: #fff !important; }
+  body.kz-printing #kzPrintArea { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6mm; padding: 6mm; }
+  .kzp-card { break-inside: avoid; border: 1.5px dashed #999; border-radius: 4mm; padding: 3mm; display: grid; justify-items: center; gap: 1.5mm; color: #000; font-family: var(--f-body); }
+  .kzp-head { width: 100%; display: flex; justify-content: space-between; align-items: center; background: var(--c); color: #fff; border-radius: 2mm; padding: 1mm 3mm; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .kzp-head b { font-family: var(--f-display); font-size: 16pt; font-weight: 400; } .kzp-head span { font-size: 9pt; font-weight: 700; }
+  .kzp-qr svg { width: 34mm; height: 34mm; display: block; }
+  .kzp-code { font-family: ui-monospace, monospace; font-size: 15pt; font-weight: 700; letter-spacing: .1em; direction: ltr; }
+  .kzp-spot { font-size: 8.5pt; text-align: center; }
+}
+.gart.treasure { background: #0d2630; overflow: hidden; }
 /* free sessions and codes */
 .modal-card { grid-template-columns: minmax(0, 1fr); }
 .passbox { max-width: none; margin-top: 0; }
@@ -745,6 +862,7 @@ button.pl { border: 1px solid var(--line); background: var(--desk-2); width: 100
 <script src="js/alqab.js"></script>
 <script src="js/hisn.js"></script>
 <script src="js/ghash.js"></script>
+<script src="js/kanz.js"></script>
 <script src="js/shell.js"></script>
 
 <script>
