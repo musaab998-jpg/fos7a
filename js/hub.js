@@ -7,11 +7,26 @@
     { id: "khat", line: "إكس أو على السبورة: كل مربع سؤال، وفريقك يصوّت على الجواب، والغلط يفتح فرصة سرقة.", tags: ["فريقين", "حتى ٣٠ لاعب", "أسئلة"], art: "chalk" },
     { id: "trabee", line: "حوش المدرسة بلاط: اختاروا بلاطة، جاوبوا صح ولوّنوها هي واللي حولها بطباشيركم. والغلط يروح للفريق الثاني.", tags: ["٢ إلى ٤ فرق", "حتى ٣٠ لاعب", "أسئلة"], art: "yard" },
     { id: "alqab", line: "كل واحد يتخبى ورا لقب سري، والأسئلة تفضحه. أسرع جواب صح يتهم: مين صاحب «ملك الأعذار»؟", tags: ["٤ إلى ٢٠ لاعب", "فردي أو ثنائيات", "تخمين"], art: "rollcall" },
+    { id: "hisn", line: "لعبة السفن على ورق الكراسة: كل فريق يخبي قائده وجنوده، وكل جواب صح قذيفة على حصن الخصم. آخر حصن يصمد يفوز.", tags: ["٢ إلى ٥ فرق", "حتى ٣٠ لاعب", "تصويب"], art: "squared" },
     { id: "foldit", line: "لعبة الدفتر القديمة: نقطة حبر في نصفك، تنطوي الورقة، وتنطبع على جنود خصمك.", tags: ["لاعبين", "والباقي يتفرجون", "مهارة"], art: "desk", solo: FOLD_IT },
   ];
   function art(g) {
     if (g.art === "notebook") return `<div class="gart notebook"><svg viewBox="0 0 220 150" width="220" height="150" aria-hidden="true"><circle cx="170" cy="60" r="36" fill="#fff" stroke="#c8232c" stroke-width="4"/><text x="170" y="78" text-anchor="middle" font-family="Lalezar, sans-serif" font-size="52" fill="#c8232c">م</text><text x="112" y="42" text-anchor="middle" font-family="IBM Plex Sans Arabic, sans-serif" font-size="15" font-weight="700" fill="#1c2433">حيوان:</text><text x="58" y="42" text-anchor="middle" font-family="IBM Plex Sans Arabic, sans-serif" font-size="17" font-weight="700" fill="#1d3fb8">ماعز</text><text x="112" y="84" text-anchor="middle" font-family="IBM Plex Sans Arabic, sans-serif" font-size="15" font-weight="700" fill="#1c2433">أكلة:</text><text x="58" y="84" text-anchor="middle" font-family="IBM Plex Sans Arabic, sans-serif" font-size="17" font-weight="700" fill="#1d3fb8">مندي</text><rect x="28" y="104" width="132" height="32" rx="10" fill="#c8232c" transform="rotate(-4 94 120)"/><text x="94" y="127" text-anchor="middle" font-family="Lalezar, sans-serif" font-size="22" fill="#fff" transform="rotate(-4 94 120)">خلّصت!</text></svg></div>`;
     if (g.art === "chalk") return `<div class="gart chalk"><svg viewBox="0 0 150 150" width="150" height="150" aria-hidden="true"><g stroke="#f3f1e6" stroke-width="4" stroke-linecap="round" opacity=".85"><path d="M52 12v126M98 12v126M12 52h126M12 98h126"/></g><g stroke="#9cc8ff" stroke-width="6" stroke-linecap="round"><path d="M22 22l20 20M42 22l-20 20M68 68l14 14M82 68l-14 14M112 112l18 18M130 112l-18 18"/></g><circle cx="120" cy="32" r="12" fill="none" stroke="#ffa3a3" stroke-width="6"/><circle cx="32" cy="120" r="12" fill="none" stroke="#ffa3a3" stroke-width="6"/><path d="M18 18l118 118" stroke="#ffe27a" stroke-width="3" stroke-dasharray="6 6" opacity=".8"/></svg></div>`;
+    if (g.art === "squared") {
+      // a fort on squared paper: pieces in blue pen, red-pen hits, pencil misses, and a wounded commander
+      const cell = 24, ox = 50, oy = 14, put = { 6: "sol", 8: "gun", 12: "cmd", 13: "shd", 16: "sol", 19: "bmb", 22: "rdr" }, hit = [6, 12], miss = [0, 4, 10, 23];
+      let g2 = "";
+      for (let k = 0; k < 25; k++) { const x = ox + (k % 5) * cell, y = oy + Math.floor(k / 5) * cell;
+        g2 += `<rect x="${x}" y="${y}" width="${cell}" height="${cell}" fill="${put[k] ? "#e8eefb" : "#fff"}" stroke="#a9c4e2" stroke-width="1"/>`;
+        if (put[k]) g2 += `<use href="#hz-${put[k]}" x="${x + 1}" y="${y + 1}" width="${cell - 2}" height="${cell - 2}" style="color:#1d3fb8"/>`;
+        if (hit.includes(k)) g2 += `<path d="M${x + 4} ${y + 4}L${x + cell - 4} ${y + cell - 4}M${x + cell - 4} ${y + 4}L${x + 4} ${y + cell - 4}" stroke="#c8232c" stroke-width="3.4" stroke-linecap="round"/>`;
+        if (miss.includes(k)) g2 += `<circle cx="${x + cell / 2}" cy="${y + cell / 2}" r="3" fill="#6b7280"/>`; }
+      return `<div class="gart squared"><svg viewBox="0 0 220 150" width="250" height="170" aria-hidden="true"><rect x="${ox - 4}" y="${oy - 4}" width="${cell * 5 + 8}" height="${cell * 5 + 8}" rx="4" fill="#fff" stroke="#1d3fb8" stroke-width="2.5"/>${g2}
+        <g transform="rotate(-8 200 40)"><rect x="170" y="22" width="50" height="22" rx="5" fill="#fff" stroke="#c8232c" stroke-width="2"/><text x="195" y="38" text-anchor="middle" font-family="Aref Ruqaa, Lalezar, serif" font-weight="700" font-size="13" fill="#c8232c">إصابة!</text></g>
+        <path d="M14 120q14-30 34-42" stroke="#1b2a4a" stroke-width="2" stroke-dasharray="4 4" fill="none"/><circle cx="14" cy="122" r="5" fill="#1b2a4a"/>
+      </svg></div>`;
+    }
     if (g.art === "rollcall") {
       // the roll-call sheet: names hidden under nickname stickers, one peeling off, the teacher's red ticks
       const rows = [["ملك الأعذار", "#ff8fa3", "✓"], ["البطريق الغامض", "#8fc7ff", "✓"], ["أبو كبسة", "#9be3b5", "✗"], ["النعسان", "#c9b3ff", "✓"]];
@@ -99,7 +114,7 @@
         <div class="faq">
           <details><summary>لازم أحمّل تطبيق؟</summary><p>لا. تدخلون من متصفح الجوال بالرمز، واللي يبي التطبيق يقدر ينزله.</p></details>
           <details><summary>نحتاج تلفزيون أو بروجكتر؟</summary><p>لا. كل شي يطلع في جوال كل لاعب: الأسئلة والتصويت والنتائج. التلفزيون عرض إضافي بس.</p></details>
-          <details><summary>كم لاعب؟</summary><p>لين ٣٠ في الغرفة. «خط ثلاثة» يتقسمون فيها فريقين، و«ترابيع» لين أربع فرق، و«انكشف!» لين ٢٠ لاعب، و«اطوِها!» يلعبها اثنين والباقي يتفرجون.</p></details>
+          <details><summary>كم لاعب؟</summary><p>لين ٣٠ في الغرفة. «خط ثلاثة» يتقسمون فيها فريقين، و«ترابيع» لين أربع فرق، و«انكشف!» لين ٢٠ لاعب، و«حرب الكراريس» لين ٥ فرق، و«اطوِها!» يلعبها اثنين والباقي يتفرجون.</p></details>
           <details><summary>نقدر نغيّر اللعبة بدون ما نطلع؟</summary><p>إيه. المضيف يختار اللعبة من شاشة «وينكم!»، والكل يبقى في نفس الغرفة.</p></details>
           <details><summary>كم تكلف؟</summary><p>كل لعبة لها جلسة مجانية. بعدها يفتح المضيف كل الألعاب بكود، تاخذه من حسابنا في انستقرام <a href="https://instagram.com/fos7a.games" target="_blank" rel="noopener">@fos7a.games</a>. واللي يدخلون الغرفة يلعبون مجاناً دائماً.</p></details>
           <details><summary>وش تحفظون عني؟</summary><p>ولا شي على سيرفر. اسمك وشخصيتك في جوالك بس، واللعب يمر بين جوالات الغرفة ويروح. التفاصيل في <a href="privacy.html">صفحة الخصوصية</a>.</p></details>

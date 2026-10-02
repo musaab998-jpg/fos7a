@@ -24,7 +24,7 @@ const hEvery = (fn, ms) => (H.timers ||= []).push(setInterval(fn, ms));
 const face = (p, s) => avatar(p.av || me.av, s);
 const hostOnly = (html, wait = "بانتظار المضيف…") => (isHost() ? html : `<p class="muted" style="text-align:center">${wait}</p>`);
 const shuffled = (a) => a.map((x) => [Math.random(), x]).sort((p, q) => p[0] - q[0]).map((p) => p[1]);
-const THEME_COLOR = { khallast: "#fbf8ef", khat: "#22402f", fold: "#151c2d", trabee: "#e6e0d4", alqab: "#fffdf6" };
+const THEME_COLOR = { khallast: "#fbf8ef", khat: "#22402f", fold: "#151c2d", trabee: "#e6e0d4", alqab: "#fffdf6", hisn: "#fbfdff" };
 
 function leaveRoom(tell = true) {
   clearKL(); hClear(); clearInterval(KL.alive); yardQuiet(0.5); KL.rang = false; keepAwake(false); hostBanner(false);
@@ -205,7 +205,7 @@ function apply(S) {
   if (viewKey !== KL.view) { KL.view = viewKey; renderPhase(S, true); yardMoment(S, prev); } else renderPhase(S, false);
 }
 // recess in «وينكم!», the bell when a game starts, and a cheer at the end
-const END_PHASE = { khallast: "cert", khat: "end", foldit: "over", trabee: "end", alqab: "end" };
+const END_PHASE = { khallast: "cert", khat: "end", foldit: "over", trabee: "end", alqab: "end", hisn: "end" };
 function yardMoment(S, prev) {
   if (S.phase === "lobby") {
     if (!KL.rang) { KL.rang = true; recess(); setTimeout(() => { if (KL.S && KL.S.phase === "lobby") yardAmbient(); }, 3800); }
