@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<title>أكواد فسحة</title>
+<title>إدارة فسحة</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lalezar&family=IBM+Plex+Sans+Arabic:wght@400;600;700&display=swap">
 <style>
 /* Layout: the owner's page for making and switching off codes; same yard colours as فسحة. */
@@ -32,17 +32,51 @@ td.c { font-family: ui-monospace, monospace; direction: ltr; text-align: end; }
 .off td { opacity: .45; }
 .wrap { overflow-x: auto; }
 .muted { color: var(--soft); font-size: 13px; }
+[hidden] { display: none !important; }
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; }
+.tile { border: 2px solid var(--navy); border-radius: 12px; padding: 10px 12px; background: var(--cream); display: grid; gap: 2px; }
+.tile b { font-family: Lalezar, sans-serif; font-weight: 400; font-size: 34px; line-height: 1; }
+.tile span { font-size: 13px; font-weight: 700; }
+.tile small { font-size: 12px; color: var(--soft); }
+.tile.hot { background: var(--yard); }
+.chart { display: grid; grid-template-columns: repeat(30, 1fr); align-items: end; gap: 2px; height: 120px; border-bottom: 2px solid var(--navy); }
+.chart i { display: flex; flex-direction: column; justify-content: flex-end; gap: 1px; height: 100%; }
+.chart i span { display: block; border-radius: 3px 3px 0 0; min-height: 0; }
+.chart .t { background: var(--navy); } .chart .p { background: var(--yard); border: 1px solid var(--navy); }
+.axis { display: flex; justify-content: space-between; font-size: 11px; color: var(--soft); }
+.key { display: flex; gap: 14px; font-size: 12px; } .key i { display: inline-block; width: 12px; height: 12px; border-radius: 3px; vertical-align: -2px; margin-inline-end: 4px; }
+.bars { display: grid; gap: 6px; }
+.bar { display: grid; grid-template-columns: 110px 1fr 40px; align-items: center; gap: 8px; font-size: 14px; }
+.bar > i { height: 12px; border-radius: 6px; background: #eee7d6; overflow: hidden; } .bar > i > span { display: block; height: 100%; background: var(--navy); }
+.bar b { text-align: end; }
+.feed { display: grid; gap: 4px; font-size: 14px; } .feed div { display: flex; justify-content: space-between; gap: 8px; border-bottom: 1px dashed #d9d3c7; padding: 4px 0; } .feed .w { direction: ltr; text-align: start; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 </style>
 </head>
 <body>
 <main>
-  <h1>أكواد فسحة</h1>
+  <h1>إدارة فسحة</h1>
 
   <section class="box" id="keyBox">
     <label>مفتاح الإدارة<input id="key" type="password" autocomplete="off" dir="ltr"></label>
     <p class="muted">ينحفظ في هذا الجهاز بس. لا ترسله لأحد.</p>
     <button type="button" id="saveKey">ادخل</button>
     <p class="msg bad" id="keyMsg"></p>
+  </section>
+
+  <section class="box" id="statsBox" hidden>
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><h2>المتابعة</h2><button type="button" class="alt" id="refresh">تحديث</button></div>
+    <div class="tiles" id="tiles"></div>
+    <h2 style="font-size:20px">آخر ٣٠ يوم</h2>
+    <div class="key"><span><i style="background:var(--navy)"></i>جلسات مجانية</span><span><i style="background:var(--yard);border:1px solid var(--navy)"></i>أكواد تفعّلت</span></div>
+    <div class="chart" id="chart"></div><div class="axis" id="axis"></div>
+    <h2 style="font-size:20px">الجلسات المجانية حسب اللعبة</h2>
+    <div class="bars" id="games"></div>
+    <h2 style="font-size:20px">مدة الأكواد اللي تفعّلت</h2>
+    <div class="bars" id="hoursBars"></div>
+    <h2 style="font-size:20px">الاشتراكات الفعالة</h2>
+    <div class="wrap"><table><thead><tr><th>مين</th><th>المدة</th><th>ينتهي</th><th>ملاحظة</th></tr></thead><tbody id="subs"></tbody></table></div>
+    <h2 style="font-size:20px">آخر النشاط</h2>
+    <div class="feed" id="recent"></div>
   </section>
 
   <section class="box" id="makeBox" hidden>
@@ -76,10 +110,37 @@ let key = ""; try { key = localStorage.getItem(KEY) || ""; } catch (e) {}
 const dur = (h) => ({ 24: "٢٤ ساعة", 168: "أسبوع", 720: "شهر", 8760: "سنة" }[h] || `${h} ساعة`);
 const pretty = (c) => c.slice(0, 4) + "-" + c.slice(4);
 
+
+// ---------------- tracking ----------------
+const GAME_AR = { khallast: "خلّصت!", khat: "خط ثلاثة", trabee: "ترابيع", foldit: "اطوِها!", alqab: "انكشف!", hisn: "حرب الكراريس", ghash: "مين الغشاش؟" };
+const N = (n) => Number(n || 0).toLocaleString("ar-SA-u-nu-arab");
+const when = (t) => new Date(t).toLocaleString("ar-SA-u-ca-gregory-nu-arab", { day: "numeric", month: "short", hour: "numeric", minute: "2-digit" });
+async function loadStats() {
+  const { data: s, error } = await sb.rpc("fos7a_admin_stats", { p_key: key });
+  if (error || !s) { $("statsBox").hidden = true; return; }
+  $("statsBox").hidden = false;
+  const tile = (n, label, sub, hot) => `<div class="tile ${hot ? "hot" : ""}"><b>${N(n)}</b><span>${label}</span>${sub ? `<small>${sub}</small>` : ""}</div>`;
+  $("tiles").innerHTML =
+    tile(s.passes_active + s.devices_active, "اشتراك فعّال الحين", `${N(s.passes_7d + s.devices_7d)} تفعيل هالأسبوع`, true) +
+    tile(s.hosts, "مضيف سجّل", `${N(s.hosts_7d)} جديد هالأسبوع · ${N(s.active_hosts_7d)} نشط`) +
+    tile(s.trials, "جلسة مجانية", `${N(s.trials_7d)} هالأسبوع`) +
+    tile(s.passes + s.devices, "كود تفعّل كله", s.devices ? `منها ${N(s.devices)} على جوالات (النظام القديم)` : "") +
+    tile(s.codes_unused, "كود جاهز ما انستخدم", `من ${N(s.codes)} كود`);
+  const days = s.daily || [], top = Math.max(1, ...days.map((d) => d.trials + d.passes));
+  $("chart").innerHTML = days.map((d) => `<i title="${d.d}: ${d.trials} مجانية · ${d.passes} كود · ${d.hosts} مضيف جديد"><span class="p" style="height:${(d.passes / top) * 100}%"></span><span class="t" style="height:${(d.trials / top) * 100}%"></span></i>`).join("");
+  $("axis").innerHTML = days.length ? `<span>${days[0].d.slice(5)}</span><span>${days[days.length - 1].d.slice(5)}</span>` : "";
+  const bars = (obj, label) => { const e = Object.entries(obj || {}).sort((a, b) => b[1] - a[1]), m = Math.max(1, ...e.map((x) => x[1]));
+    return e.length ? e.map(([k, v]) => `<div class="bar"><span>${esc(label(k))}</span><i><span style="width:${(v / m) * 100}%"></span></i><b>${N(v)}</b></div>`).join("") : '<p class="muted">ما فيه شي للحين.</p>'; };
+  $("games").innerHTML = bars(s.by_game, (k) => GAME_AR[k] || k);
+  $("hoursBars").innerHTML = bars(s.by_hours, (k) => dur(+k));
+  $("subs").innerHTML = s.subs.length ? s.subs.map((x) => `<tr><td dir="ltr" style="text-align:start">${esc(x.who)}</td><td>${x.hours ? dur(x.hours) : "—"}</td><td>${when(x.until)}</td><td>${esc(x.note || "")}</td></tr>`).join("") : '<tr><td colspan="4" class="muted">ما فيه اشتراكات فعالة للحين.</td></tr>';
+  $("recent").innerHTML = s.recent.length ? s.recent.map((e) => `<div><span class="w">${esc(e.who)}</span><span>${e.kind === "trial" ? `جلسة مجانية: ${esc(GAME_AR[e.what] || e.what)}` : `فعّل كود ${e.what ? dur(+e.what) : ""}`}</span><span class="muted">${when(e.at)}</span></div>`).join("") : '<p class="muted">ما فيه نشاط للحين.</p>';
+}
+$("refresh").onclick = () => loadStats();
 async function load() {
   const { data, error } = await sb.rpc("fos7a_admin_list", { p_key: key });
   if (error) { $("keyBox").hidden = false; $("makeBox").hidden = $("listBox").hidden = true; $("keyMsg").textContent = key ? "المفتاح غلط، أو ما فيه نت." : ""; return; }
-  $("keyBox").hidden = true; $("makeBox").hidden = $("listBox").hidden = false;
+  $("keyBox").hidden = true; $("makeBox").hidden = $("listBox").hidden = false; loadStats();
   $("list").innerHTML = data.map((c) => `<tr class="${c.active ? "" : "off"}"><td class="c">${pretty(c.code)}</td><td>${dur(c.hours)}</td><td>${c.uses} من ${c.max_uses}</td><td>${esc(c.note)}</td><td><button type="button" class="alt" data-t="${c.code}" data-a="${c.active ? 0 : 1}">${c.active ? "أوقفه" : "شغّله"}</button></td></tr>`).join("") || '<tr><td colspan="5" class="muted">ما فيه أكواد للحين.</td></tr>';
   document.querySelectorAll("[data-t]").forEach((b) => (b.onclick = async () => { b.disabled = true; await sb.rpc("fos7a_admin_toggle", { p_key: key, p_code: b.dataset.t, p_active: b.dataset.a === "1" }); load(); }));
 }
