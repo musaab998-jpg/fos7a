@@ -6,11 +6,26 @@
     { id: "khallast", line: "حرف، وخانات، وأول واحد يخلّص يوقّف الكل. وبعدها تصويت على الإجابات الغريبة.", tags: ["٢ إلى ٣٠ لاعب", "كتابة", "ضحك"], art: "notebook" },
     { id: "khat", line: "إكس أو على السبورة: كل مربع سؤال، وفريقك يصوّت على الجواب، والغلط يفتح فرصة سرقة.", tags: ["فريقين", "حتى ٣٠ لاعب", "أسئلة"], art: "chalk" },
     { id: "trabee", line: "حوش المدرسة بلاط: اختاروا بلاطة، جاوبوا صح ولوّنوها هي واللي حولها بطباشيركم. والغلط يروح للفريق الثاني.", tags: ["٢ إلى ٤ فرق", "حتى ٣٠ لاعب", "أسئلة"], art: "yard" },
+    { id: "alqab", line: "كل واحد يتخبى ورا لقب سري، والأسئلة تفضحه. أسرع جواب صح يتهم: مين صاحب «ملك الأعذار»؟", tags: ["٤ إلى ٢٠ لاعب", "فردي أو ثنائيات", "تخمين"], art: "rollcall" },
     { id: "foldit", line: "لعبة الدفتر القديمة: نقطة حبر في نصفك، تنطوي الورقة، وتنطبع على جنود خصمك.", tags: ["لاعبين", "والباقي يتفرجون", "مهارة"], art: "desk", solo: FOLD_IT },
   ];
   function art(g) {
     if (g.art === "notebook") return `<div class="gart notebook"><svg viewBox="0 0 220 150" width="220" height="150" aria-hidden="true"><circle cx="170" cy="60" r="36" fill="#fff" stroke="#c8232c" stroke-width="4"/><text x="170" y="78" text-anchor="middle" font-family="Lalezar, sans-serif" font-size="52" fill="#c8232c">م</text><text x="112" y="42" text-anchor="middle" font-family="IBM Plex Sans Arabic, sans-serif" font-size="15" font-weight="700" fill="#1c2433">حيوان:</text><text x="58" y="42" text-anchor="middle" font-family="IBM Plex Sans Arabic, sans-serif" font-size="17" font-weight="700" fill="#1d3fb8">ماعز</text><text x="112" y="84" text-anchor="middle" font-family="IBM Plex Sans Arabic, sans-serif" font-size="15" font-weight="700" fill="#1c2433">أكلة:</text><text x="58" y="84" text-anchor="middle" font-family="IBM Plex Sans Arabic, sans-serif" font-size="17" font-weight="700" fill="#1d3fb8">مندي</text><rect x="28" y="104" width="132" height="32" rx="10" fill="#c8232c" transform="rotate(-4 94 120)"/><text x="94" y="127" text-anchor="middle" font-family="Lalezar, sans-serif" font-size="22" fill="#fff" transform="rotate(-4 94 120)">خلّصت!</text></svg></div>`;
     if (g.art === "chalk") return `<div class="gart chalk"><svg viewBox="0 0 150 150" width="150" height="150" aria-hidden="true"><g stroke="#f3f1e6" stroke-width="4" stroke-linecap="round" opacity=".85"><path d="M52 12v126M98 12v126M12 52h126M12 98h126"/></g><g stroke="#9cc8ff" stroke-width="6" stroke-linecap="round"><path d="M22 22l20 20M42 22l-20 20M68 68l14 14M82 68l-14 14M112 112l18 18M130 112l-18 18"/></g><circle cx="120" cy="32" r="12" fill="none" stroke="#ffa3a3" stroke-width="6"/><circle cx="32" cy="120" r="12" fill="none" stroke="#ffa3a3" stroke-width="6"/><path d="M18 18l118 118" stroke="#ffe27a" stroke-width="3" stroke-dasharray="6 6" opacity=".8"/></svg></div>`;
+    if (g.art === "rollcall") {
+      // the roll-call sheet: names hidden under nickname stickers, one peeling off, the teacher's red ticks
+      const rows = [["ملك الأعذار", "#ff8fa3", "✓"], ["البطريق الغامض", "#8fc7ff", "✓"], ["أبو كبسة", "#9be3b5", "✗"], ["النعسان", "#c9b3ff", "✓"]];
+      return `<div class="gart rollcall"><svg viewBox="0 0 220 150" width="250" height="170" aria-hidden="true">
+        <rect x="26" y="10" width="168" height="132" rx="4" fill="#fff" stroke="#1b2a4a" stroke-width="2.5"/>
+        <text x="110" y="27" text-anchor="middle" font-family="Lalezar, sans-serif" font-size="13" fill="#1b2a4a">كشف الحضور</text>
+        <path d="M30 33h160" stroke="#1b2a4a" stroke-width="1.6"/><path d="M174 33v105" stroke="#c8232c" stroke-width="1.2" opacity=".6"/>
+        ${rows.map(([n, c, m], k) => { const y = 41 + k * 25; return `<path d="M30 ${y + 21}h160" stroke="#c9d6e6" stroke-width="1"/><text x="183" y="${y + 15}" text-anchor="middle" font-family="Lalezar, sans-serif" font-size="11" fill="#5d6887">${"١٢٣٤"[k]}</text>
+          ${k === 2 ? "" : `<g transform="rotate(${k % 2 ? 1.5 : -2} 110 ${y + 9})"><rect x="70" y="${y}" width="98" height="18" rx="4" fill="${c}" stroke="#fff" stroke-width="2"/><text x="119" y="${y + 13}" text-anchor="middle" font-family="IBM Plex Sans Arabic, sans-serif" font-weight="700" font-size="10" fill="#1b2a4a">${n}</text></g>`}
+          ${k === 2 ? `<g transform="rotate(-8 50 ${y + 10})"><rect x="30" y="${y + 1}" width="40" height="17" rx="4" fill="#fff" stroke="#c8232c" stroke-width="1.8"/><text x="50" y="${y + 14}" text-anchor="middle" font-family="Aref Ruqaa, Lalezar, serif" font-weight="700" font-size="11" fill="#c8232c">انكشف!</text></g>` : `<text x="48" y="${y + 16}" text-anchor="middle" font-family="Aref Ruqaa, Lalezar, serif" font-weight="700" font-size="18" fill="${m === "✓" ? "#1f8a53" : "#c8232c"}">${m}</text>`}`; }).join("")}
+        <text x="138" y="105" text-anchor="middle" font-family="Lalezar, sans-serif" font-size="15" fill="#1b2a4a">سالم</text>
+        <g transform="rotate(14 120 99)"><rect x="66" y="92" width="56" height="16" rx="4" fill="#9be3b5" stroke="#fff" stroke-width="2"/><text x="94" y="104" text-anchor="middle" font-family="IBM Plex Sans Arabic, sans-serif" font-weight="700" font-size="9" fill="#1b2a4a">أبو كبسة</text></g>
+      </svg></div>`;
+    }
     if (g.art === "yard") {
       // a corner of the yard: chalked tiles in perspective, a cone, chalk sticks and the folded question note
       const C = ["#ff5a6e", "#3e8bff", "#2fbf71", "#ff9f1c"], own = ["..00.11", ".0001111", "2200.31", "22.3333", ".2..33."], ctr = { "1,2": 1, "3,0": 1, "3,4": 1 };
@@ -84,7 +99,7 @@
         <div class="faq">
           <details><summary>لازم أحمّل تطبيق؟</summary><p>لا. تدخلون من متصفح الجوال بالرمز، واللي يبي التطبيق يقدر ينزله.</p></details>
           <details><summary>نحتاج تلفزيون أو بروجكتر؟</summary><p>لا. كل شي يطلع في جوال كل لاعب: الأسئلة والتصويت والنتائج. التلفزيون عرض إضافي بس.</p></details>
-          <details><summary>كم لاعب؟</summary><p>لين ٣٠ في الغرفة. «خط ثلاثة» يتقسمون فيها فريقين، و«ترابيع» لين أربع فرق، و«اطوِها!» يلعبها اثنين والباقي يتفرجون.</p></details>
+          <details><summary>كم لاعب؟</summary><p>لين ٣٠ في الغرفة. «خط ثلاثة» يتقسمون فيها فريقين، و«ترابيع» لين أربع فرق، و«الألقاب» لين ٢٠ لاعب، و«اطوِها!» يلعبها اثنين والباقي يتفرجون.</p></details>
           <details><summary>نقدر نغيّر اللعبة بدون ما نطلع؟</summary><p>إيه. المضيف يختار اللعبة من شاشة «وينكم!»، والكل يبقى في نفس الغرفة.</p></details>
           <details><summary>كم تكلف؟</summary><p>كل لعبة لها جلسة مجانية. بعدها يفتح المضيف كل الألعاب بكود، تاخذه من حسابنا في انستقرام <a href="https://instagram.com/fos7a.games" target="_blank" rel="noopener">@fos7a.games</a>. واللي يدخلون الغرفة يلعبون مجاناً دائماً.</p></details>
           <details><summary>وش تحفظون عني؟</summary><p>ولا شي على سيرفر. اسمك وشخصيتك في جوالك بس، واللعب يمر بين جوالات الغرفة ويروح. التفاصيل في <a href="privacy.html">صفحة الخصوصية</a>.</p></details>

@@ -15,7 +15,7 @@
 <title>فسحة</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lalezar&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lalezar&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Aref+Ruqaa:wght@700&display=swap">
 <style>
 /* Layout: فسحة is the school yard (bus yellow, navy ink); each game opens its own room: خلّصت! on a ruled notebook, خط ثلاثة on a chalkboard. Two typefaces everywhere. */
 :root {
@@ -367,6 +367,94 @@ body[data-theme="trabee"] .btn-ghost { border: 2px solid var(--navy); box-shadow
 .tr-aw { width: 100%; display: flex; justify-content: space-between; gap: 8px; font-size: 13.5px; padding: 2px 6px; }
 .tr-aw b { color: #ff5a6e; }
 .gart.yard { background-color: #e6e0d4; background-image: linear-gradient(#b3aa98 1.5px, transparent 1.5px), linear-gradient(90deg, #b3aa98 1.5px, transparent 1.5px); background-size: 28px 28px; }
+/* ---- الألقاب lives on the class roll-call: nicknames are stickers over the names, the teacher marks in red ---- */
+body[data-theme="alqab"] {
+  --desk: #fffdf6; --desk-2: #ffffff; --desk-3: #f1ece0; --line: #c9d6e6; --chalk: #1b2a4a; --muted: #5d6887; --soft: #3b4766;
+  --marker: #1b2a4a; --marker-deep: #0d162b; --marker-ink: #ffc933; --paper: #ffffff; --rule: #c9d6e6; --margin: #e46b6b; --ink: #1b2a4a; --ink-blue: #1d3fb8; --ink-red: #c8232c; --ok: #1f8a53; --gain: #1f8a53; --sel: #ffc933;
+  --pen: #c8232c;
+  background: #fffdf6; background-image: linear-gradient(to left, transparent 22px, rgba(200,35,44,.35) 22px, rgba(200,35,44,.35) 23.5px, transparent 23.5px), repeating-linear-gradient(to bottom, transparent 0 33px, var(--rule) 33px 34px);
+  color: var(--chalk);
+}
+body[data-theme="alqab"] .gtop { border-bottom: 2px solid var(--ink); margin-bottom: 8px; }
+body[data-theme="alqab"] .gtop .gt { color: var(--ink); }
+.aq-h { font-family: var(--f-display); font-size: 27px; line-height: 1.15; }
+.aq-pen { font-family: "Aref Ruqaa", var(--f-display); font-weight: 700; color: var(--pen); font-size: 20px; line-height: 1.35; margin: 0; }
+.aq-card { background: #fff; border: 2px solid var(--ink); border-radius: 14px; padding: 14px; display: grid; gap: 8px; box-shadow: 0 4px 0 var(--ink); }
+.aq-stk { display: inline-flex; align-items: center; gap: 5px; padding: 5px 12px 4px; border-radius: 7px; font: 700 14.5px var(--f-body); color: var(--ink); background: var(--c, #ffd27a); border: 0;
+  box-shadow: 0 0 0 2.5px #fff, 0 2px 4px 1px rgba(27,42,74,.22); position: relative; white-space: nowrap; max-width: 100%; overflow: hidden; text-overflow: ellipsis; vertical-align: middle; }
+.aq-stk::after { content: ""; position: absolute; top: 0; left: 0; width: 10px; height: 10px; background: linear-gradient(135deg, #fffdf6 50%, rgba(255,255,255,.85) 50%); border-bottom-right-radius: 3px; }
+.aq-stk small { font-weight: 500; }
+button.aq-stk { cursor: pointer; }
+button.aq-stk[aria-pressed="true"] { outline: 3px solid var(--ink); outline-offset: 3px; }
+.aq-sheet { display: flex; flex-wrap: wrap; gap: 10px 8px; padding: 10px; background: #fff; border: 2px dashed var(--rule); border-radius: 10px; }
+.aq-sheet .aq-stk:nth-child(odd) { transform: rotate(-2deg); }
+.aq-sheet .aq-stk:nth-child(3n) { transform: rotate(1.5deg); }
+.aq-write { display: flex; gap: 8px; }
+.aq-write input { flex: 1; min-width: 0; border: 2px solid var(--ink); border-radius: 12px; padding: 9px 12px; font: 600 16px var(--f-body); color: var(--ink); background: #fff; }
+.aq-write .btn { width: auto; padding-inline: 18px; }
+.aq-secret { border: 2px solid var(--ink); border-radius: 14px; background: var(--yard); padding: 8px 12px; display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 15px; }
+.aq-secret small { display: block; font-weight: 500; font-size: 12.5px; }
+.aq-secret .av { flex: none; }
+.aq-ready { text-align: center; color: var(--muted); font-size: 14px; }
+.aq-ready b { font-family: var(--f-display); font-size: 22px; color: var(--ink); }
+.aq-me { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); flex-wrap: wrap; }
+.aq-me b { margin-inline-start: auto; font-family: var(--f-display); font-size: 20px; color: var(--ink); }
+.aq-mates { display: inline-flex; align-items: center; gap: 2px; }
+.aq-q { background: #fff; border: 2px solid var(--ink); border-radius: 16px; padding: 14px; display: grid; gap: 9px; box-shadow: 0 4px 0 var(--ink); }
+.aq-kind { justify-self: start; font-size: 12px; font-weight: 700; border: 2px solid var(--ink); border-radius: 999px; padding: 0 10px; background: var(--yard); }
+.aq-kind.pref { background: #c9b3ff; }
+.aq-qt { font-size: 19px; font-weight: 700; line-height: 1.5; }
+.aq-timer { height: 8px; border-radius: 6px; background: #ece6da; border: 1.5px solid var(--ink); overflow: hidden; }
+.aq-timer i { display: block; height: 100%; background: var(--pen); transform-origin: right; transition: transform .25s linear; }
+.aq-opt { border: 2px solid var(--ink); border-radius: 12px; padding: 9px 12px; font: 700 16px var(--f-body); color: var(--ink); background: #fff; text-align: start; width: 100%; }
+.aq-opt[aria-pressed="true"] { background: var(--yard); }
+.aq-opt:disabled { cursor: default; }
+.aq-opt:disabled:not([aria-pressed="true"]) { opacity: .6; }
+.aq-strip { display: flex; flex-wrap: wrap; gap: 8px 6px; justify-content: center; padding-top: 6px; border-top: 1px dashed var(--rule); }
+.aq-mini { display: inline-flex; align-items: center; gap: 3px; }
+.aq-mini .aq-stk { font-size: 12px; padding: 3px 9px 2px; }
+.aq-mini.out .aq-stk { opacity: .55; text-decoration: line-through; text-decoration-color: var(--pen); }
+.aq-who { display: inline-flex; gap: 0; }
+.aq-who .av { margin-inline-start: -6px; }
+.aq-roll { display: grid; border-top: 2px solid var(--ink); background: rgba(255,255,255,.7); }
+.aq-r { display: grid; grid-template-columns: 22px minmax(0, 1fr) auto auto; align-items: center; gap: 8px; padding: 7px 4px; border-bottom: 1px solid var(--rule); font-size: 13px; }
+.aq-r.me { background: rgba(255,201,51,.18); }
+.aq-r .n { font-family: var(--f-display); color: var(--muted); text-align: center; }
+.aq-r .t { font-variant-numeric: tabular-nums; color: var(--muted); direction: ltr; font-size: 12.5px; }
+.aq-r > span:nth-child(2) { display: flex; align-items: center; gap: 6px; min-width: 0; }
+.aq-mark { font-family: "Aref Ruqaa", var(--f-display); font-weight: 700; font-size: 22px; line-height: 1; display: inline-block; min-width: 16px; text-align: center; }
+.aq-mark.y { color: var(--ok); } .aq-mark.n { color: var(--pen); }
+.aq-prefs { display: grid; gap: 8px; }
+.aq-pref { background: #fff; border: 2px solid var(--ink); border-radius: 12px; padding: 8px 10px; display: grid; gap: 6px; }
+.aq-pref > div { display: flex; flex-wrap: wrap; gap: 8px 6px; }
+.aq-chance { border: 2px dashed var(--pen); border-radius: 12px; padding: 8px 12px; background: #fff; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.aq-acc { border: 2.5px solid var(--pen); border-radius: 14px; padding: 10px; background: #fff; display: grid; gap: 10px; }
+.aq-pick { display: grid; grid-template-columns: repeat(auto-fill, minmax(70px, 1fr)); gap: 6px; }
+.aq-pick button { display: grid; justify-items: center; gap: 2px; font: 700 12px var(--f-body); color: var(--ink); padding: 6px 2px; border-radius: 12px; border: 2px solid transparent; background: none; }
+.aq-pick button span { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.aq-pick button[aria-pressed="true"] { border-color: var(--ink); background: var(--yard); }
+.aq-pick button:disabled { opacity: .35; filter: grayscale(1); }
+.aq-reveal { position: relative; min-height: 170px; display: grid; place-items: center; gap: 10px; padding-top: 40px; }
+.aq-name { display: flex; align-items: center; gap: 10px; font-family: var(--f-display); font-size: 36px; line-height: 1; background: #fff; border: 2px solid var(--ink); border-radius: 8px; padding: 10px 18px 6px; }
+.aq-reveal .aq-stk.peel { position: absolute; top: 8px; left: 6px; max-width: 55%; font-size: 16px; padding: 8px 14px 6px; transform: rotate(-24deg); transform-origin: top left; box-shadow: 0 0 0 2.5px #fff, 6px 10px 14px rgba(27,42,74,.3); }
+@media (prefers-reduced-motion: no-preference) { .aq-reveal .aq-stk.peel { animation: aqpeel .9s .3s ease-out backwards; } @keyframes aqpeel { from { transform: rotate(0) translate(60%, 70px); } } }
+.aq-stamp { align-self: center; justify-self: center; font-family: "Aref Ruqaa", var(--f-display); font-weight: 700; color: var(--pen); font-size: 42px; line-height: 1; border: 3px solid var(--pen); border-radius: 10px; padding: 6px 20px 2px; transform: rotate(-8deg); animation: pop .4s .6s ease-out backwards; }
+.aq-hint { text-align: center; background: var(--yard); border: 2px solid var(--ink); border-radius: 12px; padding: 10px; font-weight: 700; font-size: 18px; }
+.aq-pts { display: flex; justify-content: space-between; align-items: center; gap: 8px; border: 2px solid var(--ink); border-radius: 12px; background: #fff; padding: 8px 12px; font-size: 14px; }
+.aq-pts.dash { border-style: dashed; }
+.aq-pts b { font-family: var(--f-display); font-weight: 400; font-size: 22px; color: var(--ok); }
+.aq-pts b.minus { color: var(--pen); }
+.aq-cert { background: #fff; border: 2px solid var(--ink); outline: 5px double var(--ink); outline-offset: 4px; border-radius: 4px; margin: 10px 8px; padding: 16px 14px; text-align: center; display: grid; gap: 6px; justify-items: center; }
+.aq-school { font-size: 12px; font-weight: 700; color: var(--muted); }
+.aq-ttl { font-family: var(--f-display); font-size: 34px; line-height: 1; }
+.aq-cert .aq-stk { font-size: 18px; padding: 7px 16px 6px; transform: rotate(-3deg); }
+.aq-sign { display: flex; justify-content: space-between; width: 100%; margin-top: 4px; font-size: 12px; color: var(--muted); }
+.aq-sign i { font-family: "Aref Ruqaa", var(--f-display); font-weight: 700; font-style: normal; color: var(--pen); font-size: 20px; display: block; }
+.aq-roll.end .aq-r { grid-template-columns: 22px minmax(0, 1fr) auto; }
+.aq-rank b { font-size: 14px; }
+.aq-aw { display: flex; justify-content: space-between; align-items: center; gap: 8px; font-size: 13.5px; padding: 4px 2px; border-bottom: 1px dashed var(--rule); }
+.aq-aw b { color: var(--pen); display: inline-flex; align-items: center; gap: 6px; }
+.gart.rollcall { background: #fffdf6; background-image: linear-gradient(to left, transparent 34px, rgba(200,35,44,.4) 34px, rgba(200,35,44,.4) 36px, transparent 36px), repeating-linear-gradient(to bottom, transparent 0 27px, #c9d6e6 27px 28px); }
 /* free sessions and codes */
 .modal-card { grid-template-columns: minmax(0, 1fr); }
 .passbox { max-width: none; margin-top: 0; }
@@ -443,6 +531,7 @@ button.pl { border: 1px solid var(--line); background: var(--desk-2); width: 100
 <script src="js/khat.js"></script>
 <script src="js/fold.js"></script>
 <script src="js/trabee.js"></script>
+<script src="js/alqab.js"></script>
 <script src="js/shell.js"></script>
 
 <script>
