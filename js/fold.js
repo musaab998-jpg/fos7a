@@ -494,7 +494,7 @@ function fAfter(S, v) {
     const step = (t) => { if (KL.fv !== v || !v.fx) return; const k = (t - t0) / 700; v.fx.k = Math.max(0, 1 - k); for (const p of v.fx.parts) { p.x += p.vx; p.y += p.vy; p.vy += 0.0006; p.life -= 0.03; } fRender(S, v); if (k < 1) requestAnimationFrame(step); else { v.fx = null; fRender(S, v); } };
     requestAnimationFrame(step);
     fPlay("hit"); buzz([60, 40, 120]);
-    text = hits.length > 1 ? "ضربتين بطية وحدة!" : seat === 1 - L.by ? "انشطب واحد من جنودك!" : "صبت! ويكمل دوره";
+    text = hits.length > 1 ? "ضربتين بطية وحدة!" : seat === 1 - L.by ? "انشطب واحد من جنودك!" : seat === L.by ? "صبت! كمّل دورك" : `${who(S.duo[L.by]).name} صاب! ويكمل دوره`;
     fToast(text, PCOL[L.by]);
   } else if (rs.some((r) => r.res === "tape")) { fPlay("tape"); fToast(text = "اللزقة حمت الجندي!", "#b8a76a", "#2a2206"); }
   else if (rs.some((r) => r.res === "coffee")) { fPlay("slurp"); fToast(text = "القهوة شربت الحبر", "#7a4d22"); }

@@ -377,7 +377,7 @@ function aqvRev(S, fresh) {
          <p class="aq-pen" style="text-align:center">الملصق باقي، بس صار فيه دليل</p>`
       : `<div class="aq-reveal">${aqStk(t)}<span class="aq-name">${aqFaces(v.ids, 48)}</span></div>
          <div class="aq-stamp miss">غلط!</div>
-         <div class="aq-pts"><span>${names} ${v.ids.length > 1 ? "انتهموا" : "انتهم"} ظلم</span><b>+${AR(100)}</b></div>
+         <div class="aq-pts"><span>${names} ${v.ids.length > 1 ? "انظلموا" : "انظلم"}</span><b>+${AR(100)}</b></div>
          <div class="aq-pts dash"><span>${aqStk(by)}</span><b class="minus">−٥٠</b></div>`;
   show(`${aqMeLine(S)}<div class="aq-h" style="text-align:center">«${esc(t.n)}» ${t.size > 1 ? "هم" : "هو"}…</div>${body}${aqBar(S)}`);
 }
@@ -404,7 +404,7 @@ function aqvEnd(S, fresh) {
     ${cert}
     <div class="aq-roll end">${S.rank.map((x, k) => { const t = aqTag(S, x.tag); return `<div class="aq-r ${x.id === PID ? "me" : ""}"><span class="n">${AR(k + 1)}</span><span class="aq-rank">${face(who(x.id), 28)}<b>${esc(who(x.id).name)}</b>${aqStk(t)}${t.out ? "" : " 👻"}</span><span class="t">${AR(x.pts)}</span></div>`; }).join("")}</div>
     ${aw.sleuth ? `<div class="aq-aw"><span>أشطر محقق</span><b>${face(who(aw.sleuth.id), 24)}${esc(who(aw.sleuth.id).name)} · ${AR(aw.sleuth.n)}</b></div>` : ""}
-    ${aw.framed ? `<div class="aq-aw"><span>أكثر واحد انتهم ظلم</span><b>${face(who(aw.framed.id), 24)}${esc(who(aw.framed.id).name)} · ${AR(aw.framed.n)}</b></div>` : ""}
+    ${aw.framed ? `<div class="aq-aw"><span>أكثر واحد انظلم</span><b>${face(who(aw.framed.id), 24)}${esc(who(aw.framed.id).name)} · ${AR(aw.framed.n)}</b></div>` : ""}
     ${myTag ? '<button type="button" class="btn btn-marker" id="aqStory">احفظ شهادتي للستوري 📸</button><p class="muted" id="aqStoryMsg" style="text-align:center"></p>' : ""}
     ${isHost() ? '<button type="button" class="btn btn-marker" id="aqAgain">جلسة جديدة بنفس الربع</button>' : '<p class="muted" style="text-align:center">المضيف يقدر يبدأ جلسة جديدة.</p>'}
     <button type="button" class="btn btn-ghost" id="aqHome">رجوع لفسحة</button>`);
