@@ -1,5 +1,5 @@
 "use strict";
-// ================= انكشف!: the class roll-call, every name hidden under a nickname sticker =================
+// ================= انكشف!: on the school stage, every name hidden under a nickname sticker =================
 // Everyone (or every pair / trio) hides behind a secret nickname. Questions come, the results are read
 // out by nickname, fastest first, and every result is a clue. The fastest right answer earns one
 // accusation: name the people behind a sticker. Right, the sticker peels off; wrong, the accused gains.
@@ -425,14 +425,16 @@ async function aqStoryCanvas({ p, fem, tag, pts, ghost }) {
   c.direction = "rtl"; c.textAlign = "center"; c.textBaseline = "alphabetic";
   const rr = (x, y, w, h, r) => { c.beginPath(); c.moveTo(x + r, y); c.arcTo(x + w, y, x + w, y + h, r); c.arcTo(x + w, y + h, x, y + h, r); c.arcTo(x, y + h, x, y, r); c.arcTo(x, y, x + w, y, r); c.closePath(); };
   const text = (t, x, y, font, color) => { c.font = font; c.fillStyle = color; c.fillText(t, x, y); };
-  // the roll-call paper
-  c.fillStyle = "#fffdf6"; c.fillRect(0, 0, W, Hh);
-  c.strokeStyle = "#c9d6e6"; c.lineWidth = 3; for (let y = 120; y < Hh; y += 68) { c.beginPath(); c.moveTo(0, y); c.lineTo(W, y); c.stroke(); }
-  c.strokeStyle = "rgba(200,35,44,.45)"; c.lineWidth = 4; c.beginPath(); c.moveTo(W - 70, 0); c.lineTo(W - 70, Hh); c.stroke();
+  // the school stage: velvet pleats, a spotlight from above, the wooden floor and the gold fringe
+  for (let x = 0; x < W; x += 54) { const g = c.createLinearGradient(x, 0, x + 54, 0); g.addColorStop(0, "#4d0812"); g.addColorStop(0.55, "#8e1726"); g.addColorStop(1, "#4d0812"); c.fillStyle = g; c.fillRect(x, 0, 54, Hh); }
+  c.fillStyle = "rgba(30,4,8,.35)"; c.fillRect(0, 0, W, Hh);
+  const sp = c.createRadialGradient(W / 2, 0, 40, W / 2, 300, 1100); sp.addColorStop(0, "rgba(255,236,190,.45)"); sp.addColorStop(1, "rgba(255,236,190,0)"); c.fillStyle = sp; c.fillRect(0, 0, W, Hh);
+  c.fillStyle = "#7a4a22"; c.fillRect(0, Hh - 300, W, 300); c.strokeStyle = "#5a3418"; c.lineWidth = 5; [Hh - 300, Hh - 200, Hh - 100].forEach((y) => { c.beginPath(); c.moveTo(0, y); c.lineTo(W, y); c.stroke(); });
+  c.fillStyle = "#6a0e19"; c.fillRect(0, 0, W, 70); c.strokeStyle = "#e0b04a"; c.lineWidth = 8; for (let x = 0; x < W; x += 60) { c.beginPath(); c.arc(x + 30, 70, 30, 0, Math.PI); c.fillStyle = "#6a0e19"; c.fill(); c.stroke(); }
   // فسحة and the game's name at the top
   rr(W / 2 - 150, 150, 300, 96, 48); c.fillStyle = "#ffc933"; c.fill(); c.lineWidth = 7; c.strokeStyle = NAVY; c.stroke();
   text("فسحة", W / 2, 222, `400 66px ${D}`, NAVY);
-  text("انكشف!", W / 2, 360, `700 104px ${PEN}`, RED);
+  text("انكشف!", W / 2, 360, `700 104px ${PEN}`, "#ffd36b");
   // the certificate
   const X = 100, Y = 430, CW = W - 200, CH = 1150;
   c.fillStyle = "#fff"; rr(X, Y, CW, CH, 10); c.fill();
@@ -462,8 +464,8 @@ async function aqStoryCanvas({ p, fem, tag, pts, ghost }) {
   text("النقاط", X + 150, Y + 1050, `500 34px ${B}`, "#5d6887"); text(AR(pts), X + 150, Y + 1110, `700 58px ${PEN}`, RED);
   // the stamp
   if (!ghost) { c.save(); c.translate(W / 2 + 250, Y + 330); c.rotate(-0.16); c.strokeStyle = RED; c.lineWidth = 7; rr(-150, -62, 300, 112, 16); c.stroke(); text("انكشف!", 0, 22, `700 74px ${PEN}`, RED); c.restore(); }
-  text("العبوها من جوالاتكم", W / 2, 1700, `700 46px ${B}`, NAVY);
-  c.direction = "ltr"; text("@fos7a.games", W / 2, 1775, `700 44px ${B}`, "#5d6887");
+  text("العبوها من جوالاتكم", W / 2, 1700, `700 46px ${B}`, "#fff3e3");
+  c.direction = "ltr"; text("@fos7a.games", W / 2, 1775, `700 44px ${B}`, "#ffd36b");
   return cv;
 }
 async function aqShareStory(d) {

@@ -286,7 +286,7 @@ function ghvRole(S, fresh) {
   show(`
     <div class="gh-paper">
       <div class="gh-form"><span>الاسم: <b>${esc(who(PID).name)}</b></span><span>${c < 0 ? "متفرج" : S.cls.length > 1 ? `الفصل: <b style="color:${GH_CLS[c].c}">${GH_CLS[c].n}</b>` : `${AR(S.cls[0].members.length)} طلاب`}</span></div>
-      <div class="gh-h" style="text-align:center">اختبار فسحة</div>
+      <div class="gh-h" style="text-align:center">ملف القضية</div>
       ${note || '<p class="muted" style="text-align:center">دخلت بعد ما بدأ الاختبار، تقدر تتفرج.</p>'}
       ${ghTimer()}
     </div>
@@ -421,7 +421,7 @@ function ghvEnd(S, fresh) {
   const aw = E.awards || {}, award = (t, a, unit) => (a ? `<div class="gh-aw"><span>${t}</span><b>${face(who(a.id), 24)}${esc(who(a.id).name)}${unit ? ` · ${AR(a.n)} ${unit}` : ""}</b></div>` : "");
   show(`
     <div class="gh-paper">
-      <div class="gh-form"><span>محضر غش</span><span>${AR(S.qi)} سؤال</span></div>
+      <div class="gh-form"><span>محضر الوكيل</span><span>${AR(S.qi)} سؤال</span></div>
       <div class="gh-h" style="text-align:center;color:${one ? (won ? "#1f8a53" : "#c8232c") : GH_CLS[best].c}">${title}</div>
       ${!one ? `<div class="gh-ranks">${E.rank.map((k, i) => `<div class="gh-rk ${k === c ? "me" : ""}" style="--pen:${GH_CLS[k].c}"><span class="n">${AR(i + 1)}</span>${ghChip(S, k)}<small>${AR(E.right[k])} صح</small><b>${AR(S.cls[k].pts)}</b></div>`).join("")}</div>` : `<p class="muted" style="text-align:center">جاوبتوا ${AR(E.right[0])} من ${AR(S.qi)} صح · النقاط ${AR(S.cls[0].pts)}</p>`}
     </div>

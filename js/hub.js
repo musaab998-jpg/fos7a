@@ -6,9 +6,9 @@
     { id: "khallast", line: "حرف، وخانات، وأول واحد يخلّص يوقّف الكل. وبعدها تصويت على الإجابات الغريبة.", tags: ["٢ إلى ٣٠ لاعب", "كتابة", "ضحك"], art: "notebook" },
     { id: "khat", line: "إكس أو على السبورة: كل مربع سؤال، وفريقك يصوّت على الجواب، والغلط يفتح فرصة سرقة.", tags: ["فريقين", "حتى ٣٠ لاعب", "أسئلة"], art: "chalk" },
     { id: "trabee", line: "حوش المدرسة بلاط: اختاروا بلاطة، جاوبوا صح ولوّنوها هي واللي حولها بطباشيركم. والغلط يروح للفريق الثاني.", tags: ["٢ إلى ٤ فرق", "حتى ٣٠ لاعب", "أسئلة"], art: "yard" },
-    { id: "alqab", line: "كل واحد يتخبى ورا لقب سري، والأسئلة تفضحه. أسرع جواب صح يتهم: مين صاحب «ملك الأعذار»؟", tags: ["٤ إلى ٢٠ لاعب", "فردي أو ثنائيات", "تخمين"], art: "rollcall" },
+    { id: "alqab", line: "كل واحد يتخبى ورا لقب سري، والأسئلة تفضحه. أسرع جواب صح يتهم: مين صاحب «ملك الأعذار»؟", tags: ["٤ إلى ٢٠ لاعب", "فردي أو ثنائيات", "تخمين"], art: "stage" },
     { id: "hisn", line: "لعبة السفن على ورق الكراسة: كل فريق يخبي قائده وجنوده، وكل جواب صح قذيفة على حصن الخصم. آخر حصن يصمد يفوز.", tags: ["٢ إلى ٥ فرق", "حتى ٣٠ لاعب", "تصويب"], art: "squared" },
-    { id: "ghash", line: "اختبار جماعي وفي كل فصل غشاش معه ورقة الغش. يعرف الجواب ويبيكم تغلطون. كل ٣ أسئلة تفتيش: مين الغشاش؟", tags: ["٤ إلى ٣٠ لاعب", "فصل أو أكثر", "شك وأسئلة"], art: "omr" },
+    { id: "ghash", line: "اختبار جماعي وفي كل فصل غشاش معه ورقة الغش. يعرف الجواب ويبيكم تغلطون. كل ٣ أسئلة تفتيش: مين الغشاش؟", tags: ["٤ إلى ٣٠ لاعب", "فصل أو أكثر", "شك وأسئلة"], art: "cork" },
     { id: "foldit", line: "لعبة الدفتر القديمة: نقطة حبر في نصفك، تنطوي الورقة، وتنطبع على جنود خصمك.", tags: ["لاعبين", "والباقي يتفرجون", "مهارة"], art: "desk", solo: FOLD_IT },
   ];
   function art(g) {
@@ -28,30 +28,33 @@
         <path d="M14 120q14-30 34-42" stroke="#1b2a4a" stroke-width="2" stroke-dasharray="4 4" fill="none"/><circle cx="14" cy="122" r="5" fill="#1b2a4a"/>
       </svg></div>`;
     }
-    if (g.art === "omr") {
-      // an answer sheet in OMR pink, pencil marks, and a cheat note slipping out of a sleeve
-      let rows = "";
-      ["أ", "ب", "ج", "د"].forEach((_, r) => { const y = 34 + r * 26; rows += `<text x="146" y="${y + 5}" font-family="IBM Plex Sans Arabic, sans-serif" font-size="12" font-weight="700" fill="#1b2a4a">${["١", "٢", "٣", "٤"][r]}</text>`;
-        [0, 1, 2, 3].forEach((k) => { const x = 124 - k * 24, on = [2, 0, 3, 1][r] === k; rows += `<circle cx="${x}" cy="${y}" r="8.5" fill="${on ? "#2b2f3a" : "#fff"}" stroke="${on ? "#2b2f3a" : "#d6455b"}" stroke-width="2"/>${on ? "" : `<text x="${x}" y="${y + 4}" text-anchor="middle" font-family="IBM Plex Sans Arabic, sans-serif" font-size="9" font-weight="700" fill="#d6455b">${["أ", "ب", "ج", "د"][k]}</text>`}`; }); });
-      return `<div class="gart omr"><svg viewBox="0 0 220 150" width="250" height="170" aria-hidden="true">
-        <g transform="rotate(-3 95 75)"><rect x="40" y="10" width="124" height="128" rx="4" fill="#fff" stroke="#1b2a4a" stroke-width="2.5"/><path d="M48 22h108" stroke="#d6455b" stroke-width="1.5" stroke-dasharray="3 3"/>${rows}</g>
-        <g transform="rotate(12 182 92)"><rect x="160" y="62" width="48" height="58" rx="3" fill="#fffdf3" stroke="#1b2a4a" stroke-width="2"/><path d="M164 74h40M164 84h40M164 94h40M164 104h40" stroke="#dfe7f3" stroke-width="1.5"/><text x="184" y="100" text-anchor="middle" font-family="Aref Ruqaa, Lalezar, serif" font-weight="700" font-size="22" fill="#c8232c">ج ✓</text></g>
-        <g transform="rotate(-10 30 110)"><rect x="6" y="98" width="62" height="24" rx="5" fill="#fff" stroke="#c8232c" stroke-width="2"/><text x="37" y="115" text-anchor="middle" font-family="Aref Ruqaa, Lalezar, serif" font-weight="700" font-size="14" fill="#c8232c">غشاش؟</text></g>
-        <text x="190" y="40" text-anchor="middle" font-size="26">👀</text>
+    if (g.art === "cork") {
+      // the vice principal's cork board: three suspects on polaroids, red string, and one circled in marker
+      const av = (a, x, y, sz) => avatar(a, sz).replace("<svg ", `<svg x="${x}" y="${y}" `);
+      const pol = (a, x, y, r) => `<g transform="rotate(${r} ${x + 24} ${y + 28})"><rect x="${x}" y="${y}" width="48" height="56" fill="#fff" filter="url(#ckSh)"/><rect x="${x + 4}" y="${y + 4}" width="40" height="40" fill="#e9e2d2"/>${av(a, x + 4, y + 4, 40)}</g>`;
+      const pin = (x, y, c = "#c8232c") => `<circle cx="${x}" cy="${y}" r="4.5" fill="${c}"/><circle cx="${x - 1.4}" cy="${y - 1.4}" r="1.4" fill="#fff" opacity=".7"/>`;
+      return `<div class="gart cork"><svg viewBox="0 0 220 150" width="250" height="170" aria-hidden="true"><defs><filter id="ckSh" x="-20%" y="-20%" width="150%" height="150%"><feDropShadow dx="1.5" dy="3" stdDeviation="2" flood-opacity=".35"/></filter></defs>
+        ${pol({ c: 2, k: 12, r: -3 }, 18, 14, -6)}${pol({ c: 4, k: 27, r: 3 }, 86, 8, 4)}${pol({ c: 6, k: 41, r: -2 }, 154, 18, -3)}
+        <g transform="rotate(-4 50 118)"><rect x="12" y="96" width="78" height="44" fill="#fff2a1" filter="url(#ckSh)"/><text x="51" y="124" text-anchor="middle" font-family="Aref Ruqaa, Lalezar, serif" font-weight="700" font-size="13" fill="#b3121c">مين الغشاش؟</text></g>
+        <path d="M42 16L50 98M110 10L54 98M178 20L58 98" stroke="#b3121c" stroke-width="1.6" fill="none"/>
+        ${pin(42, 16)}${pin(110, 10)}${pin(178, 20)}${pin(54, 98, "#1d3fb8")}
+        <ellipse cx="110" cy="38" rx="31" ry="35" fill="none" stroke="#c8232c" stroke-width="3" transform="rotate(-8 110 38)"/>
+        <g transform="rotate(8 170 118)"><rect x="128" y="104" width="78" height="26" rx="3" fill="none" stroke="#c8232c" stroke-width="2.5"/><text x="167" y="123" text-anchor="middle" font-family="Aref Ruqaa, Lalezar, serif" font-weight="700" font-size="15" fill="#c8232c">تفتيش!</text></g>
       </svg></div>`;
     }
-    if (g.art === "rollcall") {
-      // the roll-call sheet: names hidden under nickname stickers, one peeling off, the teacher's red ticks
-      const rows = [["ملك الأعذار", "#ff8fa3", "✓"], ["البطريق الغامض", "#8fc7ff", "✓"], ["أبو كبسة", "#9be3b5", "✗"], ["النعسان", "#c9b3ff", "✓"]];
-      return `<div class="gart rollcall"><svg viewBox="0 0 220 150" width="250" height="170" aria-hidden="true">
-        <rect x="26" y="10" width="168" height="132" rx="4" fill="#fff" stroke="#1b2a4a" stroke-width="2.5"/>
-        <text x="110" y="27" text-anchor="middle" font-family="Lalezar, sans-serif" font-size="13" fill="#1b2a4a">كشف الحضور</text>
-        <path d="M30 33h160" stroke="#1b2a4a" stroke-width="1.6"/><path d="M174 33v105" stroke="#c8232c" stroke-width="1.2" opacity=".6"/>
-        ${rows.map(([n, c, m], k) => { const y = 41 + k * 25; return `<path d="M30 ${y + 21}h160" stroke="#c9d6e6" stroke-width="1"/><text x="183" y="${y + 15}" text-anchor="middle" font-family="Lalezar, sans-serif" font-size="11" fill="#5d6887">${"١٢٣٤"[k]}</text>
-          ${k === 2 ? "" : `<g transform="rotate(${k % 2 ? 1.5 : -2} 110 ${y + 9})"><rect x="70" y="${y}" width="98" height="18" rx="4" fill="${c}" stroke="#fff" stroke-width="2"/><text x="119" y="${y + 13}" text-anchor="middle" font-family="IBM Plex Sans Arabic, sans-serif" font-weight="700" font-size="10" fill="#1b2a4a">${n}</text></g>`}
-          ${k === 2 ? `<g transform="rotate(-8 50 ${y + 10})"><rect x="30" y="${y + 1}" width="40" height="17" rx="4" fill="#fff" stroke="#c8232c" stroke-width="1.8"/><text x="50" y="${y + 14}" text-anchor="middle" font-family="Aref Ruqaa, Lalezar, serif" font-weight="700" font-size="11" fill="#c8232c">انكشف!</text></g>` : `<text x="48" y="${y + 16}" text-anchor="middle" font-family="Aref Ruqaa, Lalezar, serif" font-weight="700" font-size="18" fill="${m === "✓" ? "#1f8a53" : "#c8232c"}">${m}</text>`}`; }).join("")}
-        <text x="138" y="105" text-anchor="middle" font-family="Lalezar, sans-serif" font-size="15" fill="#1b2a4a">سالم</text>
-        <g transform="rotate(14 120 99)"><rect x="66" y="92" width="56" height="16" rx="4" fill="#9be3b5" stroke="#fff" stroke-width="2"/><text x="94" y="104" text-anchor="middle" font-family="IBM Plex Sans Arabic, sans-serif" font-weight="700" font-size="9" fill="#1b2a4a">أبو كبسة</text></g>
+    if (g.art === "stage") {
+      // the school stage: velvet curtains, the spotlight, and a nickname sticker peeling off whoever is under it
+      const av = avatar({ c: 3, k: 7, r: -2 }, 58).replace("<svg ", '<svg x="81" y="58" ');
+      let pleats = ""; for (let x = 0; x < 50; x += 10) pleats += `<rect x="${x}" width="10" height="132" fill="url(#stCur)"/><rect x="${210 - x}" width="10" height="132" fill="url(#stCur)"/>`;
+      let fringe = ""; for (let x = 0; x < 220; x += 14) fringe += `<path d="M${x} 16q7 9 14 0" fill="#6a0e19" stroke="#e0b04a" stroke-width="2"/>`;
+      return `<div class="gart stage"><svg viewBox="0 0 220 150" width="100%" height="100%" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><defs><linearGradient id="stCur" x1="0" x2="1"><stop offset="0" stop-color="#4d0812"/><stop offset=".55" stop-color="#9a1a2b"/><stop offset="1" stop-color="#4d0812"/></linearGradient><linearGradient id="stLt" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff0c8" stop-opacity=".35"/><stop offset="1" stop-color="#fff0c8" stop-opacity=".08"/></linearGradient></defs>
+        <rect width="220" height="150" fill="#2a0a10"/>
+        <rect y="122" width="220" height="28" fill="#7a4a22"/><path d="M0 122h220M0 135h220M40 122v13M110 135v15M170 122v13" stroke="#5a3418" stroke-width="1.5"/>
+        <path d="M84 14h52l34 112H50z" fill="url(#stLt)"/><ellipse cx="110" cy="124" rx="50" ry="8" fill="#fff0c8" opacity=".3"/>
+        ${av}
+        <g transform="rotate(-18 92 64)"><rect x="54" y="52" width="76" height="22" rx="5" fill="#fff"/><rect x="57" y="55" width="70" height="16" rx="3" fill="#8fc7ff"/><text x="92" y="67" text-anchor="middle" font-family="IBM Plex Sans Arabic, sans-serif" font-weight="700" font-size="10.5" fill="#1b2a4a">ملك الأعذار</text></g>
+        ${pleats}${fringe}<rect width="220" height="16" fill="#6a0e19"/><path d="M0 16h220" stroke="#e0b04a" stroke-width="2"/>
+        <g transform="rotate(-8 180 96)"><rect x="146" y="84" width="66" height="26" rx="4" fill="none" stroke="#ffd36b" stroke-width="2.5" stroke-dasharray="1.5 3.5" stroke-linecap="round"/><text x="179" y="103" text-anchor="middle" font-family="Aref Ruqaa, Lalezar, serif" font-weight="700" font-size="16" fill="#ffd36b">انكشف!</text></g>
       </svg></div>`;
     }
     if (g.art === "yard") {

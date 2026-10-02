@@ -367,16 +367,21 @@ body[data-theme="trabee"] .btn-ghost { border: 2px solid var(--navy); box-shadow
 .tr-aw { width: 100%; display: flex; justify-content: space-between; gap: 8px; font-size: 13.5px; padding: 2px 6px; }
 .tr-aw b { color: #ff5a6e; }
 .gart.yard { background-color: #e6e0d4; background-image: linear-gradient(#b3aa98 1.5px, transparent 1.5px), linear-gradient(90deg, #b3aa98 1.5px, transparent 1.5px); background-size: 28px 28px; }
-/* ---- الألقاب lives on the class roll-call: nicknames are stickers over the names, the teacher marks in red ---- */
+/* ---- انكشف! lives on the school stage: velvet curtains, a spotlight, nickname stickers, programmes in hand ---- */
 body[data-theme="alqab"] {
-  --desk: #fffdf6; --desk-2: #ffffff; --desk-3: #f1ece0; --line: #c9d6e6; --chalk: #1b2a4a; --muted: #5d6887; --soft: #3b4766;
-  --marker: #1b2a4a; --marker-deep: #0d162b; --marker-ink: #ffc933; --paper: #ffffff; --rule: #c9d6e6; --margin: #e46b6b; --ink: #1b2a4a; --ink-blue: #1d3fb8; --ink-red: #c8232c; --ok: #1f8a53; --gain: #1f8a53; --sel: #ffc933;
-  --pen: #c8232c;
-  background: #fffdf6; background-image: linear-gradient(to left, transparent 22px, rgba(200,35,44,.35) 22px, rgba(200,35,44,.35) 23.5px, transparent 23.5px), repeating-linear-gradient(to bottom, transparent 0 33px, var(--rule) 33px 34px);
+  --desk: #3a0a12; --desk-2: #4a0f19; --desk-3: #5c1420; --line: #8a3a44; --chalk: #fff3e3; --muted: #e6c2b4; --soft: #f6dccd;
+  --marker: #ffc933; --marker-deep: #b8860b; --marker-ink: #2a0d10; --paper: #ffffff; --rule: rgba(255,220,180,.28); --margin: #e46b6b; --ink: #2a1a1f; --ink-blue: #1d3fb8; --ink-red: #c8232c; --ok: #8fe6b0; --gain: #8fe6b0; --sel: #ffc933;
+  --pen: #ffd36b; --hd: #ffd36b;
+  background:
+    radial-gradient(ellipse 70% 42% at 50% 0%, rgba(255,232,170,.30), transparent 72%),
+    linear-gradient(to right, rgba(0,0,0,.5), transparent 16%, transparent 84%, rgba(0,0,0,.5)),
+    linear-gradient(rgba(30,4,8,.38), rgba(30,4,8,.38)),
+    repeating-linear-gradient(90deg, #5e0b16 0 10px, #7d1322 10px 20px, #6a0e19 20px 28px, #4d0812 28px 34px);
+  background-color: #5e0b16; background-attachment: fixed;
   color: var(--chalk);
 }
-body[data-theme="alqab"] .gtop { border-bottom: 2px solid var(--ink); margin-bottom: 8px; }
-body[data-theme="alqab"] .gtop .gt { color: var(--ink); }
+body[data-theme="alqab"] .gtop { border-bottom: 3px solid #e0b04a; box-shadow: 0 5px 0 -2px rgba(224,176,74,.3); margin-bottom: 10px; }
+body[data-theme="alqab"] .gtop .gt { color: #ffd36b; }
 .aq-h { font-family: var(--f-display); font-size: 27px; line-height: 1.15; }
 .aq-pen { font-family: "Aref Ruqaa", var(--f-display); font-weight: 700; color: var(--pen); font-size: 20px; line-height: 1.35; margin: 0; }
 .aq-card { background: #fff; border: 2px solid var(--ink); border-radius: 14px; padding: 14px; display: grid; gap: 8px; box-shadow: 0 4px 0 var(--ink); }
@@ -456,7 +461,20 @@ button.aq-stk[aria-pressed="true"] { outline: 3px solid var(--ink); outline-offs
 .aq-rank b { font-size: 14px; }
 .aq-aw { display: flex; justify-content: space-between; align-items: center; gap: 8px; font-size: 13.5px; padding: 4px 2px; border-bottom: 1px dashed var(--rule); }
 .aq-aw b { color: var(--pen); display: inline-flex; align-items: center; gap: 6px; }
-.gart.rollcall { background: #fffdf6; background-image: linear-gradient(to left, transparent 34px, rgba(200,35,44,.4) 34px, rgba(200,35,44,.4) 36px, transparent 36px), repeating-linear-gradient(to bottom, transparent 0 27px, #c9d6e6 27px 28px); }
+/* on the stage the programmes and cards stay white, so they get their own ink back */
+body[data-theme="alqab"] :is(.aq-card, .aq-q, .aq-roll, .aq-pref, .aq-acc, .aq-pts, .aq-cert, .aq-chance, .aq-name, .aq-hint, .aq-sheet, .aq-secret, .aq-mhint) { --muted: #6e5560; --pen: #c8232c; --ok: #1f8a53; --rule: #eadbd0; --hd: var(--ink); color: var(--ink); }
+body[data-theme="alqab"] .aq-h { color: var(--hd); }
+body[data-theme="alqab"] .aq-me b, body[data-theme="alqab"] .aq-ready b { color: #ffd36b; }
+body[data-theme="alqab"] .aq-roll { background: #fffaf3; border: 0; border-top: 4px solid #e0b04a; border-radius: 10px; overflow: hidden; box-shadow: 0 8px 20px rgba(0,0,0,.35); }
+body[data-theme="alqab"] .aq-q, body[data-theme="alqab"] .aq-card { border: 0; box-shadow: 0 0 0 3px #e0b04a, 0 10px 24px rgba(0,0,0,.4); background: #fffaf3; }
+body[data-theme="alqab"] .aq-opt { border-color: #d9c3b4; }
+body[data-theme="alqab"] .aq-opt[aria-pressed="true"] { border-color: var(--ink); background: #ffe7a3; }
+body[data-theme="alqab"] .aq-reveal { background: radial-gradient(ellipse 52% 62% at 50% 58%, rgba(255,240,200,.42), transparent 72%); border-radius: 20px; }
+body[data-theme="alqab"] .aq-stamp { color: #ffd36b; border-color: #ffd36b; border-style: dotted; border-width: 4px; text-shadow: 0 0 14px rgba(255,200,80,.7); box-shadow: 0 0 18px rgba(255,200,80,.35); }
+body[data-theme="alqab"] .aq-strip { border-top-color: rgba(224,176,74,.5); }
+body[data-theme="alqab"] .aq-aw { border-bottom-color: rgba(224,176,74,.35); }
+body[data-theme="alqab"] .aq-cert { box-shadow: 0 0 0 3px #e0b04a, 0 12px 28px rgba(0,0,0,.45); }
+.gart.stage { background: #2a0a10; overflow: hidden; }
 /* ---- حرب الكراريس lives on squared exercise-book paper: pieces in each team's colour, hits in red pen, misses in pencil ---- */
 body[data-theme="hisn"] {
   --desk: #fbfdff; --desk-2: #ffffff; --desk-3: #eef3fb; --line: #a9c4e2; --chalk: #1b2a4a; --muted: #5d6887; --soft: #3b4766;
@@ -553,85 +571,101 @@ button.hz-chip { cursor: pointer; }
 .hz-all > div { display: grid; gap: 4px; justify-items: start; }
 .hz-all .hz-grid.small { width: 100%; }
 .gart.squared { background-color: #fbfdff; background-image: linear-gradient(#cfe0f2 1px, transparent 1px), linear-gradient(90deg, #cfe0f2 1px, transparent 1px); background-size: 14px 14px; }
-/* ---- مين الغشاش؟ is an exam: question sheets, answer-sheet bubbles in OMR pink, the teacher's red pen ---- */
+/* ---- مين الغشاش؟ lives on the vice principal's cork board: pinned case cards, sticky notes, polaroids of the suspects, red string ---- */
 body[data-theme="ghash"] {
-  --desk: #f3f1e8; --desk-2: #ffffff; --desk-3: #e9e5d6; --line: #d9d3c0; --chalk: #1b2a4a; --muted: #5d6887; --soft: #3b4766;
-  --marker: #1b2a4a; --marker-deep: #0d162b; --marker-ink: #ffc933; --paper: #ffffff; --rule: #e6e1d2; --ink: #1b2a4a; --ok: #1f8a53; --gain: #1f8a53; --sel: #ffc933;
-  --omr: #d6455b; --pen: #c8232c;
-  background-color: #f3f1e8; background-image: radial-gradient(rgba(27,42,74,.07) 1px, transparent 1.4px); background-size: 14px 14px;
+  --desk: #c08a52; --desk-2: #fffdf5; --desk-3: #ecd6b0; --line: #8a5f36; --chalk: #2b1a0e; --muted: #4a3020; --soft: #3b2414;
+  --marker: #2b1a0e; --marker-deep: #0f0904; --marker-ink: #ffd36b; --paper: #fffdf5; --rule: #e6d7bd; --ink: #2b1a0e; --ok: #1f7a46; --gain: #1f7a46; --sel: #ffd36b;
+  --red: #b3121c; --pen: #b3121c;
+  background-color: #c08a52;
+  background-image: radial-gradient(rgba(92,56,24,.5) 1px, transparent 1.6px), radial-gradient(rgba(255,236,200,.38) 1px, transparent 1.5px), radial-gradient(rgba(120,72,32,.32) 2px, transparent 2.8px);
+  background-size: 7px 7px, 11px 11px, 23px 23px; background-position: 0 0, 3px 5px, 9px 2px;
   color: var(--chalk);
 }
-body[data-theme="ghash"] .gtop { border-bottom: 2px solid var(--ink); margin-bottom: 8px; background: #f3f1e8; }
+body[data-theme="ghash"] .gtop { background: linear-gradient(#7a4f2a, #5b391c); color: #ffe9c4; border-radius: 10px; padding: 8px 10px; margin-bottom: 14px; box-shadow: 0 3px 0 #3e2510, 0 6px 12px rgba(40,20,5,.3); }
+body[data-theme="ghash"] .gtop .gt { color: #ffd36b; font-size: 19px; }
 .gh-h { font-family: var(--f-display); font-size: 28px; line-height: 1.15; }
-.gh-pen { font-family: "Aref Ruqaa", var(--f-display); font-weight: 700; color: #c8232c; font-size: 18px; line-height: 1.4; margin: 0; text-align: center; }
-.gh-paper { background: #fff; border: 2px solid var(--ink); border-radius: 6px; padding: 14px; display: grid; gap: 10px; box-shadow: 4px 5px 0 rgba(27,42,74,.12); position: relative; }
-.gh-form { display: flex; justify-content: space-between; gap: 8px; font-size: 13px; color: var(--muted); border-bottom: 1.5px dashed #c9c2ad; padding-bottom: 8px; }
+.gh-pen { font-family: "Aref Ruqaa", var(--f-display); font-weight: 700; color: #7d0d14; font-size: 18px; line-height: 1.4; margin: 0; text-align: center; }
+/* a case card pinned to the board */
+.gh-paper, .gh-res, .gh-cl { position: relative; background: #fffdf5; border-radius: 2px; box-shadow: 0 1px 2px rgba(0,0,0,.25), 3px 8px 14px rgba(40,20,5,.35); }
+.gh-paper { padding: 22px 14px 14px; display: grid; gap: 10px; transform: rotate(-.4deg); border-top: 3px solid #c8232c; }
+.gh-paper::before, .gh-res::before { content: ""; position: absolute; top: -9px; left: 50%; width: 20px; height: 20px; margin-left: -10px; border-radius: 50%; background: radial-gradient(circle at 35% 32%, rgba(255,255,255,.75), transparent 34%), var(--pin, #c8232c); box-shadow: 1px 3px 3px rgba(0,0,0,.4); z-index: 1; }
+.gh-form { display: flex; justify-content: space-between; gap: 8px; font-size: 13px; color: var(--muted); border-bottom: 1.5px solid #ead9bd; padding-bottom: 8px; }
 .gh-form b { color: var(--ink); font-family: "Aref Ruqaa", var(--f-display); font-size: 16px; }
 .gh-me { display: flex; align-items: center; gap: 8px; }
-.gh-me > b { margin-inline-start: auto; font-family: var(--f-display); font-size: 22px; font-weight: 400; color: var(--pen); }
-.gh-faces { display: inline-flex; flex-wrap: wrap; gap: 2px; align-items: center; }
-.gh-faces .av { flex: none; }
-.gh-chip { display: inline-flex; align-items: center; gap: 5px; font: 700 13px var(--f-body); color: var(--pen); border: 2px solid var(--pen); border-radius: 6px; padding: 1px 9px; background: #fff; white-space: nowrap; }
-.gh-chip.on { background: var(--pen); color: #fff; }
+.gh-faces { display: inline-flex; flex-wrap: wrap; gap: 3px; align-items: center; }
+.gh-faces .av { flex: none; background: #fff; padding: 2px 2px 5px; box-shadow: 0 1px 3px rgba(0,0,0,.3); }
+.gh-me .gh-faces .av { box-shadow: 0 1px 3px rgba(0,0,0,.4); }
+.gh-chip { display: inline-flex; align-items: center; gap: 5px; font: 700 13px var(--f-body); color: var(--pen); border: 2px solid var(--pen); border-radius: 4px; padding: 1px 9px; background: #fff; white-space: nowrap; }
+.gh-chip.on { background: var(--pen); color: #fff; box-shadow: 0 2px 4px rgba(0,0,0,.25); }
 .gh-board { display: flex; gap: 6px; flex-wrap: wrap; }
-.gh-sc { display: inline-flex; gap: 6px; align-items: center; font: 700 13px var(--f-body); color: var(--pen); border: 1.5px solid color-mix(in srgb, var(--pen) 45%, #fff); border-radius: 6px; padding: 1px 8px; background: #fff; }
+.gh-sc { display: inline-flex; gap: 6px; align-items: center; font: 700 13px var(--f-body); color: var(--pen); border-top: 3px solid var(--pen); border-radius: 2px; padding: 1px 8px; background: #fffdf5; box-shadow: 0 2px 4px rgba(40,20,5,.3); }
 .gh-sc b { font-family: var(--f-display); font-weight: 400; font-size: 16px; color: var(--ink); }
-.gh-sc.me { border-color: var(--pen); box-shadow: 0 2px 0 var(--pen); }
+.gh-sc.me { transform: rotate(-2deg) scale(1.06); }
 .gh-qn { display: flex; align-items: baseline; gap: 8px; }
 .gh-qn span { font-family: "Aref Ruqaa", var(--f-display); font-weight: 700; font-size: 22px; color: #c8232c; }
 .gh-qn small { color: var(--muted); font-size: 12px; }
 .gh-qt { font-family: var(--f-display); font-size: 25px; line-height: 1.3; }
-.gh-timer { height: 6px; background: #eee9da; border-radius: 99px; overflow: hidden; }
-.gh-timer i { display: block; height: 100%; background: var(--omr); transform-origin: right; transition: transform .2s linear; }
-.gh-opts { display: grid; gap: 8px; }
-.gh-opt { display: flex; align-items: center; gap: 12px; text-align: start; font: 700 17px var(--f-body); color: var(--ink); background: #fff; border: 1.5px solid #e2c3c8; border-radius: 10px; padding: 10px 12px; cursor: pointer; }
-.gh-opt i, .gh-mk i { flex: none; width: 30px; height: 30px; border-radius: 50%; border: 2px solid var(--omr); color: var(--omr); display: grid; place-items: center; font: 700 14px var(--f-body); font-style: normal; }
-.gh-opt[aria-pressed="true"] { border-color: var(--ink); background: #fff8f9; }
-.gh-opt[aria-pressed="true"] i { background: #2b2f3a; border-color: #2b2f3a; color: #fff; box-shadow: inset 0 0 0 3px #555b69; }
-.gh-opt:disabled { cursor: default; opacity: .8; }
-/* the folded note: the same for everyone until you hold it */
+/* the clock is a red string running out */
+.gh-timer { height: 4px; background: rgba(43,26,14,.12); border-radius: 99px; overflow: hidden; }
+.gh-timer i { display: block; height: 100%; background: #b3121c; transform-origin: right; transition: transform .2s linear; }
+/* the options are sticky notes */
+.gh-opts { display: grid; gap: 10px; }
+.gh-opt { --note: #fff2a1; display: flex; align-items: center; gap: 12px; text-align: start; font: 700 17px var(--f-body); color: var(--ink); background: var(--note); border: 0; border-radius: 2px; padding: 11px 12px; cursor: pointer; box-shadow: 0 1px 1px rgba(0,0,0,.15), 2px 5px 8px rgba(60,40,10,.25); transform: rotate(-.6deg); }
+.gh-opt:nth-child(2) { --note: #ffd0dc; transform: rotate(.5deg); } .gh-opt:nth-child(3) { --note: #cdf0c4; transform: rotate(-.3deg); } .gh-opt:nth-child(4) { --note: #cbe4ff; transform: rotate(.7deg); }
+.gh-opt i, .gh-mk i { flex: none; width: 30px; height: 30px; border-radius: 50%; border: 2px solid var(--ink); background: rgba(255,255,255,.7); color: var(--ink); display: grid; place-items: center; font: 700 14px var(--f-body); font-style: normal; }
+.gh-opt[aria-pressed="true"] { outline: 3px solid #b3121c; outline-offset: 4px; border-radius: 3px; }
+.gh-opt[aria-pressed="true"] i { background: #b3121c; border-color: #b3121c; color: #fff; }
+.gh-opt:disabled { cursor: default; opacity: .85; }
+/* the private note is a sealed manila envelope; everyone has one */
 .gh-note { position: relative; width: 100%; min-height: 128px; border: 0; padding: 0; background: none; cursor: pointer; touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
 .gh-note.big { min-height: 170px; }
-.gh-fold, .gh-in { position: absolute; inset: 0; display: grid; place-content: center; gap: 4px; text-align: center; border-radius: 8px; padding: 10px; }
-.gh-fold { background: repeating-linear-gradient(to bottom, #fffdf3 0 22px, #dfe7f3 22px 23px); border: 2px dashed #b9b29b; color: var(--soft); font: 700 15px var(--f-body); transform: rotate(-1deg); box-shadow: 3px 4px 0 rgba(27,42,74,.1); }
-.gh-fold small { font-weight: 500; color: var(--muted); font-size: 12px; }
-.gh-in { background: #fffdf3; border: 2px solid var(--ink); visibility: hidden; }
+.gh-fold, .gh-in { position: absolute; inset: 0; display: grid; place-content: center; gap: 4px; text-align: center; border-radius: 3px; padding: 10px; }
+.gh-fold { background: linear-gradient(162deg, #d6b277 0 47%, transparent 47.5%) top / 100% 52% no-repeat, linear-gradient(18deg, transparent 52.5%, #d6b277 53%) top / 100% 52% no-repeat, #e4c58d; color: #4a3020; font: 700 15px var(--f-body); transform: rotate(-1deg); box-shadow: 0 1px 2px rgba(0,0,0,.25), 3px 8px 14px rgba(40,20,5,.35); padding-top: 34px; }
+.gh-fold::after { content: "سري"; position: absolute; top: 10px; left: 16px; font: 700 18px "Aref Ruqaa", var(--f-display); color: #b3121c; border: 2px solid #b3121c; border-radius: 4px; padding: 0 10px; transform: rotate(-12deg); opacity: .85; }
+.gh-fold small { font-weight: 500; color: #6a4a2c; font-size: 12px; }
+.gh-in { background: #fffdf5; border-top: 3px solid #c8232c; box-shadow: 0 1px 2px rgba(0,0,0,.25), 3px 8px 14px rgba(40,20,5,.35); visibility: hidden; }
 .gh-note.open .gh-in { visibility: visible; } .gh-note.open .gh-fold { visibility: hidden; }
 .gh-n1 { font-family: "Aref Ruqaa", var(--f-display); font-weight: 700; color: #c8232c; font-size: 22px; }
 .gh-n2 { font-family: var(--f-display); font-size: 22px; color: var(--ink); }
 .gh-in small { color: var(--muted); font: 500 13px var(--f-body); }
-.gh-classes { display: grid; gap: 6px; }
-.gh-cl { display: flex; align-items: center; gap: 8px; background: #fff; border-inline-start: 4px solid var(--pen); border-radius: 6px; padding: 6px 8px; }
+.gh-classes { display: grid; gap: 8px; }
+.gh-cl { display: flex; align-items: center; gap: 8px; border-inline-start: 5px solid var(--pen); padding: 7px 9px; }
 .gh-cl small { margin-inline-start: auto; color: var(--muted); }
 .gh-ans { font-size: 16px; } .gh-ans b { font-family: var(--f-display); font-weight: 400; font-size: 22px; color: var(--ok); }
-.gh-res { background: #fff; border: 2px solid color-mix(in srgb, var(--pen) 40%, #fff); border-inline-start: 6px solid var(--pen); border-radius: 8px; padding: 10px 12px; display: grid; gap: 8px; }
-.gh-res.big { border-color: var(--pen); }
+.gh-res { --pin: var(--pen); border-top: 4px solid var(--pen); padding: 14px 12px 10px; display: grid; gap: 8px; }
+.gh-res:nth-of-type(even) { transform: rotate(.4deg); }
 .gh-res > .gh-chip { justify-self: start; }
 .gh-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
-.gh-stamp { font-family: "Aref Ruqaa", var(--f-display); font-weight: 700; font-size: 18px; color: var(--muted); border: 2px solid currentColor; border-radius: 6px; padding: 0 10px; transform: rotate(-4deg); white-space: nowrap; }
-.gh-stamp.ok { color: #1f8a53; } .gh-stamp.no { color: #c8232c; }
-.gh-stamp.big { font-size: 34px; color: #c8232c; justify-self: center; padding: 2px 18px; }
-.gh-mk { display: flex; align-items: center; gap: 10px; padding: 4px 6px; border-radius: 8px; }
+.gh-stamp { font-family: "Aref Ruqaa", var(--f-display); font-weight: 700; font-size: 18px; color: var(--muted); border: 2px solid currentColor; border-radius: 4px; padding: 0 10px; transform: rotate(-4deg); white-space: nowrap; }
+.gh-stamp.ok { color: #1f7a46; } .gh-stamp.no { color: #c8232c; }
+.gh-stamp.big { font-size: 34px; color: #c8232c; justify-self: center; padding: 2px 18px; border-width: 3px; }
+.gh-mk { display: flex; align-items: center; gap: 10px; padding: 5px 6px; border-radius: 3px; }
 .gh-mk .t { flex: 1; font-weight: 700; font-size: 15px; }
-.gh-mk.right { background: #eaf6ee; } .gh-mk.right i { background: #1f8a53; border-color: #1f8a53; color: #fff; }
-.gh-mk.pick:not(.right) { background: #fdecee; } .gh-mk.pick:not(.right) i { background: #2b2f3a; border-color: #2b2f3a; color: #fff; }
-.gh-pick { display: grid; grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)); gap: 8px; }
-.gh-pick button { display: grid; justify-items: center; gap: 4px; padding: 8px 4px; background: #fff; border: 2px solid #e2dccb; border-radius: 10px; font: 700 14px var(--f-body); color: var(--ink); cursor: pointer; }
-.gh-pick button small { color: #c8232c; font-size: 11px; }
-.gh-pick button[aria-pressed="true"] { border-color: #c8232c; background: #fff1f2; box-shadow: 0 0 0 2px #c8232c inset; }
-.gh-acc { display: flex; align-items: center; gap: 10px; } .gh-acc b { font-family: var(--f-display); font-weight: 400; font-size: 22px; } .gh-acc span { color: var(--muted); font-size: 13px; }
-.gh-votes { display: flex; flex-wrap: wrap; gap: 6px 12px; font-size: 12px; color: var(--muted); }
+.gh-mk.right { background: #e3f4e7; } .gh-mk.right i { background: #1f7a46; border-color: #1f7a46; color: #fff; }
+.gh-mk.pick:not(.right) { background: #fde6e8; } .gh-mk.pick:not(.right) i { background: #b3121c; border-color: #b3121c; color: #fff; }
+/* the suspects are polaroids; the vote is a red marker circle */
+.gh-pick { display: grid; grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)); gap: 14px 10px; padding: 4px; }
+.gh-pick button { position: relative; display: grid; justify-items: center; gap: 4px; padding: 7px 7px 6px; background: #fff; border: 0; border-radius: 2px; font: 700 15px "Aref Ruqaa", var(--f-display); color: var(--ink); cursor: pointer; box-shadow: 0 1px 2px rgba(0,0,0,.25), 2px 6px 10px rgba(40,20,5,.3); transform: rotate(-2deg); }
+.gh-pick button:nth-child(even) { transform: rotate(1.8deg); } .gh-pick button:nth-child(3n) { transform: rotate(-.6deg); }
+.gh-pick button .av { width: 100%; max-width: 74px; height: auto; background: #e9e2d2; }
+.gh-pick button small { color: #c8232c; font: 700 11px var(--f-body); }
+.gh-pick button[aria-pressed="true"]::after { content: ""; position: absolute; inset: -7px; border: 3px solid #c8232c; border-radius: 48% 52% 44% 56% / 56% 44% 56% 44%; transform: rotate(-5deg); pointer-events: none; }
+.gh-acc { display: flex; align-items: center; gap: 12px; }
+.gh-acc .av { background: #fff; padding: 4px 4px 12px; box-shadow: 0 1px 2px rgba(0,0,0,.25), 2px 6px 10px rgba(40,20,5,.3); transform: rotate(-3deg); }
+.gh-acc b { font-family: var(--f-display); font-weight: 400; font-size: 22px; } .gh-acc span { color: var(--muted); font-size: 13px; }
+.gh-votes { display: flex; flex-wrap: wrap; gap: 6px 12px; font-size: 13px; color: #b3121c; font-weight: 700; }
 .gh-votes span { display: inline-flex; align-items: center; gap: 2px; }
 .gh-ranks { display: grid; gap: 6px; }
-.gh-rk { display: flex; align-items: center; gap: 10px; padding: 6px 8px; border-radius: 8px; background: #faf8f1; }
+.gh-rk { display: flex; align-items: center; gap: 10px; padding: 6px 8px; border-radius: 2px; background: #f6ecd8; }
 .gh-rk.me { box-shadow: 0 0 0 2px var(--pen) inset; }
 .gh-rk .n { font-family: var(--f-display); font-size: 20px; width: 20px; } .gh-rk small { color: var(--muted); margin-inline-start: auto; } .gh-rk b { font-family: var(--f-display); font-weight: 400; font-size: 22px; }
 .gh-ch { display: flex; align-items: center; gap: 10px; }
+.gh-ch .av { background: #fff; padding: 3px 3px 9px; box-shadow: 0 1px 3px rgba(0,0,0,.3); }
 .gh-ch span { display: grid; } .gh-ch small { color: var(--muted); font-size: 12px; } .gh-ch i { margin-inline-start: auto; font-style: normal; font-family: var(--f-display); font-size: 20px; color: var(--muted); }
 .gh-ch.free small { color: #c8232c; font-weight: 700; } .gh-ch.free i { color: #c8232c; }
-.gh-aw { display: flex; justify-content: space-between; align-items: center; gap: 8px; border-bottom: 1.5px dashed #c9c2ad; padding: 6px 0; }
-.gh-aw b { display: inline-flex; align-items: center; gap: 6px; color: #c8232c; }
-.gart.omr { background: #f3f1e8; background-image: radial-gradient(rgba(27,42,74,.08) 1px, transparent 1.4px); background-size: 12px 12px; }
+.gh-aw { display: flex; justify-content: space-between; align-items: center; gap: 8px; border-bottom: 1.5px dashed rgba(43,26,14,.4); padding: 6px 0; }
+.gh-aw b { display: inline-flex; align-items: center; gap: 6px; color: #7d0d14; }
+.gart.cork { background-color: #c08a52; background-image: radial-gradient(rgba(92,56,24,.5) 1px, transparent 1.6px), radial-gradient(rgba(255,236,200,.38) 1px, transparent 1.5px); background-size: 7px 7px, 11px 11px; background-position: 0 0, 3px 5px; }
 /* free sessions and codes */
 .modal-card { grid-template-columns: minmax(0, 1fr); }
 .passbox { max-width: none; margin-top: 0; }
