@@ -8,6 +8,7 @@
     { id: "trabee", line: "حوش المدرسة بلاط: اختاروا بلاطة، جاوبوا صح ولوّنوها هي واللي حولها بطباشيركم. والغلط يروح للفريق الثاني.", tags: ["٢ إلى ٤ فرق", "حتى ٣٠ لاعب", "أسئلة"], art: "yard" },
     { id: "alqab", line: "كل واحد يتخبى ورا لقب سري، والأسئلة تفضحه. أسرع جواب صح يتهم: مين صاحب «ملك الأعذار»؟", tags: ["٤ إلى ٢٠ لاعب", "فردي أو ثنائيات", "تخمين"], art: "rollcall" },
     { id: "hisn", line: "لعبة السفن على ورق الكراسة: كل فريق يخبي قائده وجنوده، وكل جواب صح قذيفة على حصن الخصم. آخر حصن يصمد يفوز.", tags: ["٢ إلى ٥ فرق", "حتى ٣٠ لاعب", "تصويب"], art: "squared" },
+    { id: "ghash", line: "اختبار جماعي وفي كل فصل غشاش معه ورقة الغش. يعرف الجواب ويبيكم تغلطون. كل ٣ أسئلة تفتيش: مين الغشاش؟", tags: ["٤ إلى ٣٠ لاعب", "فصل أو أكثر", "شك وأسئلة"], art: "omr" },
     { id: "foldit", line: "لعبة الدفتر القديمة: نقطة حبر في نصفك، تنطوي الورقة، وتنطبع على جنود خصمك.", tags: ["لاعبين", "والباقي يتفرجون", "مهارة"], art: "desk", solo: FOLD_IT },
   ];
   function art(g) {
@@ -25,6 +26,18 @@
       return `<div class="gart squared"><svg viewBox="0 0 220 150" width="250" height="170" aria-hidden="true"><rect x="${ox - 4}" y="${oy - 4}" width="${cell * 5 + 8}" height="${cell * 5 + 8}" rx="4" fill="#fff" stroke="#1d3fb8" stroke-width="2.5"/>${g2}
         <g transform="rotate(-8 200 40)"><rect x="170" y="22" width="50" height="22" rx="5" fill="#fff" stroke="#c8232c" stroke-width="2"/><text x="195" y="38" text-anchor="middle" font-family="Aref Ruqaa, Lalezar, serif" font-weight="700" font-size="13" fill="#c8232c">إصابة!</text></g>
         <path d="M14 120q14-30 34-42" stroke="#1b2a4a" stroke-width="2" stroke-dasharray="4 4" fill="none"/><circle cx="14" cy="122" r="5" fill="#1b2a4a"/>
+      </svg></div>`;
+    }
+    if (g.art === "omr") {
+      // an answer sheet in OMR pink, pencil marks, and a cheat note slipping out of a sleeve
+      let rows = "";
+      ["أ", "ب", "ج", "د"].forEach((_, r) => { const y = 34 + r * 26; rows += `<text x="146" y="${y + 5}" font-family="IBM Plex Sans Arabic, sans-serif" font-size="12" font-weight="700" fill="#1b2a4a">${["١", "٢", "٣", "٤"][r]}</text>`;
+        [0, 1, 2, 3].forEach((k) => { const x = 124 - k * 24, on = [2, 0, 3, 1][r] === k; rows += `<circle cx="${x}" cy="${y}" r="8.5" fill="${on ? "#2b2f3a" : "#fff"}" stroke="${on ? "#2b2f3a" : "#d6455b"}" stroke-width="2"/>${on ? "" : `<text x="${x}" y="${y + 4}" text-anchor="middle" font-family="IBM Plex Sans Arabic, sans-serif" font-size="9" font-weight="700" fill="#d6455b">${["أ", "ب", "ج", "د"][k]}</text>`}`; }); });
+      return `<div class="gart omr"><svg viewBox="0 0 220 150" width="250" height="170" aria-hidden="true">
+        <g transform="rotate(-3 95 75)"><rect x="40" y="10" width="124" height="128" rx="4" fill="#fff" stroke="#1b2a4a" stroke-width="2.5"/><path d="M48 22h108" stroke="#d6455b" stroke-width="1.5" stroke-dasharray="3 3"/>${rows}</g>
+        <g transform="rotate(12 182 92)"><rect x="160" y="62" width="48" height="58" rx="3" fill="#fffdf3" stroke="#1b2a4a" stroke-width="2"/><path d="M164 74h40M164 84h40M164 94h40M164 104h40" stroke="#dfe7f3" stroke-width="1.5"/><text x="184" y="100" text-anchor="middle" font-family="Aref Ruqaa, Lalezar, serif" font-weight="700" font-size="22" fill="#c8232c">ج ✓</text></g>
+        <g transform="rotate(-10 30 110)"><rect x="6" y="98" width="62" height="24" rx="5" fill="#fff" stroke="#c8232c" stroke-width="2"/><text x="37" y="115" text-anchor="middle" font-family="Aref Ruqaa, Lalezar, serif" font-weight="700" font-size="14" fill="#c8232c">غشاش؟</text></g>
+        <text x="190" y="40" text-anchor="middle" font-size="26">👀</text>
       </svg></div>`;
     }
     if (g.art === "rollcall") {
@@ -114,7 +127,7 @@
         <div class="faq">
           <details><summary>لازم أحمّل تطبيق؟</summary><p>لا. تدخلون من متصفح الجوال بالرمز، واللي يبي التطبيق يقدر ينزله.</p></details>
           <details><summary>نحتاج تلفزيون أو بروجكتر؟</summary><p>لا. كل شي يطلع في جوال كل لاعب: الأسئلة والتصويت والنتائج. التلفزيون عرض إضافي بس.</p></details>
-          <details><summary>كم لاعب؟</summary><p>لين ٣٠ في الغرفة. «خط ثلاثة» يتقسمون فيها فريقين، و«ترابيع» لين أربع فرق، و«انكشف!» لين ٢٠ لاعب، و«حرب الكراريس» لين ٥ فرق، و«اطوِها!» يلعبها اثنين والباقي يتفرجون.</p></details>
+          <details><summary>كم لاعب؟</summary><p>لين ٣٠ في الغرفة. «خط ثلاثة» يتقسمون فيها فريقين، و«ترابيع» لين أربع فرق، و«انكشف!» لين ٢٠ لاعب، و«حرب الكراريس» لين ٥ فرق، و«مين الغشاش؟» لين ٣٠ لاعب، و«اطوِها!» يلعبها اثنين والباقي يتفرجون.</p></details>
           <details><summary>نقدر نغيّر اللعبة بدون ما نطلع؟</summary><p>إيه. المضيف يختار اللعبة من شاشة «وينكم!»، والكل يبقى في نفس الغرفة.</p></details>
           <details><summary>كم تكلف؟</summary><p>كل لعبة لها جلسة مجانية. بعدها يفتح المضيف كل الألعاب بكود، تاخذه من حسابنا في انستقرام <a href="https://instagram.com/fos7a.games" target="_blank" rel="noopener">@fos7a.games</a>. واللي يدخلون الغرفة يلعبون مجاناً دائماً.</p></details>
           <details><summary>وش تحفظون عني؟</summary><p>ولا شي على سيرفر. اسمك وشخصيتك في جوالك بس، واللعب يمر بين جوالات الغرفة ويروح. التفاصيل في <a href="privacy.html">صفحة الخصوصية</a>.</p></details>

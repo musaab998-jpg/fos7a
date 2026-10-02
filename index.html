@@ -553,6 +553,85 @@ button.hz-chip { cursor: pointer; }
 .hz-all > div { display: grid; gap: 4px; justify-items: start; }
 .hz-all .hz-grid.small { width: 100%; }
 .gart.squared { background-color: #fbfdff; background-image: linear-gradient(#cfe0f2 1px, transparent 1px), linear-gradient(90deg, #cfe0f2 1px, transparent 1px); background-size: 14px 14px; }
+/* ---- مين الغشاش؟ is an exam: question sheets, answer-sheet bubbles in OMR pink, the teacher's red pen ---- */
+body[data-theme="ghash"] {
+  --desk: #f3f1e8; --desk-2: #ffffff; --desk-3: #e9e5d6; --line: #d9d3c0; --chalk: #1b2a4a; --muted: #5d6887; --soft: #3b4766;
+  --marker: #1b2a4a; --marker-deep: #0d162b; --marker-ink: #ffc933; --paper: #ffffff; --rule: #e6e1d2; --ink: #1b2a4a; --ok: #1f8a53; --gain: #1f8a53; --sel: #ffc933;
+  --omr: #d6455b; --pen: #c8232c;
+  background-color: #f3f1e8; background-image: radial-gradient(rgba(27,42,74,.07) 1px, transparent 1.4px); background-size: 14px 14px;
+  color: var(--chalk);
+}
+body[data-theme="ghash"] .gtop { border-bottom: 2px solid var(--ink); margin-bottom: 8px; background: #f3f1e8; }
+.gh-h { font-family: var(--f-display); font-size: 28px; line-height: 1.15; }
+.gh-pen { font-family: "Aref Ruqaa", var(--f-display); font-weight: 700; color: #c8232c; font-size: 18px; line-height: 1.4; margin: 0; text-align: center; }
+.gh-paper { background: #fff; border: 2px solid var(--ink); border-radius: 6px; padding: 14px; display: grid; gap: 10px; box-shadow: 4px 5px 0 rgba(27,42,74,.12); position: relative; }
+.gh-form { display: flex; justify-content: space-between; gap: 8px; font-size: 13px; color: var(--muted); border-bottom: 1.5px dashed #c9c2ad; padding-bottom: 8px; }
+.gh-form b { color: var(--ink); font-family: "Aref Ruqaa", var(--f-display); font-size: 16px; }
+.gh-me { display: flex; align-items: center; gap: 8px; }
+.gh-me > b { margin-inline-start: auto; font-family: var(--f-display); font-size: 22px; font-weight: 400; color: var(--pen); }
+.gh-faces { display: inline-flex; flex-wrap: wrap; gap: 2px; align-items: center; }
+.gh-faces .av { flex: none; }
+.gh-chip { display: inline-flex; align-items: center; gap: 5px; font: 700 13px var(--f-body); color: var(--pen); border: 2px solid var(--pen); border-radius: 6px; padding: 1px 9px; background: #fff; white-space: nowrap; }
+.gh-chip.on { background: var(--pen); color: #fff; }
+.gh-board { display: flex; gap: 6px; flex-wrap: wrap; }
+.gh-sc { display: inline-flex; gap: 6px; align-items: center; font: 700 13px var(--f-body); color: var(--pen); border: 1.5px solid color-mix(in srgb, var(--pen) 45%, #fff); border-radius: 6px; padding: 1px 8px; background: #fff; }
+.gh-sc b { font-family: var(--f-display); font-weight: 400; font-size: 16px; color: var(--ink); }
+.gh-sc.me { border-color: var(--pen); box-shadow: 0 2px 0 var(--pen); }
+.gh-qn { display: flex; align-items: baseline; gap: 8px; }
+.gh-qn span { font-family: "Aref Ruqaa", var(--f-display); font-weight: 700; font-size: 22px; color: #c8232c; }
+.gh-qn small { color: var(--muted); font-size: 12px; }
+.gh-qt { font-family: var(--f-display); font-size: 25px; line-height: 1.3; }
+.gh-timer { height: 6px; background: #eee9da; border-radius: 99px; overflow: hidden; }
+.gh-timer i { display: block; height: 100%; background: var(--omr); transform-origin: right; transition: transform .2s linear; }
+.gh-opts { display: grid; gap: 8px; }
+.gh-opt { display: flex; align-items: center; gap: 12px; text-align: start; font: 700 17px var(--f-body); color: var(--ink); background: #fff; border: 1.5px solid #e2c3c8; border-radius: 10px; padding: 10px 12px; cursor: pointer; }
+.gh-opt i, .gh-mk i { flex: none; width: 30px; height: 30px; border-radius: 50%; border: 2px solid var(--omr); color: var(--omr); display: grid; place-items: center; font: 700 14px var(--f-body); font-style: normal; }
+.gh-opt[aria-pressed="true"] { border-color: var(--ink); background: #fff8f9; }
+.gh-opt[aria-pressed="true"] i { background: #2b2f3a; border-color: #2b2f3a; color: #fff; box-shadow: inset 0 0 0 3px #555b69; }
+.gh-opt:disabled { cursor: default; opacity: .8; }
+/* the folded note: the same for everyone until you hold it */
+.gh-note { position: relative; width: 100%; min-height: 128px; border: 0; padding: 0; background: none; cursor: pointer; touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
+.gh-note.big { min-height: 170px; }
+.gh-fold, .gh-in { position: absolute; inset: 0; display: grid; place-content: center; gap: 4px; text-align: center; border-radius: 8px; padding: 10px; }
+.gh-fold { background: repeating-linear-gradient(to bottom, #fffdf3 0 22px, #dfe7f3 22px 23px); border: 2px dashed #b9b29b; color: var(--soft); font: 700 15px var(--f-body); transform: rotate(-1deg); box-shadow: 3px 4px 0 rgba(27,42,74,.1); }
+.gh-fold small { font-weight: 500; color: var(--muted); font-size: 12px; }
+.gh-in { background: #fffdf3; border: 2px solid var(--ink); visibility: hidden; }
+.gh-note.open .gh-in { visibility: visible; } .gh-note.open .gh-fold { visibility: hidden; }
+.gh-n1 { font-family: "Aref Ruqaa", var(--f-display); font-weight: 700; color: #c8232c; font-size: 22px; }
+.gh-n2 { font-family: var(--f-display); font-size: 22px; color: var(--ink); }
+.gh-in small { color: var(--muted); font: 500 13px var(--f-body); }
+.gh-classes { display: grid; gap: 6px; }
+.gh-cl { display: flex; align-items: center; gap: 8px; background: #fff; border-inline-start: 4px solid var(--pen); border-radius: 6px; padding: 6px 8px; }
+.gh-cl small { margin-inline-start: auto; color: var(--muted); }
+.gh-ans { font-size: 16px; } .gh-ans b { font-family: var(--f-display); font-weight: 400; font-size: 22px; color: var(--ok); }
+.gh-res { background: #fff; border: 2px solid color-mix(in srgb, var(--pen) 40%, #fff); border-inline-start: 6px solid var(--pen); border-radius: 8px; padding: 10px 12px; display: grid; gap: 8px; }
+.gh-res.big { border-color: var(--pen); }
+.gh-res > .gh-chip { justify-self: start; }
+.gh-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+.gh-stamp { font-family: "Aref Ruqaa", var(--f-display); font-weight: 700; font-size: 18px; color: var(--muted); border: 2px solid currentColor; border-radius: 6px; padding: 0 10px; transform: rotate(-4deg); white-space: nowrap; }
+.gh-stamp.ok { color: #1f8a53; } .gh-stamp.no { color: #c8232c; }
+.gh-stamp.big { font-size: 34px; color: #c8232c; justify-self: center; padding: 2px 18px; }
+.gh-mk { display: flex; align-items: center; gap: 10px; padding: 4px 6px; border-radius: 8px; }
+.gh-mk .t { flex: 1; font-weight: 700; font-size: 15px; }
+.gh-mk.right { background: #eaf6ee; } .gh-mk.right i { background: #1f8a53; border-color: #1f8a53; color: #fff; }
+.gh-mk.pick:not(.right) { background: #fdecee; } .gh-mk.pick:not(.right) i { background: #2b2f3a; border-color: #2b2f3a; color: #fff; }
+.gh-pick { display: grid; grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)); gap: 8px; }
+.gh-pick button { display: grid; justify-items: center; gap: 4px; padding: 8px 4px; background: #fff; border: 2px solid #e2dccb; border-radius: 10px; font: 700 14px var(--f-body); color: var(--ink); cursor: pointer; }
+.gh-pick button small { color: #c8232c; font-size: 11px; }
+.gh-pick button[aria-pressed="true"] { border-color: #c8232c; background: #fff1f2; box-shadow: 0 0 0 2px #c8232c inset; }
+.gh-acc { display: flex; align-items: center; gap: 10px; } .gh-acc b { font-family: var(--f-display); font-weight: 400; font-size: 22px; } .gh-acc span { color: var(--muted); font-size: 13px; }
+.gh-votes { display: flex; flex-wrap: wrap; gap: 6px 12px; font-size: 12px; color: var(--muted); }
+.gh-votes span { display: inline-flex; align-items: center; gap: 2px; }
+.gh-ranks { display: grid; gap: 6px; }
+.gh-rk { display: flex; align-items: center; gap: 10px; padding: 6px 8px; border-radius: 8px; background: #faf8f1; }
+.gh-rk.me { box-shadow: 0 0 0 2px var(--pen) inset; }
+.gh-rk .n { font-family: var(--f-display); font-size: 20px; width: 20px; } .gh-rk small { color: var(--muted); margin-inline-start: auto; } .gh-rk b { font-family: var(--f-display); font-weight: 400; font-size: 22px; }
+.gh-ch { display: flex; align-items: center; gap: 10px; }
+.gh-ch span { display: grid; } .gh-ch small { color: var(--muted); font-size: 12px; } .gh-ch i { margin-inline-start: auto; font-style: normal; font-family: var(--f-display); font-size: 20px; color: var(--muted); }
+.gh-ch.free small { color: #c8232c; font-weight: 700; } .gh-ch.free i { color: #c8232c; }
+.gh-aw { display: flex; justify-content: space-between; align-items: center; gap: 8px; border-bottom: 1.5px dashed #c9c2ad; padding: 6px 0; }
+.gh-aw b { display: inline-flex; align-items: center; gap: 6px; color: #c8232c; }
+.gart.omr { background: #f3f1e8; background-image: radial-gradient(rgba(27,42,74,.08) 1px, transparent 1.4px); background-size: 12px 12px; }
 /* free sessions and codes */
 .modal-card { grid-template-columns: minmax(0, 1fr); }
 .passbox { max-width: none; margin-top: 0; }
@@ -631,6 +710,7 @@ button.pl { border: 1px solid var(--line); background: var(--desk-2); width: 100
 <script src="js/trabee.js"></script>
 <script src="js/alqab.js"></script>
 <script src="js/hisn.js"></script>
+<script src="js/ghash.js"></script>
 <script src="js/shell.js"></script>
 
 <script>
