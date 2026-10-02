@@ -73,21 +73,28 @@
         <g transform="translate(6 -4) scale(.9) rotate(7 186 30)"><path d="M160 10h44v38h-36l-8-8z" fill="#fff" stroke="#1b2a4a" stroke-width="2.5" stroke-linejoin="round"/><path d="M160 40l8 0v8z" fill="#e8dcc0" stroke="#1b2a4a" stroke-width="2" stroke-linejoin="round"/><text x="183" y="38" text-anchor="middle" font-family="Lalezar, sans-serif" font-size="28" fill="#1b2a4a">؟</text></g>
       </svg></div>`;
     }
-    // اطوِها: a notebook page under the lamp, the top half folding down onto the soldiers, a ballpoint blob, a pen
-    return `<div class="gart desk"><svg viewBox="0 0 220 150" width="250" height="170" aria-hidden="true"><defs><linearGradient id="dflap" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#d9dbe6"/><stop offset="1" stop-color="#fbfbf5"/></linearGradient></defs>
-      <ellipse cx="110" cy="80" rx="96" ry="66" fill="#ffd678" opacity=".05"/>
-      <g transform="rotate(-5 110 80)">
-        <rect x="56" y="83" width="116" height="64" rx="3" fill="#000" opacity=".35"/>
-        <rect x="52" y="78" width="116" height="64" rx="3" fill="#fbfbf5"/>
-        <g stroke="#c7d7ea" stroke-width="1.2">${[90, 102, 114, 126].map((y) => `<path d="M52 ${y}h116"/>`).join("")}</g><path d="M150 78v64" stroke="#e46b6b" stroke-width="1.4"/>
-        <path d="M95 112c-2-9 5-15 13-13 7-4 15 2 13 9 6 5 2 14-6 13-4 6-13 6-16 0-7 1-10-5-4-9z" fill="#1d3fb8"/><circle cx="128" cy="100" r="3" fill="#1d3fb8"/><circle cx="88" cy="122" r="2.2" fill="#1d3fb8"/><circle cx="133" cy="118" r="1.6" fill="#1d3fb8"/><path d="M108 125q1 7-1 11" stroke="#1d3fb8" stroke-width="3" stroke-linecap="round" fill="none"/>
-        <path d="M52 78h116l-10 -46h-96z" fill="url(#dflap)"/><g stroke="#c7d7ea" stroke-width="1" opacity=".8">${[68, 58, 48, 38].map((y, k) => `<path d="M${54 + (78 - y) * 0.2} ${y}h${112 - (78 - y) * 0.4}"/>`).join("")}</g>
-        <g stroke="#c8232c" stroke-width="2.4" stroke-linecap="round" fill="none"><circle cx="84" cy="50" r="4.5"/><path d="M84 55v9M78.5 58h11M84 64l-4 6M84 64l4 6"/><circle cx="132" cy="54" r="4.5"/><path d="M132 59v9M126.5 62h11M132 68l-4 6M132 68l4 6"/></g>
-        <path d="M76 54c-1-6 4-10 9-7 5-3 10 2 8 7 4 3 0 9-5 7-3 4-9 3-10-1-4 0-5-4-2-6z" fill="#1d3fb8" opacity=".6"/>
-        <path d="M44 78h132" stroke="#ffc933" stroke-width="2.4" stroke-dasharray="7 5"/>
-        <path d="M184 60q8 18 0 34" stroke="#ffc933" stroke-width="2.6" fill="none" stroke-linecap="round"/><path d="M178 90l6 6 5-7" stroke="#ffc933" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+    // اطوِها: an open notebook on the desk under the lamp: red soldiers on one page, blue on the other,
+    // a ballpoint blob on the blue page and its mirror print landing on a red soldier when the page folds
+    const man = (x, y, c, hit) => `<g stroke="${c}" stroke-width="2.2" stroke-linecap="round" fill="none"${hit ? ' opacity=".55"' : ""}><circle cx="${x}" cy="${y}" r="4"/><path d="M${x} ${y + 4}v8M${x - 5} ${y + 7}h10M${x} ${y + 12}l-4 6M${x} ${y + 12}l4 6"/></g>`;
+    const blot = (x, y, o) => `<g fill="#1d3fb8" opacity="${o}"><path d="M${x - 8} ${y}c-2-7 4-11 9-9 5-3 11 1 9 7 5 3 2 10-4 9-3 5-10 4-11-1-5 0-6-4-3-6z"/><circle cx="${x + 11}" cy="${y - 8}" r="2"/><circle cx="${x - 12}" cy="${y + 7}" r="1.5"/></g>`;
+    const lines = (x0) => [44, 54, 64, 74, 84, 94, 104, 114].map((y) => `<path d="M${x0} ${y}h66"/>`).join("");
+    return `<div class="gart desk"><svg viewBox="0 0 220 150" width="250" height="170" style="overflow:visible" aria-hidden="true">
+      <defs><radialGradient id="dkLamp" cx=".78" cy=".08" r=".9"><stop offset="0" stop-color="#ffd678" stop-opacity=".42"/><stop offset=".55" stop-color="#ffd678" stop-opacity=".08"/><stop offset="1" stop-color="#ffd678" stop-opacity="0"/></radialGradient>
+        <linearGradient id="dkSpine" x1="0" x2="1"><stop offset="0" stop-color="#000" stop-opacity="0"/><stop offset=".5" stop-color="#000" stop-opacity=".16"/><stop offset="1" stop-color="#000" stop-opacity="0"/></linearGradient></defs>
+      
+      <g transform="rotate(-4 110 82)">
+        <rect x="40" y="36" width="140" height="94" rx="3" fill="#000" opacity=".35" transform="translate(4 5)"/>
+        <rect x="40" y="34" width="70" height="94" rx="2" fill="#fbfbf5"/><rect x="110" y="34" width="70" height="94" rx="2" fill="#f4f4ec"/>
+        <g stroke="#c7d7ea" stroke-width="1">${lines(42)}${lines(112)}</g><path d="M50 34v94M170 34v94" stroke="#e46b6b" stroke-width="1.2"/>
+        <rect x="98" y="34" width="24" height="94" fill="url(#dkSpine)"/>
+        <path d="M110 26v110" stroke="#ffc933" stroke-width="2.2" stroke-dasharray="6 5"/>
+        ${man(66, 48, "#c8232c")}${man(84, 92, "#c8232c", true)}${man(134, 48, "#1d3fb8")}${man(160, 76, "#1d3fb8")}
+        ${blot(136, 104, 1)}${blot(84, 104, .45)}
+        <g stroke="#c8232c" stroke-width="2.6" stroke-linecap="round"><path d="M76 90l16 16M92 90l-16 16"/></g>
+        <path d="M156 24q-46-30-92 0" stroke="#ffc933" stroke-width="2.6" fill="none" stroke-linecap="round"/><path d="M70 17l-6 7 9 2" stroke="#ffc933" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
       </g>
-      <g transform="rotate(32 40 120)"><rect x="12" y="116" width="60" height="8" rx="4" fill="#e9edf5"/><rect x="12" y="116" width="14" height="8" rx="3" fill="#1d3fb8"/><path d="M72 116l9 4-9 4z" fill="#c9cfdb"/><circle cx="81" cy="120" r="1.4" fill="#1d3fb8"/></g>
+      <g transform="rotate(-28 176 128)"><rect x="140" y="124" width="62" height="8" rx="4" fill="#e9edf5"/><rect x="188" y="124" width="14" height="8" rx="3" fill="#1d3fb8"/><path d="M140 124l-9 4 9 4z" fill="#c9cfdb"/><circle cx="131" cy="128" r="1.4" fill="#1d3fb8"/></g>
+      <g transform="translate(206 -6)"><path d="M-30 4l26 0 8 22h-42z" fill="#1f4d3a"/><path d="M-38 26h42" stroke="#ffe3a0" stroke-width="3" stroke-linecap="round"/><path d="M-17 4V-40" stroke="#1a120b" stroke-width="2.5"/></g>
     </svg></div>`;
   }
   function renderHub() {
