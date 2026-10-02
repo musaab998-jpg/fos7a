@@ -66,14 +66,20 @@ ROOM_GAMES.alqab = {
     const n = S.players.length, ok = aqSizesFor(n).map((m) => m[0]);
     const h = (t) => `<p class="muted" style="font-weight:700;color:var(--soft)">${t}</p>`;
     const chips = (attr, list, cur, lab) => `<div class="chips pick">${list.map((v) => `<button type="button" class="chip" data-${attr}="${v}" aria-pressed="${cur === v}">${lab(v)}</button>`).join("")}</div>`;
-    return `${h("الفرق")}<div class="chips pick"><button type="button" class="chip" data-aqm="auto" aria-pressed="${S.mode === "auto"}">تلقائي (${AQ_SIZES.find((m) => m[0] === aqModeFor({ mode: "auto" }, n))[3]})</button>${AQ_SIZES.map(([id, , min, lab]) => `<button type="button" class="chip" data-aqm="${id}" aria-pressed="${S.mode === id}" ${ok.includes(id) ? "" : "disabled"}>${lab}${ok.includes(id) ? "" : ` (من ${AR(min)})`}</button>`).join("")}</div>
+    return `${h("الفرق")}<div class="chips pick"><button type="button" class="chip" data-aqm="auto" aria-pressed="${S.mode === "auto" || !ok.includes(S.mode)}">تلقائي (${AQ_SIZES.find((m) => m[0] === aqModeFor({ mode: "auto" }, n))[3]})</button>${AQ_SIZES.map(([id, , min, lab]) => `<button type="button" class="chip" data-aqm="${id}" aria-pressed="${S.mode === id && ok.includes(id)}" aria-disabled="${!ok.includes(id)}" data-min="${min}">${lab}${ok.includes(id) ? "" : ` (من ${AR(min)})`}</button>`).join("")}</div>
+      <p class="aq-mhint" id="aqmHint" hidden></p>
       <p class="muted">كل لاعب يعرف فريقه، فلازم يكون فيه ٤ ألقاب على الأقل. الثنائيات من ٨ لاعبين، والثلاثيات من ١٢.</p>
       ${h("كم سؤال؟")}${chips("aqn", [8, 12, 16], S.qn, (v) => AR(v))}
       ${h("وقت الإجابة")}${chips("aqt", [10, 15, 20], S.qtime, (v) => `${AR(v)} ثانية`)}
       ${h("فئات الأسئلة")}<div class="chips pick">${aqCats().map((c) => `<button type="button" class="chip" data-aqc="${c}" aria-pressed="${S.picks.includes(c)}">${c}</button>`).join("")}</div>`;
   },
   bindLobby(S) {
-    const set = (attr, key, num) => screen.querySelectorAll(`[data-${attr}]`).forEach((b) => (b.onclick = () => { if (b.disabled) return; H.S[key] = num ? +b.dataset[attr] : b.dataset[attr]; beep(700, 0.04); hostSend(); }));
+    const set = (attr, key, num) => screen.querySelectorAll(`[data-${attr}]:not([aria-disabled="true"])`).forEach((b) => (b.onclick = () => { if (b.disabled) return; H.S[key] = num ? +b.dataset[attr] : b.dataset[attr]; beep(700, 0.04); hostSend(); }));
+    // a size that needs more players explains itself instead of doing nothing
+    screen.querySelectorAll('[data-aqm][aria-disabled="true"]').forEach((b) => (b.onclick = () => {
+      const left = +b.dataset.min - H.players.length, hint = $("aqmHint"); buzz(30); beep(260, 0.08, "square", 0.05);
+      if (hint) { hint.hidden = false; hint.textContent = `ال${b.textContent.replace(/\s*\(.*\)/, "")} تبي ${AR(+b.dataset.min)} لاعبين على الأقل. باقي ${AR(left)}، وإذا دخلوا تقدر تختارها.`; }
+    }));
     set("aqm", "mode", false); set("aqn", "qn", true); set("aqt", "qtime", true);
     screen.querySelectorAll("[data-aqc]").forEach((b) => (b.onclick = () => { const c = b.dataset.aqc, p = H.S.picks; H.S.picks = p.includes(c) ? p.filter((x) => x !== c) : [...p, c]; beep(660, 0.04); hostSend(); }));
     const st = $("start");

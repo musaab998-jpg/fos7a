@@ -408,6 +408,8 @@ button.aq-stk[aria-pressed="true"] { outline: 3px solid var(--ink); outline-offs
 .aq-timer i { display: block; height: 100%; background: var(--pen); transform-origin: right; transition: transform .25s linear; }
 .aq-opt { border: 2px solid var(--ink); border-radius: 12px; padding: 9px 12px; font: 700 16px var(--f-body); color: var(--ink); background: #fff; text-align: start; width: 100%; }
 .aq-opt[aria-pressed="true"] { background: var(--yard); }
+.chip[aria-disabled="true"] { opacity: .5; border-style: dashed; }
+.aq-mhint { margin: 6px 0 0; padding: 8px 12px; border-radius: 10px; background: #fff1f2; color: #b4232c; font-weight: 700; font-size: .92rem; }
 .aq-opt:disabled { cursor: default; }
 .aq-opt:disabled:not([aria-pressed="true"]) { opacity: .6; }
 .aq-strip { display: flex; flex-wrap: wrap; gap: 8px 6px; justify-content: center; padding-top: 6px; border-top: 1px dashed var(--rule); }
