@@ -991,7 +991,16 @@ button.pl { border: 1px solid var(--line); background: var(--desk-2); width: 100
 <script src="js/shell.js"></script>
 
 <script>
-  if ("serviceWorker" in navigator && !/Fos7aApp/.test(navigator.userAgent)) addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));
+  if ("serviceWorker" in navigator && !/Fos7aApp/.test(navigator.userAgent)) {
+    addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));
+    // a new version just took over: reload once to show it, unless someone is in the middle of a room
+    const hadOne = !!navigator.serviceWorker.controller;
+    let reloaded = false;
+    navigator.serviceWorker.addEventListener("controllerchange", () => {
+      if (!hadOne || reloaded || !$("game").hidden || !$("tv").hidden) return;
+      reloaded = true; location.reload();
+    });
+  }
 </script>
 </body>
 </html>
