@@ -481,3 +481,40 @@ async function aqShareStory(d) {
   } catch (e) { if (msg) msg.textContent = e && e.name === "AbortError" ? "" : "ما قدرنا نجهز الصورة، صوّر الشاشة بدالها 📸"; }
   if (btn) btn.disabled = false;
 }
+
+// ---------------- the big screen (tv.js): the roll-call of nicknames, and every reveal ----------------
+// Who is behind a sticker is only in S once it's revealed, so the screen can't give anyone away.
+ROOM_GAMES.alqab.tv = {
+  nick: (S) => `<div class="tva"><div class="aq-h" style="text-align:center">كل واحد يختار لقبه السري في جواله…</div>
+    <div class="aq-ready" style="font-size:26px"><b>${AR(S.ready || 0)}</b> من ${AR(S.tags.length)} جاهزين</div>
+    <p class="aq-pen" style="text-align:center">لا تناظرون جوال اللي جنبكم 👀</p></div>`,
+  q(S) {
+    const q = S.q;
+    return `<div class="tva"><div class="aq-q"><div class="row" style="justify-content:space-between"><span class="aq-kind ${q.kind}">${q.kind === "pref" ? "وش تفضل؟" : `معلومات · ${esc(q.cat)}`} · سؤال ${AR(S.qi)} من ${AR(S.qn)}</span>${tvSecs(S.left)}</div>
+      <div class="aq-qt">${esc(q.q)}</div>${tvBar(S.left, S.qtime * 1000)}<div class="tva-opts">${q.o.map((o) => `<div class="aq-opt">${esc(o)}</div>`).join("")}</div></div>
+      <p class="muted" style="text-align:center">جاوب ${AR(S.answered || 0)} من ${AR(S.tags.reduce((x, t) => x + t.size, 0))}</p>${aqBar(S)}</div>`;
+  },
+  res(S) {
+    const r = S.res, chanceTag = r.chance ? aqTag(S, r.chance) : null;
+    const mark = (m) => (r.kind === "pref" ? "" : m.k < 0 ? '<span class="aq-mark n">—</span>' : `<span class="aq-mark ${m.ok ? "y" : "n"}">${m.ok ? "✓" : "✗"}</span>`);
+    const sheet = r.kind === "info"
+      ? `<div class="aq-roll tva-roll">${r.rows.map((row, k) => { const t = aqTag(S, row.tag); return `<div class="aq-r"><span class="n">${AR(k + 1)}</span><span>${aqStk(t)}${t.out ? `<span class="aq-who">${aqFaces(t.who, 20)}</span>` : ""}</span><span class="t">${row.marks.map((m) => (m.ok && m.t != null ? `${m.t.toFixed(1)}s` : "")).filter(Boolean).join(" · ") || "—"}</span><span class="m">${row.marks.map(mark).join("")}</span></div>`; }).join("")}</div>`
+      : `<div class="aq-prefs">${S.q.o.map((o, k) => { const ids = r.rows.flatMap((row) => row.marks.filter((m) => m.k === k).map(() => row.tag)); return `<div class="aq-pref"><b>${esc(o)}</b><div>${ids.map((id) => aqStk(aqTag(S, id))).join("") || '<span class="muted">ولا أحد</span>'}</div></div>`; }).join("")}</div>`;
+    return `<div class="tva"><div class="aq-h">${r.kind === "info" ? `الجواب: ${esc(r.answer)}` : "وش اختار كل لقب؟"}</div>${r.kind === "pref" ? `<p class="muted">${esc(S.q.q)}</p>` : ""}${sheet}
+      ${r.chance ? `<div class="aq-chance"><span class="aq-pen">${r.gone ? "راحت الفرصة!" : "فرصة الاتهام لـ"}</span> ${aqStk(chanceTag)} ${r.gone ? "" : tvSecs(S.left)}</div>` : ""}</div>`;
+  },
+  rev(S) {
+    const v = S.rev, t = aqTag(S, v.tag), by = aqTag(S, v.by), names = v.ids.map((id) => esc(who(id).name)).join(" و");
+    const body = v.outcome === "hit"
+      ? `<div class="aq-reveal"><span class="aq-name">${aqFaces(v.ids, 64)}<span>${names}</span></span>${aqStk(t, "peel")}</div><div class="aq-stamp">انكشف!</div><div class="aq-pts"><span>${aqStk(by)} كشف${t.size > 1 ? "هم" : "ه"}</span><b>+${AR(200 + 20 * Math.max(0, S.qn - S.qi))}</b></div>`
+      : v.outcome === "part"
+        ? `<div class="aq-reveal">${aqStk(t)}<span class="aq-name">${aqFaces(v.ids, 56)}</span></div><div class="aq-hint">${v.size === 2 ? "واحد منهم صح… 👀" : `${AR(v.hits)} من ${AR(v.size)} صح… 👀`}</div>`
+        : `<div class="aq-reveal">${aqStk(t)}<span class="aq-name">${aqFaces(v.ids, 56)}</span></div><div class="aq-stamp miss">غلط!</div><div class="aq-pts"><span>${names} ${v.ids.length > 1 ? "انظلموا" : "انظلم"}</span><b>+${AR(100)}</b></div><div class="aq-pts dash"><span>${aqStk(by)}</span><b class="minus">−٥٠</b></div>`;
+    return `<div class="tva narrow"><div class="aq-h" style="text-align:center">«${esc(t.n)}» ${t.size > 1 ? "هم" : "هو"}…</div>${body}${aqBar(S)}</div>`;
+  },
+  end(S) {
+    const aw = S.awards || {};
+    return `<div class="tva"><div class="aq-h" style="text-align:center">لوحة الشرف</div><div class="aq-roll end tva-roll">${S.rank.map((x, k) => { const t = aqTag(S, x.tag); return `<div class="aq-r"><span class="n">${AR(k + 1)}</span><span class="aq-rank">${face(who(x.id), 28)}<b>${esc(who(x.id).name)}</b>${aqStk(t)}${t.out ? "" : " 👻"}</span><span class="t">${AR(x.pts)}</span></div>`; }).join("")}</div>
+      <div class="row" style="justify-content:center;gap:12px">${aw.sleuth ? `<div class="aq-aw"><span>أشطر محقق</span><b>${face(who(aw.sleuth.id), 24)}${esc(who(aw.sleuth.id).name)} · ${AR(aw.sleuth.n)}</b></div>` : ""}${aw.framed ? `<div class="aq-aw"><span>أكثر واحد انظلم</span><b>${face(who(aw.framed.id), 24)}${esc(who(aw.framed.id).name)} · ${AR(aw.framed.n)}</b></div>` : ""}</div></div>`;
+  },
+};

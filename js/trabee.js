@@ -303,3 +303,34 @@ function trvEnd(S, fresh) {
   if (isHost()) $("trAgain").onclick = () => hostAgain();
   $("trHome").onclick = () => { leaveRoom(); renderHub(); view("hub"); };
 }
+
+// ---------------- the big screen (tv.js): the whole yard, and the question for the room ----------------
+ROOM_GAMES.trabee.tvTeams = (S) => Array.from({ length: S.nt || 2 }, (_, t) => ({ n: `الفريق ${TR_TEAMS[t].n}`, c: TR_TEAMS[t].c, ps: S.players.filter((p) => trTeamOf(S, p.id) === t) }));
+const trTvSide = (S, inner) => `<div class="tvt"><div class="tvt-board">${inner.board}</div><div class="tvt-side ${S.phase}">${S.phase === "ask" ? "" : trScores(S)}${S.mins && S.phase !== "end" ? `<p class="tr-hint" style="text-align:center">باقي على نهاية المباراة ${tvClock(S.matchLeft)}</p>` : ""}${inner.side}</div></div>`;
+ROOM_GAMES.trabee.tv = {
+  pick: (S) => trTvSide(S, { board: trBoard(S), side: `<div class="tr-turn" style="color:${TR_TEAMS[S.turn].c}">الفريق ${TR_TEAMS[S.turn].n} يختار بلاطة…</div>${S.memLeft ? `<div class="tr-hint">وضع الذاكرة: الألوان مخفية ${AR(S.memLeft)} أدوار</div>` : ""}` }),
+  ask(S) {
+    const a = S.ask, col = TR_TEAMS[a.team].c;
+    const head = a.steal ? `<div class="tr-banner whistle"><b>فرصة للفريق ${TR_TEAMS[a.team].n}!</b><span>الفريق ${TR_TEAMS[a.from].n} غلط</span></div>` : `<div class="tr-turn" style="color:${col}">سؤال للفريق ${TR_TEAMS[a.team].n}</div>`;
+    const card = a.ref ? `<div class="tr-card"><div class="tr-q">الحَكَم يسأل الفريق ${TR_TEAMS[a.team].n}… جاوبوا بصوتكم</div></div>`
+      : `<div class="tr-card"><div class="row" style="justify-content:space-between"><span class="tr-cat">${a.q.cat}</span>${a.T ? tvSecs(S.left) : ""}</div><div class="tr-q">${esc(a.q.q)}</div>
+        ${a.T ? `<div style="color:${col}">${tvBar(S.left, a.T)}</div>` : ""}
+        ${a.q.o.map((o, k) => `<div class="tr-opt ${k === a.excluded ? "wrong" : ""}"><span>${esc(o)}</span><small>${k === a.excluded ? `جواب ${TR_TEAMS[a.from].n}` : ""}</small></div>`).join("")}</div>`;
+    const voters = S.players.filter((p) => trTeamOf(S, p.id) === a.team);
+    return trTvSide(S, { board: trBoard(S, { prev: S.memLeft > 0 ? [a.i] : a.take, team: a.team, at: a.i }), side: `${head}${trStake(S, a)}${card}${a.ref ? "" : `<span class="k-faces" style="justify-content:center">${voters.map((p) => `<span style="opacity:${a.voted.includes(p.id) ? 1 : 0.35}">${face(p, 26)}</span>`).join("")}</span>`}` });
+  },
+  res(S) {
+    const a = S.ask, r = S.res, col = TR_TEAMS[a.team].c;
+    const msg = r.miss ? `${trName(a.i)} مأخوذة! راح الدور على ${TR_TEAMS[a.team].n}` : r.ok ? (a.kind === "cone" ? `قمع للفريق ${TR_TEAMS[a.team].n} على ${trName(a.i)}` : `${trName(a.i)} للفريق ${TR_TEAMS[a.team].n}! +${AR(r.took.length)}`) : r.stealNext ? `غلط! السؤال ينتقل للفريق ${TR_TEAMS[r.next].n}…` : a.steal ? "غلط بعد! البلاطة تبقى فاضية" : "غلط!";
+    return trTvSide(S, { board: trBoard(S, { flash: r.took }), side: `<div class="tr-banner${r.stealNext ? " whistle" : ""}" style="background:${r.ok ? col : "var(--navy)"}"><b>${msg}</b><span>${r.stealNext ? "الجواب الصح ينكشف بعد محاولتهم" : !a.ref && a.q ? `الجواب: ${esc(r.answer)}` : ""}</span></div>${!a.ref && a.q ? `<div class="tr-card"><div class="tr-q">${esc(a.q.q)}</div></div>` : ""}` });
+  },
+  end(S) {
+    const n = trCount(S), order = S.live.slice().sort((x, y) => n[y] - n[x]), w = order[0], tie = order.length > 1 && n[order[0]] === n[order[1]];
+    const thief = S.live.slice().sort((x, y) => S.stolen[y] - S.stolen[x])[0], aw = S.awards || {};
+    const pod = [order[1], order[0], order[2]].map((x, k) => (x === undefined ? "" : `<div style="background:${TR_TEAMS[x].c};height:${[52, 72, 38][k]}px">${AR([2, 1, 3][k])}</div>`)).join("");
+    return trTvSide(S, { board: trBoard(S), side: `<div class="tr-cert"><div class="tr-crown" style="color:${tie ? "var(--navy)" : TR_TEAMS[w].c}">${tie ? "تعادل!" : `فاز الفريق ${TR_TEAMS[w].n}!`}</div><div class="tr-podium">${pod}</div>
+      ${order.map((x, k) => `<div class="tr-rank"><span>${AR(k + 1)}</span><i style="background:${TR_TEAMS[x].c}"></i><span>الفريق ${TR_TEAMS[x].n}</span><b>${AR(n[x])}</b></div>`).join("")}
+      ${S.stolen[thief] ? `<div class="tr-aw"><span>أكثر فريق سرق</span><b>${TR_TEAMS[thief].n} · ${AR(S.stolen[thief])} بلاطة</b></div>` : ""}
+      ${aw.right ? `<div class="tr-aw"><span>أكثر واحد جاوب صح</span><b>${esc(who(aw.right.id).name)} · ${AR(aw.right.n)}</b></div>` : ""}</div>` });
+  },
+};

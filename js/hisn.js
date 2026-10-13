@@ -423,6 +423,15 @@ function hzvAim(S, fresh) {
   if ($("hzFire")) $("hzFire").onclick = () => { if (sel == null) return; $("hzFire").disabled = true; beep(988, 0.08); buzz(40); act({ t: "hzfire", id: PID, f, c: sel, heavy }); };
 }
 
+// one line of «وش صار؟»; t is the team reading it (-1 for the big screen)
+function hzFeedLine(S, e, t) {
+  if (e.m === "none") return `<div class="hz-ev">محد جاوب صح هالمرة 🤷</div>`;
+  if (e.m === "late") return `<div class="hz-ev">${hzChip(e.by)} ما لحقوا يضربون</div>`;
+  const to = `${hzChip(e.by)} ← ${hzChip(e.f)} <b class="hz-sq">${hzName(S.n, e.c)}</b>`;
+  const what = { miss: "فاضي", blk: `${hzIc("shd")}انصدّت بالدرع`, dup: "المربع انضرب قبلهم", hit: e.items ? e.items.map(hzIc).join("") + (e.items.length > 1 ? "كومة!" : `${HZ_NAME[e.items[0]]}!`) : "إصابة", wnd: `${(e.items || ["cmd"]).map(hzIc).join("")}جرحوا القائد!`, dead: `${(e.items || ["cmd"]).map(hzIc).join("")}طاح القائد!` }[e.m];
+  return `<div class="hz-ev ${e.m === "dead" ? "dead" : e.bmb ? "boom" : ""}">${to} <span class="hz-what">${what}</span>${e.pts ? `<b class="p">+${AR(e.pts)}</b>` : ""}${e.bmb ? `<span class="muted hz-full">💥 قنبلة! انفجرت عليهم${e.note ? ` وانكشف مربع ${e.note} في حصنهم` : ""}.</span>` : ""}${e.rdr ? `<span class="muted hz-full">📡 رادار! ${e.by === t ? "شوفوا اللي حوله بسرعة…" : "شافوا اللي حوله ثواني."}</span>` : ""}</div>`;
+}
+
 function hzvRes(S, fresh) {
   hzAsk4Me();
   const me2 = hzMine(), t = me2 ? me2.team : -1;
@@ -435,19 +444,12 @@ function hzvRes(S, fresh) {
     if (KL.my.radar) klLater(() => { const s = KL.S; if (s && s.phase === "res") hzvRes(s, false); }, Math.max(0, KL.my.radar.until - now()) + 50);
   }
   setTop("وش صار؟");
-  const line = (e) => {
-    if (e.m === "none") return `<div class="hz-ev">محد جاوب صح هالمرة 🤷</div>`;
-    if (e.m === "late") return `<div class="hz-ev">${hzChip(e.by)} ما لحقوا يضربون</div>`;
-    const to = `${hzChip(e.by)} ← ${hzChip(e.f)} <b class="hz-sq">${hzName(S.n, e.c)}</b>`;
-    const what = { miss: "فاضي", blk: `${hzIc("shd")}انصدّت بالدرع`, dup: "المربع انضرب قبلهم", hit: e.items ? e.items.map(hzIc).join("") + (e.items.length > 1 ? "كومة!" : `${HZ_NAME[e.items[0]]}!`) : "إصابة", wnd: `${(e.items || ["cmd"]).map(hzIc).join("")}جرحوا القائد!`, dead: `${(e.items || ["cmd"]).map(hzIc).join("")}طاح القائد!` }[e.m];
-    return `<div class="hz-ev ${e.m === "dead" ? "dead" : e.bmb ? "boom" : ""}">${to} <span class="hz-what">${what}</span>${e.pts ? `<b class="p">+${AR(e.pts)}</b>` : ""}${e.bmb ? `<span class="muted hz-full">💥 قنبلة! انفجرت عليهم${e.note ? ` وانكشف مربع ${e.note} في حصنهم` : ""}.</span>` : ""}${e.rdr ? `<span class="muted hz-full">📡 رادار! ${e.by === t ? "شوفوا اللي حوله بسرعة…" : "شافوا اللي حوله ثواني."}</span>` : ""}</div>`;
-  };
   const rad = KL.my.radar && KL.my.radar.until > now() && me2 && me2.team >= 0 ? KL.my.radar : null;
   const fell = S.feed.filter((e) => e.m === "dead").map((e) => e.f);
   show(`
     <div class="hz-row">${hzScores(S)}${hzClock(S)}</div>
     ${fell.length ? `<div class="hz-stamp">سقط حصن ${fell.map((x) => HZ_TEAMS[x].n).join(" و")}!</div>` : ""}
-    <div class="hz-feed">${S.feed.map(line).join("")}</div>
+    <div class="hz-feed">${S.feed.map((e) => hzFeedLine(S, e, t)).join("")}</div>
     ${rad ? `<div class="hz-radar"><b>📡 رادار ${HZ_TEAMS[rad.f].n}</b> احفظوا اللي حوله!</div>${hzGrid(S, { team: rad.f, fog: S.fog[rad.f], radar: rad.cells, small: true })}` : ""}
     ${t >= 0 && me2.cells ? `<p class="muted">حصنكم:</p>${hzGrid(S, { team: t, cells: me2.cells, fog: S.fog[t], broken: me2.broken, small: true })}` : ""}
     ${t >= 0 && !S.live[t] ? '<p class="hz-pen" style="text-align:center">حصنكم طاح، بس كملوا تجاوبون: كل جواب صح ضربة دعم!</p>' : ""}`);
@@ -472,3 +474,38 @@ function hzvEnd(S, fresh) {
   if ($("hzAgain")) $("hzAgain").onclick = () => hostAgain();
   $("hzHome").onclick = () => { leaveRoom(); renderHub(); view("hub"); };
 }
+
+// ---------------- the big screen (tv.js): every fort as the others see it, and the question ----------------
+// Only what's public: hits and misses on each fort (S.fog); the hidden pieces stay with each team until the end.
+ROOM_GAMES.hisn.tvTeams = (S) => Array.from({ length: S.nt || 2 }, (_, t) => ({ n: `الفريق ${HZ_TEAMS[t].n}`, c: HZ_TEAMS[t].c, ps: S.players.filter((p) => hzTeamOf(S, p.id) === t) }));
+const hzTvForts = (S, reveal) => `<div class="tvh-forts">${S.teams.map((x) => `<div class="tvh-fort ${S.live[x] ? "" : "out"}">${hzChip(x, S.live[x] ? "" : "out")}<b class="tvh-pts">${AR(S.pts[x])}${S.heavy[x] ? ` 💥${AR(S.heavy[x])}` : ""}</b>${hzGrid(S, { team: x, cells: reveal ? S.boards[x] : null, fog: S.fog[x], small: true })}</div>`).join("")}</div>`;
+const hzTvTop = (S, mid) => `<div class="tvh-top">${mid}${S.mins && S.matchLeft > 0 && S.phase !== "end" ? `<span class="tvh-clock">⏱ ${tvClock(S.matchLeft)}</span>` : ""}</div>`;
+ROOM_GAMES.hisn.tv = {
+  place: (S) => `<div class="tvh">${hzTvTop(S, `<div class="hz-h">الفرق تخبي حصونها في الكراريس…</div><span class="tvh-clock">${tvSecs(S.left)}</span>`)}
+    <div class="tvh-ready">${S.teams.map((x) => `<div class="tvh-r" style="--pen:${HZ_TEAMS[x].c}">${hzChip(x)}<b>${S.ready[x] ? "جاهزين ✓" : "يخبّون…"}</b><div class="hz-faces">${S.players.filter((p) => hzTeamOf(S, p.id) === x).map((p) => face(p, 30)).join("")}</div></div>`).join("")}</div>
+    <p class="tvh-hint">كل فريق يحط قائده وجنوده وسلاحه في شبكة ${AR(S.n)}×${AR(S.n)} من جواله. محد يشوف حصن غيره.</p></div>`,
+  q(S) {
+    const q = S.q;
+    return `<div class="tvh">${hzTvTop(S, `<span class="hz-kind">${esc(q.cat)} · سؤال ${AR(S.qi)}</span>`)}
+      <div class="hz-q tvh-q"><div class="row" style="justify-content:space-between;align-items:center"><div class="hz-qt">${esc(q.q)}</div>${tvSecs(S.left)}</div>${tvBar(S.left, S.qtime * 1000)}
+        <div class="tvh-opts">${q.o.map((o) => `<div class="hz-opt"><span>${esc(o)}</span></div>`).join("")}</div></div>
+      ${hzTvForts(S)}</div>`;
+  },
+  aim(S) {
+    const order = S.answers.filter((a) => a.ok).sort((x, y) => (x.at ?? 99) - (y.at ?? 99));
+    return `<div class="tvh">${hzTvTop(S, `<div class="hz-h">الجواب: ${esc(S.answer)}</div><span class="tvh-clock">${tvSecs(S.left)}</span>`)}
+      <div class="tvh-order">${order.length ? `<span>ترتيب الضرب:</span>${order.map((a, k) => `<span>${AR(k + 1)}. ${hzChip(a.t)} ${S.aimed.includes(a.t) ? "🎯" : "…"}</span>`).join("")}` : "<span>محد جاوب صح هالمرة 🤷</span>"}</div>
+      ${hzTvForts(S)}</div>`;
+  },
+  res(S) {
+    const fell = S.feed.filter((e) => e.m === "dead").map((e) => e.f);
+    return `<div class="tvh">${hzTvTop(S, fell.length ? `<div class="hz-stamp">سقط حصن ${fell.map((x) => HZ_TEAMS[x].n).join(" و")}!</div>` : `<div class="hz-h">وش صار؟</div>`)}
+      <div class="hz-feed tvh-feed">${S.feed.map((e) => hzFeedLine(S, e, -1)).join("")}</div>${hzTvForts(S)}</div>`;
+  },
+  end(S) {
+    const w = S.won, aw = S.awards || {};
+    return `<div class="tvh">${hzTvTop(S, `<div class="hz-h" style="color:${HZ_TEAMS[w].c}">${S.byTime ? `خلص الوقت! فاز ${HZ_TEAMS[w].n} بالنقاط` : `صمد حصن ${HZ_TEAMS[w].n}!`}</div>`)}
+      <div class="tvh-order">${S.rank.map((x, k) => `<span>${AR(k + 1)}. ${hzChip(x, S.live[x] ? "" : "out")} <b>${AR(S.pts[x])}</b></span>`).join("")}${aw.sniper ? `<span>أشطر قنّاص: <b>${HZ_TEAMS[aw.sniper.t].n}</b></span>` : ""}</div>
+      ${hzTvForts(S, true)}</div>`;
+  },
+};

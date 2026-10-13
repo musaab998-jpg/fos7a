@@ -251,3 +251,43 @@ function kvEnd(S, fresh) {
   if (isHost()) { if (S.over) $("kAgain").onclick = () => hostAgain(); else $("kGo").onclick = () => kNext(); }
   $("kHome").onclick = () => { leaveRoom(); renderHub(); view("hub"); };
 }
+
+// ---------------- the big screen (tv.js): the board for the room, the phones do the voting ----------------
+// It shows what a phone outside the voting team would: during a vote, no bars unless everyone votes.
+ROOM_GAMES.khat.tvTeams = (S) => [["b", "#2a63c4"], ["r", "#c8323a"]].map(([t, c]) => ({ n: `الفريق ${TN[t]}`, c: `var(--t${t}, ${c})`, ps: S.players.filter((p) => (S.teams || {})[p.id] === t) }));
+const kTvOpts = (S, bars, mark) => {
+  const q = S.ask.q, total = Math.max(1, bars ? bars.reduce((x, y) => x + y, 0) : 1);
+  return q.o.map((o, k) => `<div class="k-opt ${mark ? mark(k) : k === S.ask.excluded ? "wrong" : ""}"><i style="width:${bars ? Math.round((bars[k] / total) * 100) : 0}%"></i><span><b>${esc(o)}</b><small>${bars && bars[k] ? AR(bars[k]) : ""}</small></span></div>`).join("");
+};
+ROOM_GAMES.khat.tv = {
+  pick: (S) => `<div class="tvk"><div class="tvk-board big">${kBoardHTML(S, false)}</div>
+    <div class="tvk-side">${kScore(S)}<div class="k-turn ${S.team}">الفريق ${TN[S.team]} يختار مربع…</div><p class="k-dim">الدور ${AR(S.turns + 1)}${S.fade !== false ? " · مع الاختفاء: الرابعة تمسح أقدم علامة" : ""}</p></div></div>`,
+  ask(S) {
+    const a = S.ask, voters = S.players.filter((p) => a.maj || (S.teams || {})[p.id] === a.team);
+    const bars = a.maj ? a.q.o.map((_, k) => a.tally.b[k] + a.tally.r[k]) : null;
+    return `<div class="tvk"><div class="tvk-board">${kBoardHTML(S, false)}${kScore(S)}</div>
+      <div class="tvk-side wide"><div class="k-turn ${a.team}">${a.steal ? `فرصة سرقة للفريق ${TN[a.team]}` : `دور الفريق ${TN[a.team]}`}${a.maj ? " · الكل يصوّت" : ""}</div>
+      <div class="k-card" style="display:grid;gap:10px"><div class="row" style="justify-content:space-between"><span class="k-cat">${KLABEL(a.q.cat)}</span>${tvSecs(S.left)}</div>
+        <div class="k-q">${esc(a.q.q)}</div>${tvBar(S.left, a.T)}${kTvOpts(S, bars)}</div>
+      <div class="k-faces" style="justify-content:center">${voters.map((p) => `<span style="opacity:${a.voted.includes(p.id) ? 1 : 0.3}">${face(p, 30)}</span>`).join("")}</div></div></div>`;
+  },
+  res(S) {
+    const a = S.ask, r = S.res, other = kOther(a.team);
+    return `<div class="tvk"><div class="tvk-board">${kBoardHTML(S, false)}${kScore(S)}</div>
+      <div class="tvk-side wide"><div class="k-turn ${a.team}">${r.ok ? `صح! المربع للفريق ${TN[a.team]}` : a.maj ? `الفريق ${TN[a.team]} ما توقّع الأغلبية` : `غلط! ${a.steal ? "والسرقة ما نجحت" : `فرصة سرقة للفريق ${TN[other]}`}`}</div>
+      <div class="k-card" style="display:grid;gap:10px"><span class="k-cat">${KLABEL(a.q.cat)}</span><div class="k-q">${esc(a.q.q)}</div>
+        ${kTvOpts(S, r.counts, (k) => (k === r.right ? "right" : k === r.teamAns || k === a.excluded ? "wrong" : ""))}
+        <p class="k-dim">${r.stealNext ? `الجواب الصح ينكشف بعد محاولة الفريق ${TN[other]}.` : !a.maj && !r.ok ? `الصح: «${esc(r.answer)}».` : ""} ${r.note}</p></div>
+      ${r.told.length ? `<div class="k-told">${r.told.map((id) => face(who(id), 28)).join("")}<span>«قلت لكم!» ${r.told.map((id) => esc(who(id).name)).join(" و")} صوّت صح</span></div>` : ""}</div></div>`;
+  },
+  end(S) {
+    const w = S.over ? (S.wins.b > S.wins.r ? "b" : S.wins.r > S.wins.b ? "r" : null) : S.boardWin, h = S.honor;
+    const team = (x) => S.players.filter((p) => (S.teams || {})[p.id] === x);
+    return `<div class="tvk"><div class="tvk-board big">${kBoardHTML(S, false)}</div>
+      <div class="tvk-side"><div class="k-card k-honor"><p class="k-dim">${S.over ? "لوحة الشرف" : `النتيجة ${AR(S.wins.b)}-${AR(S.wins.r)}`}</p>
+        <div class="big" style="color:${w === "b" ? "var(--tb)" : w === "r" ? "var(--tr)" : "var(--chalk-y)"}">${w ? `${S.over ? `فاز الفريق ${TN[w]}` : `اللوحة للفريق ${TN[w]}`}!` : "تعادل!"}</div>
+        <div class="k-faces">${(w ? team(w) : S.players).map((p) => face(p, 40)).join("")}</div>
+        ${S.over && h.right ? `<div class="k-row">${face(who(h.right.id), 28)}<span>${esc(who(h.right.id).name)}</span><b>أكثر واحد جاوب صح (${AR(h.right.n)})</b></div>` : ""}
+        ${S.over && h.told ? `<div class="k-row">${face(who(h.told.id), 28)}<span>${esc(who(h.told.id).name)}</span><b>ملك «قلت لكم!» (${AR(h.told.n)})</b></div>` : ""}</div></div></div>`;
+  },
+};

@@ -693,3 +693,20 @@ function flags(S) {
 }
 return { VENUES, svg, steps, flags };
 })();
+
+// ---------------- the big screen (tv.js): the venue map and the race ----------------
+ROOM_GAMES.kanz.tvTeams = (S) => Array.from({ length: S.nt || 2 }, (_, t) => ({ n: `الفريق ${KZ_TEAMS[t].n}`, c: KZ_TEAMS[t].c, ps: S.players.filter((p) => kzTeamOf(S, p.id) === t) }));
+ROOM_GAMES.kanz.tv = {
+  print: (S) => `<div class="tv-plain"><div class="kz-big">🗺️</div><h1>الكنز · ${KZ_MAP.VENUES[S.venue].t}</h1><p>المضيف يطبع البطاقات ويخبيها في الأماكن…<br>الفرق: اختاروا مين يحل الشفرات ومين يدوّر.</p>${tvTeams(ROOM_GAMES.kanz.tvTeams(S))}</div>`,
+  play(S) {
+    const board = S.teams.slice().sort((a, b) => (S.tm[b].done - S.tm[a].done) || (S.tm[b].at - S.tm[a].at) || (S.tm[a].pen - S.tm[b].pen)).map((t, i) => `<div class="kz-rb" style="--c:${KZ_TEAMS[t].c}"><span class="rk">${AR(i + 1)}</span><div><b>${KZ_TEAMS[t].n}</b><small>${S.tm[t].done ? "🏆 خلّص!" : S.tm[t].at ? `آخر مكان: ${esc(KZ_MAP.VENUES[S.venue].st[S.tm[t].last][0])}` : "في البداية"}${S.tm[t].lock ? " · ⏳" : ""}</small>${kzBeads(S, t)}</div></div>`).join("");
+    const feed = (S.feed || []).slice(0, 5).map((f) => `<p>${esc(f.text)}</p>`).join("");
+    return { html: `<div class="kz-tv tvz-map"><div class="kz-tvbar"><b>الكنز · ${KZ_MAP.VENUES[S.venue].t}</b><span>${S.left ? `باقي ${kzClock(S.left)}` : kzClock(S.elapsed)}</span></div>
+      <div class="kz-tvbody"><div id="kzMapWrap">${KZ_MAP.svg(S)}</div><aside class="kz-board" id="kzBoard">${board}<div class="kz-feed">${feed}</div></aside></div></div>`, after: () => { KZ_MAP.steps(S); KZ_MAP.flags(S); } };
+  },
+  end(S) {
+    const w = S.winner;
+    return `<div class="kz-end tvz-end"><div class="kz-big">🧰✨</div><div class="kz-h" style="text-align:center;color:${w >= 0 ? KZ_TEAMS[w].c : "inherit"}">${w >= 0 ? `الفريق ${KZ_TEAMS[w].n} لقى الكنز!` : "خلص الوقت قبل ما أحد يلقى الكنز"}</div>
+      <div class="kz-ranks">${S.rank.map((t, i) => `<div class="kz-rk" style="--c:${KZ_TEAMS[t].c}"><span class="rk">${AR(i + 1)}</span>${kzChip(t)}<span>${S.tm[t].done ? kzClock(S.tm[t].doneAt) : `${AR(S.tm[t].at)} من ${AR(S.n)}`}</span><small>${S.tm[t].hints ? `${AR(S.tm[t].hints)} تلميحة` : "بدون تلميحات"}</small></div>`).join("")}</div></div>`;
+  },
+};

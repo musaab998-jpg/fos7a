@@ -332,7 +332,7 @@ function fContent(ctx, u, S, side, v) {
 }
 function fRender(S, v) {
   const cv = $("fcv"); if (!cv) return;
-  const ctx = cv.getContext("2d"), dpr = Math.min(window.devicePixelRatio || 1, 2), u = cv.clientWidth;
+  const ctx = cv.getContext("2d"), dpr = Math.min((window.devicePixelRatio || 1) * ZOOM, 3), u = cv.clientWidth;
   if (cv.width !== Math.round(u * dpr)) { cv.width = Math.round(u * dpr); cv.height = Math.round(u * FH * dpr); }
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.clearRect(0, 0, u, FH * u);
   ctx.save();
@@ -521,4 +521,22 @@ function fvOver(S, fresh) {
   fKeepDrawing(S, { stampsShown: S.stamps.length });
   if (isHost()) { if (S.over) $("fAgain").onclick = () => hostAgain(); else $("fNext").onclick = () => fSetup(); }
   $("fHome").onclick = () => { leaveRoom(); renderHub(); view("hub"); };
+}
+
+// ---------------- the big screen (tv.js): the notebook on the desk, big, for everyone watching ----------------
+ROOM_GAMES.foldit.tvKeep = true;
+const fTvSide = (S, body) => `<div class="tvf"><div class="tvf-side">${fHead(S)}${body}</div>${fBoard()}</div>`;
+ROOM_GAMES.foldit.tv = {
+  setup: (S) => ({ html: fTvSide(S, `<div class="fcard" style="text-align:center;display:grid;gap:8px"><h2 style="font-size:26px">اللاعبين يرتبون جنودهم…</h2><p class="muted">${[0, 1].map((i) => `${fName(S, i)}: ${S.ready[i] ? "جاهز ✓" : "يرتّب"}`).join(" · ")}</p></div>`), after: () => fKeepDrawing(S, { stampsShown: (S.stamps || []).length }) }),
+  aim: (S) => fTvPlay(S), shot: (S) => fTvPlay(S),
+  over(S) {
+    const w = S.over && S.best > 1 ? (S.wins[0] > S.wins[1] ? 0 : 1) : S.winner, st = S.stats;
+    return { html: fTvSide(S, `<div class="fcard" style="text-align:center;display:grid;gap:6px;justify-items:center">${face(who(S.duo[w]), 70)}<h2 style="font-size:30px;color:${w === 0 ? "#8fb0ff" : "#ff9aa0"}">فاز ${fName(S, w)}!</h2><p class="muted">${[0, 1].map((i) => `${fName(S, i)}: ${AR(st[i].h)} صابت من ${AR(st[i].f)} طيّات`).join("<br>")}</p></div>`), after: () => fKeepDrawing(S, { stampsShown: S.stamps.length }) };
+  },
+};
+function fTvPlay(S) {
+  const turnCol = PCOL[S.phase === "shot" ? S.last.by : S.turn];
+  return { html: fTvSide(S, `<div class="fturn" style="border-color:${turnCol};color:${S.phase === "shot" ? "#fff" : turnCol === PCOL[0] ? "#8fb0ff" : "#ff9aa0"}">${S.phase === "shot" ? `${fName(S, S.last.by)} طوى الورقة…` : `${fName(S, S.turn)} يصوّب…`}</div>
+      ${S.phase === "aim" ? `<div style="color:${turnCol}">${tvBar(S.left, fTurn(S))}</div><p class="muted" style="text-align:center">خط الطي يتمايل… والطي يصير على مكانه لحظة الضغط.</p>` : ""}`),
+    after: () => { const v = { stampsShown: (S.stamps || []).length, drops: [], dropSide: S.turn, size: "normal", pulse: 0 }; if (S.phase === "shot") fAnimate(S, v); else fKeepDrawing(S, v); } };
 }

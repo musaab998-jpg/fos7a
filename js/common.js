@@ -101,10 +101,25 @@
   const setTop = (t) => { $("topLeft").textContent = t; };
   let current = null; // the open game
   function view(v) {
-    $("hub").hidden = v !== "hub"; $("profile").hidden = v !== "profile"; $("game").hidden = v !== "game";
-    document.body.dataset.theme = v === "game" ? current : "hub";
+    $("hub").hidden = v !== "hub"; $("profile").hidden = v !== "profile"; $("game").hidden = v !== "game"; $("tv").hidden = v !== "tv";
+    document.body.dataset.theme = v === "game" || v === "tv" ? current : "hub";
     // inside the Android app the system bars follow the room's colour
     try { window.Fos7aApp?.setTheme({ khallast: "#fbf8ef", khat: "#22402f" }[document.body.dataset.theme] || "#fff6dc"); } catch (e) {}
     scrollTo(0, 0);
   }
 
+
+  // ---------------- big screens: the phone layout, scaled up ----------------
+  // Rooms and the profile are drawn for a phone. On an iPad, a TV or a projector the same column is zoomed
+  // (as a whole, so every game keeps its proportions) as far as it can while the page still has at least
+  // 520×640 of phone-sized room: an iPad on its side gets ×1.3, a TV ×1.7. A phone stays at 1.
+  let ZOOM = 1;
+  function fitScreen() {
+    const w = innerWidth, h = innerHeight;
+    ZOOM = Math.max(1, Math.min(2.2, Math.min(w / 520, h / 640)));
+    ZOOM = Math.round(ZOOM * 100) / 100;
+    document.documentElement.style.setProperty("--z", ZOOM);
+    document.documentElement.classList.toggle("big", ZOOM > 1);
+  }
+  fitScreen();
+  addEventListener("resize", fitScreen);

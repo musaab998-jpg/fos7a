@@ -29,6 +29,7 @@ addEventListener("pagehide", () => { if (KL.net && !isHost()) KL.net.send({ t: "
 // the Android app sends its back button here: leave the game first, then let the app close
 window.fos7aBack = () => {
   if (!$("modal").hidden) { $("modal").hidden = true; return true; }
+  if (!$("tv").hidden) { tvLeave(); return true; }
   if (!$("game").hidden || !$("profile").hidden) { $("quit").click(); return true; }
   return false;
 };
@@ -36,5 +37,6 @@ window.fos7aBack = () => {
 document.querySelectorAll(".gtop [data-sound]").forEach((b) => (b.onclick = () => setSound(!soundOn)));
 setSound(soundOn);
 renderHub(); view("hub");
-const startCode = cleanCode(new URLSearchParams(location.search).get("r"));
-if (startCode.length === 4) openJoin(startCode);
+const startQ = new URLSearchParams(location.search), startCode = cleanCode(startQ.get("r"));
+if (startCode.length === 4) startQ.has("tv") ? openScreen(startCode) : openJoin(startCode);
+initAuth();
