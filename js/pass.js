@@ -103,7 +103,13 @@ function openLogin(game) {
   $("gIn").onclick = async () => { $("gIn").disabled = true; $("gMsg").textContent = "نفتح قوقل…"; if (!(await signIn(game))) { $("gIn").disabled = false; $("gMsg").textContent = "ما قدرنا نفتح قوقل، تأكد من النت وجرّب."; } };
 }
 
-const passDate = () => new Date(passUntil()).toLocaleString("ar-SA-u-nu-arab", { weekday: "long", day: "numeric", month: "long", hour: "numeric", minute: "2-digit" });
+// "ar-SA" alone is the Hijri calendar without a year, so the Gregorian date leads and the Hijri one follows
+const passDate = () => {
+  const d = new Date(passUntil());
+  const g = d.toLocaleString("ar-SA-u-ca-gregory-nu-arab", { weekday: "long", day: "numeric", month: "long", year: "numeric", hour: "numeric", minute: "2-digit" });
+  const h = d.toLocaleDateString("ar-SA-u-ca-islamic-umalqura-nu-arab", { day: "numeric", month: "long", year: "numeric" });
+  return `${g} (${h})`;
+};
 // the card that shows up instead of starting a game whose free session is used
 function openPass(game, then) {
   if (!signedIn()) return openLogin(game);
