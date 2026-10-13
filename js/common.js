@@ -5,7 +5,7 @@
   const pickOne = (arr) => arr[Math.floor(Math.random() * arr.length)];
   const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
   const FOLD_IT = "foldit/";
-  const PUBLIC_URL = "https://musaab998-jpg.github.io/fos7a/";
+  const PUBLIC_URL = "https://fos7a.games/";
 
   // ---------------- characters: a face doodled in pen on a sticky note ----------------
   const NOTES = ["#ffe66d", "#ff9fb2", "#9be7a0", "#9fd3ff", "#ffbd6b", "#c9a7ff", "#f4f1e8", "#7ee0d0"];
