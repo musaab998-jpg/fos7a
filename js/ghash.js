@@ -433,3 +433,47 @@ function ghvEnd(S, fresh) {
   if ($("ghAgain")) $("ghAgain").onclick = () => hostAgain();
   $("ghHome").onclick = () => { leaveRoom(); renderHub(); view("hub"); };
 }
+
+// ---------------- the big screen (tv.js): the exam paper for the whole room ----------------
+// Who cheats never reaches the screen (it isn't in S); it shows the question, the evidence after it
+// (who marked what, as on the phones), the inspection's progress and its verdict.
+const ghTvScores = (S) => (S.cls.length > 1 ? `<div class="gh-board">${S.cls.map((cl, k) => `<span class="gh-sc" style="--pen:${GH_CLS[k].c}">${GH_CLS[k].n}<b>${AR(cl.pts)}</b></span>`).join("")}</div>` : "");
+const ghTvClasses = (S, line) => `<div class="tvg-cls">${S.cls.map((cl, k) => `<div class="gh-res" style="--pen:${GH_CLS[k].c}"><div class="gh-row">${ghChip(S, k)}${line(cl, k)}</div><span class="gh-faces">${ghFaces(cl.members, 30)}</span></div>`).join("")}</div>`;
+ROOM_GAMES.ghash.tv = {
+  role: (S) => `<div class="tvg"><div class="gh-paper"><div class="gh-h" style="text-align:center">ملف القضية</div>
+      <p style="text-align:center">كل واحد يشوف دوره في جواله بالسر… غطّوا شاشاتكم! ${tvSecs(S.left)}</p></div>
+    ${ghTvClasses(S, (cl) => `<small>${cl.n > 1 ? "فيه غشاشين" : "فيه غشاش"}</small>`)}</div>`,
+  q(S) {
+    const q = S.q, next = GH_EVERY - ((S.qi - 1) % GH_EVERY) - 1;
+    return `<div class="tvg">${ghTvScores(S)}<div class="gh-paper"><div class="gh-qn"><span>س${AR(S.qi)} من ${AR(S.qn)}</span><small>${esc(q.cat)}</small>${tvSecs(S.left)}</div>
+      <div class="gh-qt">${esc(q.q)}</div>${tvBar(S.left, S.qtime * 1000)}
+      <div class="gh-opts tvg-opts">${q.o.map((o, k) => `<div class="gh-opt"><i>${GH_LET[k]}</i><span>${esc(o)}</span></div>`).join("")}</div></div>
+      ${ghTvClasses(S, (cl, k) => `<small>صوّت ${AR(S.voted[k] || 0)} من ${AR(cl.members.length)}</small>`)}
+      <p class="gh-pen" style="text-align:center">${next ? `التفتيش بعد ${next === 1 ? "سؤال" : "سؤالين"}` : "بعد هالسؤال: تفتيش!"}</p></div>`;
+  },
+  res(S) {
+    const r = S.res, q = S.q;
+    const card = (k) => { const x = r.cls[k];
+      return `<div class="gh-res big" style="--pen:${GH_CLS[k].c}"><div class="gh-row">${ghChip(S, k)}<span class="gh-stamp ${x.ok ? "ok" : "no"}">${x.ok ? `صح +${AR(GH_PTS.right)}` : x.pick < 0 ? "ما جاوبوا" : "غلط"}</span></div>
+        ${q.o.map((o, i) => `<div class="gh-mk ${i === r.right ? "right" : ""} ${i === x.pick ? "pick" : ""}"><i>${GH_LET[i]}</i><span class="t">${esc(o)}</span><span class="gh-faces">${ghFaces(Object.keys(x.votes).filter((id) => x.votes[id] === i), 24)}</span></div>`).join("")}</div>`; };
+    return `<div class="tvg">${ghTvScores(S)}<div class="gh-paper"><p class="muted" style="margin:0">${esc(q.q)}</p><div class="gh-ans">الجواب: <b>(${GH_LET[r.right]}) ${esc(q.o[r.right])}</b></div></div>
+      <div class="tvg-cls">${S.cls.map((_, k) => card(k)).join("")}</div></div>`;
+  },
+  insp: (S) => `<div class="tvg">${ghTvScores(S)}<div class="gh-paper"><div class="gh-stamp big">تفتيش!</div><p style="text-align:center;margin:0">كل فصل يتناقش ويصوّت من جواله: مين الغشاش؟ ${tvSecs(S.left)}</p></div>
+    ${ghTvClasses(S, (cl, k) => (cl.clean ? '<small>نظيف ✨</small>' : `<small>صوّت ${AR(S.voted[k] || 0)} من ${AR(cl.members.length)}</small>`))}</div>`,
+  rev(S) {
+    const card = (k) => { const r = S.rev[k];
+      if (r.clean) return `<div class="gh-res" style="--pen:${GH_CLS[k].c}"><div class="gh-row">${ghChip(S, k)}<span class="muted">نظيف ✨</span></div></div>`;
+      return `<div class="gh-res big" style="--pen:${GH_CLS[k].c}"><div class="gh-row">${ghChip(S, k)}<span class="gh-stamp ${r.acc ? (r.ok ? "ok" : "no") : ""}">${!r.acc ? (r.tie ? "ما اتفقوا" : "ما فيه اتهام") : r.ok ? "انمسك الغشاش!" : "مظلوم!"}</span></div>
+        ${r.acc ? `<div class="gh-acc">${face(who(r.acc), 64)}<b>${esc(who(r.acc).name)}</b><span>${r.ok ? `انشقت ورقته · +${AR(GH_PTS.catch)}` : `بريء! ${AR(Math.abs(GH_PTS.framed))}−`}</span></div>` : ""}</div>`; };
+    return `<div class="tvg">${ghTvScores(S)}<div class="tvg-cls">${S.cls.map((_, k) => card(k)).join("")}</div></div>`;
+  },
+  end(S) {
+    const E = S.end, one = S.cls.length === 1, won = one ? E.cheats[0].every((x) => x.caught) : null, best = E.rank[0];
+    const title = one ? (won ? "الفصل مسك الغشاش! 🎉" : "الغشاش فاز! 😈") : `${ghName(S, best)} الأول! 🎉`;
+    const cheatLine = (x) => `<div class="gh-ch ${x.caught ? "" : "free"}">${face(who(x.id), 40)}<span><b>${esc(who(x.id).name)}</b><small>${x.caught ? `انمسك في التفتيش ${AR(x.at / GH_EVERY)}` : "ما انمسك 😈"}</small></span><i>${AR(x.pts)}</i></div>`;
+    return `<div class="tvg"><div class="gh-paper"><div class="gh-h" style="text-align:center;color:${one ? (won ? "#1f8a53" : "#c8232c") : GH_CLS[best].c}">${title}</div>
+      ${!one ? `<div class="gh-ranks">${E.rank.map((k, i) => `<div class="gh-rk" style="--pen:${GH_CLS[k].c}"><span class="n">${AR(i + 1)}</span>${ghChip(S, k)}<small>${AR(E.right[k])} صح</small><b>${AR(S.cls[k].pts)}</b></div>`).join("")}</div>` : `<p class="muted" style="text-align:center">جاوبوا ${AR(E.right[0])} من ${AR(S.qi)} صح · النقاط ${AR(S.cls[0].pts)}</p>`}</div>
+      <div class="tvg-cls">${S.cls.map((_, k) => `<div class="gh-res" style="--pen:${GH_CLS[k].c}">${one ? "<b>الغشاشين:</b>" : ghChip(S, k)}${E.cheats[k].map(cheatLine).join("")}</div>`).join("")}</div></div>`;
+  },
+};

@@ -188,6 +188,7 @@ function joinRoom(code) {
 // ---------------- what every phone shows ----------------
 function apply(S) {
   if (!S) return;
+  if (isScreen()) { if (S.phase === "closed") { KL.S = null; return renderTV(S, true); } }
   if (S.phase === "closed") { KL.S = null; clearKL(); show(`<div class="paper" style="display:grid;gap:10px"><h2 style="font-size:26px">المضيف قفل الغرفة</h2><p class="pmuted">شكراً على اللعب!</p></div><button type="button" class="btn btn-marker" id="back">رجوع لفسحة</button>`); $("back").onclick = () => { leaveRoom(false); renderHub(); view("hub"); }; return; }
   if (KL.S && S.seq < KL.S.seq) return;
   const g = ROOM_GAMES[S.game];
@@ -200,6 +201,7 @@ function apply(S) {
   current = S.game;
   const theme = S.phase === "lobby" ? "khallast" : g.theme;
   if (document.body.dataset.theme !== theme) { document.body.dataset.theme = theme; try { window.Fos7aApp?.setTheme(THEME_COLOR[theme]); } catch (e) {} }
+  if (isScreen()) { const k = S.game + ":" + (g.key ? g.key(S) : S.phase + ":" + S.round), fresh = k !== KL.view; KL.view = k; renderTV(S, fresh); if (fresh) yardMoment(S, prev); return; }
   if (!isHost() && prev && !S.players.some((p) => p.id === PID)) KL.net.send({ t: "join", p: { id: PID, name: me.name, av: me.av } });
   const viewKey = S.game + ":" + (g.key ? g.key(S) : S.phase + ":" + S.round);
   if (viewKey !== KL.view) { KL.view = viewKey; renderPhase(S, true); yardMoment(S, prev); } else renderPhase(S, false);
@@ -231,7 +233,7 @@ function vLobby(S, fresh) {
       <h2 style="font-size:30px">وينكم!</h2>
       ${isHost() ? `<div class="qr" style="width:180px;max-width:70%;background:#fff;border-radius:12px;padding:6px">${qrSvg(url)}</div><p class="pmuted">صوّروا الباركود بكاميرا الجوال، أو ادخلوا فسحة واكتبوا الرمز</p>` : `<p class="pmuted">دخلت! انتظر المضيف يبدأ.</p>`}
       <div style="font-family:var(--f-display);font-size:44px;letter-spacing:.18em;color:var(--ink-red);direction:ltr;line-height:1">${esc(S.code)}</div>
-      ${isHost() ? `<button type="button" class="btn btn-ghost" id="shareLink" style="width:auto;padding:6px 16px;font-size:14px">أرسل الرابط</button>` : ""}
+      ${isHost() ? `<div class="row" style="gap:8px;justify-content:center;flex-wrap:wrap"><button type="button" class="btn btn-ghost" id="shareLink" style="width:auto;padding:6px 16px;font-size:14px">أرسل الرابط</button><button type="button" class="btn btn-ghost" id="tvHow" style="width:auto;padding:6px 16px;font-size:14px">📺 اعرضها على التلفزيون</button></div>` : ""}
     </div>
     ${isHost() ? `<p class="muted" style="font-weight:700;color:var(--soft)">وش نلعب؟</p>
       <div class="modes gamepick">${Object.entries(ROOM_GAMES).map(([id, x]) => `<button type="button" class="mode" data-game="${id}" aria-pressed="${S.game === id}"><b>${x.name}</b><small>${canHost(id) ? x.who : "خلصت جلستها المجانية"}</small></button>`).join("")}</div>`
@@ -242,8 +244,13 @@ function vLobby(S, fresh) {
   screen.scrollTop = fresh ? 0 : y;
   if (!isHost()) return;
   $("shareLink").onclick = async () => { const text = `تعال العب معنا في فسحة، ادخل الغرفة ${S.code}: ${url}`; try { if (window.Fos7aApp) window.Fos7aApp.share(text); else if (navigator.share) await navigator.share({ text }); else { await navigator.clipboard.writeText(text); $("shareLink").textContent = "انسخ الرابط"; } } catch (e) {} };
+  $("tvHow").onclick = () => {
+    $("modalCard").innerHTML = `<h3>📺 شاشة العرض</h3><p>افتح فسحة من متصفح التلفزيون أو الآيباد أو اللابتوب الموصول بالبروجكتر، واكتب الرمز <b dir="ltr">${esc(S.code)}</b> واضغط «اعرض الغرفة على هذي الشاشة». أو صوّر هذا الباركود من الآيباد:</p>
+      <div style="width:170px;justify-self:center;background:#fff;border-radius:12px;padding:6px">${qrSvg(tvUrl(S.code))}</div><p class="muted">الشاشة ما تنحسب لاعب. تعرض اللعبة كبيرة للكل، والكل يجاوب من جواله.</p><button type="button" class="pbtn" id="tvOk">تمام</button>`;
+    $("modal").hidden = false; $("tvOk").onclick = () => ($("modal").hidden = true);
+  };
   screen.querySelectorAll("[data-game]").forEach((b) => (b.onclick = () => { if (b.dataset.game === S.game) return; beep(700, 0.04); roomGame(b.dataset.game); hostSend(); }));
   if (g.bindLobby) g.bindLobby(S);
-  $("start").onclick = () => { if (!canHost(S.game)) return openPass(S.game, () => g.start()); beep(880, 0.08); g.start(); };
+  $("start").onclick = () => hostGate(S.game, () => { beep(880, 0.08); g.start(); });
 }
 const plCard = (p) => `<div class="pl ${p.id === PID ? "me" : ""}">${face(p, 36)}<div class="grow"><div class="name">${esc(p.name)}</div><div class="tag">${p.host ? "المضيف" : p.id === PID ? "أنت" : "جاهز"}</div></div></div>`;

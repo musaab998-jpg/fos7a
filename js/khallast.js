@@ -374,3 +374,30 @@ function vCert(S, fresh) {
   if (isHost()) $("again").onclick = () => hostAgain();
   $("home").onclick = () => { leaveRoom(); renderHub(); view("hub"); };
 }
+
+// ---------------- the big screen (tv.js): the letter, the race to finish, and the answers ----------------
+// While everyone writes it shows who's done, never what they wrote; doubtful answers go up without names.
+const khTvHead = (S, extra = "") => `<div class="tvk2-head"><div class="letter">${S.letter || "؟"}</div><div><b>الجولة ${AR(S.round)} من ${AR(S.rounds)}</b><p class="pmuted">${S.cats.map((c) => c.n).join(" · ")}</p></div>${extra}</div>`;
+ROOM_GAMES.khallast.tv = {
+  letter: (S) => `<div class="tvk2 center"><p class="pmuted">حرف الجولة</p><div class="letter tvk2-big pop">${S.letter}</div><p class="tvk2-cats">${S.cats.map((c) => c.n).join(" · ")}</p></div>`,
+  write: (S) => `<div class="tvk2">${khTvHead(S, `<span class="ring">${tvSecs(S.left)}</span>`)}<div class="ink">${tvBar(S.left, khWrite(S))}</div>
+    ${S.stop ? `<div class="banner pop"><span class="row">${face(who(S.stop.by), 40)}<span>${esc(who(S.stop.by).name)} خلّص! الباقين عندهم</span></span><b>${tvSecs(S.stop.left)}</b></div>` : `<p class="pmuted" style="text-align:center">كل واحد يكتب في جواله كلمة تبدأ بـ«${S.letter}» لكل خانة. أول واحد يخلّص يوقّف الكل!</p>`}
+    <div class="tvk2-strip">${S.players.map((p) => `<span class="tv-p">${face(p, 60)}${S.done.includes(p.id) ? '<span class="ok">✓</span>' : ""}<small>${esc(p.name)}</small></span>`).join("")}</div></div>`,
+  collect: () => `<div class="tvk2 center"><h1 class="tvk2-big">قلم فوق!</h1><p class="pmuted">نجمع الأوراق…</p></div>`,
+  vote(S) {
+    const doubt = S.groups.filter((g) => g.doubt);
+    return `<div class="tvk2"><div class="row" style="justify-content:space-between"><h2 style="font-size:34px">مقبولة ولا لا؟</h2><span class="ring">${tvSecs(S.voteLeft)}</span></div>
+      <p class="pmuted">صوّتوا من جوالاتكم، والإجابات بدون أسماء · سلّم ${AR(S.voted.length)} من ${AR(S.players.length)}</p>
+      <div class="tvk2-ans">${doubt.map((g) => `<div class="ans"><div class="ans-top"><span class="ans-text">${esc(g.text)}</span><span class="dup">${S.cats[g.ci].n}</span></div></div>`).join("") || '<p class="pmuted">كل الإجابات انحسمت تلقائي.</p>'}</div></div>`;
+  },
+  reveal: (S) => `<div class="tvk2 ${S.groups.length > 24 ? "denser" : S.groups.length > 12 ? "dense" : ""}">${khTvHead(S)}<div class="tvk2-cols">${S.cats.map((c, ci) => { const gs = S.groups.filter((g) => g.ci === ci); return `<div><h3>${c.n}</h3>
+    ${gs.map((g) => `<div class="ans"><div class="ans-top"><span class="ans-text">${esc(g.text)}</span><span class="stamp ${g.ok ? "yes" : "no"}">${g.ok ? "مقبولة" : g.bad ? "ممنوعة" : g.wrong ? "حرف غلط" : "مرفوضة"}</span></div>
+      <div class="ans-top"><div class="who">${g.who.map((id) => `<span class="p">${face(who(id), 22)}${esc(who(id).name)}</span>`).join("")}</div><span class="pts ${g.pts ? "" : "zero"}">+${AR(g.pts)}</span></div></div>`).join("") || '<p class="muted">محد كتب شي.</p>'}</div>`; }).join("")}</div></div>`,
+  board(S) {
+    const order = S.players.slice().sort((a, b) => (S.score[b.id] || 0) - (S.score[a.id] || 0)), f = S.funniest && S.funniest.round === S.round ? S.funniest : null;
+    return `<div class="tvk2"><h2 style="font-size:36px">ترتيب الفصل</h2>${f ? `<div class="best"><span style="font-family:var(--f-display);font-size:22px;color:var(--ink-red)">+٥</span><div><b>أضحك إجابة:</b> «${esc(f.text)}» في ${f.cat}<div class="pmuted">${f.who.map((id) => esc(who(id).name)).join("، ")}</div></div></div>` : ""}
+      <div class="board tvk2-board">${order.map((p, i) => `<div class="rank"><span class="n">${AR(i + 1)}</span>${face(p, 40)}<div class="grow"><b>${esc(p.name)}</b><div class="gain">+${AR((S.lastGain || {})[p.id] || 0)}</div></div><span class="sc">${AR(S.score[p.id] || 0)}</span></div>`).join("")}</div></div>`;
+  },
+  cert: (S) => `<div class="tvk2"><h2 style="font-size:36px;text-align:center">شهادات الليلة</h2><div class="tvk2-certs">${S.players.map((p) => { const a = S.awards[p.id] || { t: "", why: "" };
+    return `<div class="cert">${face(p, 56)}<div style="font-family:var(--f-display);font-size:22px">${esc(p.name)}</div><div class="title">${a.t}</div><p class="pmuted">${a.why}</p></div>`; }).join("")}</div></div>`,
+};
