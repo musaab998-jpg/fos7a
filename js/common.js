@@ -1,5 +1,11 @@
 "use strict";
   const $ = (id) => document.getElementById(id);
+  // small drawn icons in the bell's hand (navy ink, one yellow stroke); the site uses no emoji
+  const ICON = {
+    screen: '<svg class="ico" viewBox="0 0 40 40" aria-hidden="true"><rect x="4.5" y="7.5" width="31" height="20" rx="3.5" fill="#fffdf6" stroke="#1b2a4a" stroke-width="3"/><path d="M10 13.5q3-2.5 7-2.5" stroke="#ffc933" stroke-width="3" stroke-linecap="round" fill="none"/><path d="M20 27.5v5M13 33.5h14" stroke="#1b2a4a" stroke-width="3" stroke-linecap="round"/></svg>',
+    ticket: '<svg class="ico" viewBox="0 0 40 40" aria-hidden="true"><path d="M5 11h30v6a3 3 0 0 0 0 6v6H5v-6a3 3 0 0 0 0-6z" fill="#fffdf6" stroke="#1b2a4a" stroke-width="3" stroke-linejoin="round"/><path d="M26 13v3M26 19v2M26 24v3" stroke="#1b2a4a" stroke-width="2.5" stroke-linecap="round"/><path d="M10 17h10" stroke="#ffc933" stroke-width="3" stroke-linecap="round"/><path d="M10 23h7" stroke="#1b2a4a" stroke-width="2.5" stroke-linecap="round"/></svg>',
+    check: '<svg class="ico" viewBox="0 0 40 40" aria-hidden="true"><path d="M9 21l7 7 15-16" fill="none" stroke="currentColor" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  };
   const AR = (n) => String(n).replace(/\d/g, (d) => "٠١٢٣٤٥٦٧٨٩"[d]);
   const rnd = (a, b) => a + Math.random() * (b - a);
   const pickOne = (arr) => arr[Math.floor(Math.random() * arr.length)];

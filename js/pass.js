@@ -104,6 +104,7 @@ function openLogin(game) {
 }
 
 // "ar-SA" alone is the Hijri calendar without a year, so the Gregorian date leads and the Hijri one follows
+const passDay = () => new Date(passUntil()).toLocaleDateString("ar-SA-u-ca-gregory-nu-arab", { day: "numeric", month: "long", year: "numeric" });
 const passDate = () => {
   const d = new Date(passUntil());
   const g = d.toLocaleString("ar-SA-u-ca-gregory-nu-arab", { weekday: "long", day: "numeric", month: "long", year: "numeric", hour: "numeric", minute: "2-digit" });

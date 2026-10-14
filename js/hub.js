@@ -131,9 +131,10 @@
           <p class="lead">دق الجرس! المضيف يفتح غرفة، والكل يدخل من جواله برمز. اللاعبين بدون تحميل ولا تسجيل، والتلفزيون اختياري.</p>
           <div class="hero-btns"><button type="button" class="hbtn bellbtn" id="heroBell">${BELL}دق الجرس</button><a class="hbtn" href="#games">اختاروا لعبة</a><button type="button" class="hbtn alt" id="heroMe">شخصيتك</button></div>
           ${(() => { const r = savedRoom(); return r ? `<div class="resume pop"><span>غرفتك <b dir="ltr">${esc(r.code)}</b> للحين مفتوحة</span><button type="button" class="hbtn" id="resumeBtn">رجّعها</button><button type="button" class="hbtn alt" id="dropRoom">قفلها</button></div>` : ""; })()}
-          <form class="joinbox" id="joinForm"><input id="joinCode" maxlength="4" placeholder="رمز الغرفة" aria-label="رمز الغرفة" autocomplete="off" autocapitalize="characters"><button type="submit" class="hbtn">ادخل</button></form>
-          <button type="button" class="tvlink" id="tvOpen">📺 اعرض الغرفة على هذي الشاشة (تلفزيون أو آيباد)</button>
-          <p style="margin-top:10px">${passActive() ? `<button type="button" class="passchip" data-pass="">✓ تذكرتك فعالة</button>` : `<button type="button" class="passnote" data-pass="" style="font-size:14px">${USER ? "حسابك · عندك كود؟" : "عندك كود؟"}</button>`}</p>
+          <form class="joinbox" id="joinForm"><label for="joinCode">عندك رمز غرفة؟</label>
+            <div class="joinrow"><input id="joinCode" maxlength="4" placeholder="مثلاً ABCD" autocomplete="off" autocapitalize="characters"><button type="submit" class="hbtn">ادخل</button></div>
+            <button type="button" class="joinlink" id="tvOpen">${ICON.screen}اعرضها على شاشة كبيرة</button></form>
+          <button type="button" class="passline" data-pass="">${ICON.ticket}<span>${passActive() ? `تذكرتك فعالة لين ${passDay()}` : USER ? "عندك كود؟ فعّله هنا" : "عندك كود؟"}</span></button>
         </div>
         <div class="crew" aria-hidden="true">${crew.map((p) => avatar(p.av, 74)).join("")}</div>
       </section>
@@ -156,7 +157,7 @@
         <div class="sec-h"><i></i><h2>أسئلة</h2></div>
         <div class="faq">
           <details><summary>لازم أحمّل تطبيق؟</summary><p>لا. تدخلون من متصفح الجوال بالرمز، واللي يبي التطبيق يقدر ينزله.</p></details>
-          <details><summary>نحتاج تلفزيون أو بروجكتر؟</summary><p>لا. كل شي يطلع في جوال كل لاعب: الأسئلة والتصويت والنتائج. بس إذا عندكم واحد، افتحوا فسحة من متصفح التلفزيون أو الآيباد أو اللابتوب الموصول بالبروجكتر، اكتبوا رمز الغرفة واضغطوا «📺 اعرض الغرفة على هذي الشاشة». تطلع اللعبة كبيرة للكل، والشاشة ما تنحسب لاعب.</p></details>
+          <details><summary>نحتاج تلفزيون أو بروجكتر؟</summary><p>لا. كل شي يطلع في جوال كل لاعب: الأسئلة والتصويت والنتائج. بس إذا عندكم واحد، افتحوا فسحة من متصفح التلفزيون أو الآيباد أو اللابتوب الموصول بالبروجكتر، اكتبوا رمز الغرفة واضغطوا «اعرضها على شاشة كبيرة». تطلع اللعبة كبيرة للكل، والشاشة ما تنحسب لاعب.</p></details>
           <details><summary>كم لاعب؟</summary><p>لين ٣٠ في الغرفة. «خط ثلاثة» يتقسمون فيها فريقين، و«ترابيع» لين أربع فرق، و«انكشف!» لين ٢٠ لاعب، و«حرب الكراريس» لين ٥ فرق، و«مين الغشاش؟» لين ٣٠ لاعب، و«الكنز» لين ٤ فرق، و«اطوِها!» يلعبها اثنين والباقي يتفرجون.</p></details>
           <details><summary>نقدر نغيّر اللعبة بدون ما نطلع؟</summary><p>إيه. المضيف يختار اللعبة من شاشة «وينكم!»، والكل يبقى في نفس الغرفة.</p></details>
           <details><summary>كم تكلف؟</summary><p>المضيف يسجل دخوله بحساب قوقل، وكل لعبة لها جلسة مجانية على حسابه. بعدها يفتح كل الألعاب بكود، تاخذه من حسابنا في انستقرام <a href="https://instagram.com/fos7a.games" target="_blank" rel="noopener">@fos7a.games</a>. واللي يدخلون الغرفة يلعبون مجاناً دائماً وبدون حساب.</p></details>
@@ -209,7 +210,7 @@
     $("profile").querySelectorAll(".popt").forEach((b) => (b.onclick = () => { me.av[tab] = +b.dataset.set; if (tab === "e" && me.av.h === 4) me.av.h = 0; if (tab === "k") me.av.h = 0; beep(700, 0.04); drawProfile(); }));
     $("shuffle").onclick = () => { me.av = { c: Math.floor(rnd(0, NOTES.length)), e: Math.floor(rnd(0, EYES.length)), m: Math.floor(rnd(0, MOUTHS.length)), h: 0, k: Math.floor(rnd(0, PEOPLE.length)), r: -3 }; beep(600, 0.05); drawProfile(); };
     $("saveMe").onclick = () => {
-      if (isRude(nm.value)) { nm.value = ""; nm.placeholder = "اختر اسم ثاني 🙂"; nm.focus(); beep(200, 0.2, "sawtooth", 0.06); buzz([40, 30, 40]); return; }
+      if (isRude(nm.value)) { nm.value = ""; nm.placeholder = "اختر اسم ثاني"; nm.focus(); beep(200, 0.2, "sawtooth", 0.06); buzz([40, 30, 40]); return; }
       me.name = nm.value.trim() || "أنا"; saveProfile(); beep(880, 0.08); (afterProfile || (() => { renderHub(); view("hub"); }))(); };
   }
 

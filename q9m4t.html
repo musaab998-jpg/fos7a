@@ -151,7 +151,7 @@ $("make").onclick = async () => {
   $("makeMsg").textContent = `طلعت ${data.length} كود:`;
   $("newCodes").innerHTML = data.map((c) => `<span class="code">${pretty(c)}</span>`).join("");
   $("copyAll").hidden = false;
-  $("copyAll").onclick = async () => { try { await navigator.clipboard.writeText(data.map(pretty).join("\n")); $("copyAll").textContent = "انسخت ✓"; } catch (e) {} };
+  $("copyAll").onclick = async () => { try { await navigator.clipboard.writeText(data.map(pretty).join("\n")); $("copyAll").textContent = "انسخت"; } catch (e) {} };
   load();
 };
 (async () => {
