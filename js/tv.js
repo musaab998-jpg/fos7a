@@ -99,7 +99,7 @@ function tvLobby(S) {
   return `<div class="tv-lobby">
     <section class="tv-door"><h1>وينكم!</h1><div class="tv-bigqr">${qrSvg(joinUrl(S.code))}</div>
       <p>صوّروا الباركود بكاميرا الجوال<br>أو ادخلوا فسحة واكتبوا الرمز</p><div class="tv-code" dir="ltr">${esc(S.code)}</div></section>
-    <section class="tv-side"><h2>${g.name}</h2><ol class="tv-rules">${g.rules.slice(0, 5).map((r) => `<li>${r}</li>`).join("")}</ol>
+    <section class="tv-side"><h2>${g.name}</h2>${howHTML(S.game, { tv: true })}
       <h3>اللاعبين (${AR(S.players.length)})</h3>${g.tvTeams ? tvTeams(g.tvTeams(S)) : tvFaces(S.players)}</section></div>`;
 }
 // a phase no game has drawn for the TV yet: the game's name, and everyone in the room

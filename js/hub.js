@@ -174,7 +174,7 @@
     $("meChip").onclick = $("heroMe").onclick = () => openProfile(() => { renderHub(); view("hub"); });
     document.querySelectorAll("[data-play]").forEach((b) => (b.onclick = () => { beep(700, 0.05); const id = b.dataset.play; hostGate(id, () => openGame(id)); }));
     document.querySelectorAll("[data-pass]").forEach((b) => (b.onclick = () => openPass(b.dataset.pass || null)));
-    document.querySelectorAll("[data-info]").forEach((b) => (b.onclick = () => { const g = ROOM_GAMES[b.dataset.info]; $("modalCard").innerHTML = `<h3>${g.name}</h3><ol>${g.rules.map((r) => `<li>${r}</li>`).join("")}</ol><button type="button" class="pbtn" id="mClose">فهمت</button>`; $("modal").hidden = false; $("mClose").onclick = () => ($("modal").hidden = true); }));
+    document.querySelectorAll("[data-info]").forEach((b) => (b.onclick = () => openHow(b.dataset.info)));
   }
   $("modal").addEventListener("click", (e) => { if (e.target === $("modal")) $("modal").hidden = true; });
 
