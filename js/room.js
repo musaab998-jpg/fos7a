@@ -237,7 +237,7 @@ function vLobby(S, fresh) {
     </div>
     ${isHost() ? `<p class="muted" style="font-weight:700;color:var(--soft)">وش نلعب؟</p>
       <div class="modes gamepick">${Object.entries(ROOM_GAMES).map(([id, x]) => `<button type="button" class="mode" data-game="${id}" aria-pressed="${S.game === id}"><b>${x.name}</b><small>${canHost(id) ? x.who : "خلصت جلستها المجانية"}</small></button>`).join("")}</div>`
-      : `<div class="paper" style="padding-block:12px"><h3 style="font-size:24px">${g.name}</h3><ol class="rules">${g.rules.map((r) => `<li>${r}</li>`).join("")}</ol></div>`}
+      : `<div class="paper" style="padding-block:12px"><h3 style="font-size:24px;margin-bottom:8px">${g.name}</h3>${howHTML(S.game)}</div>`}
     ${g.lobbyPlayers ? g.lobbyPlayers(S) : `<p class="muted" style="font-weight:700;color:var(--soft)">اللاعبين (${AR(n)})</p><div class="players">${S.players.map(plCard).join("")}</div>`}
     ${isHost() ? `${g.lobby ? g.lobby(S) : ""}
       <button type="button" class="btn btn-marker" id="start" ${enough ? "" : "disabled"}>${enough ? `ابدأ ${g.name}` : g.need}</button>` : ""}`);

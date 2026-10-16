@@ -182,7 +182,7 @@ section.sec { margin-top: 56px; }
 .tvh-q { padding: 14px 18px; } .tvh-q .hz-qt { font-size: 22px; } .tvh .tv-bar { height: 8px; margin-block: 8px; }
 .tvh-opts { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 .tvh-forts { display: flex; gap: 14px; justify-content: center; }
-.tvh-fort { flex: 1; max-width: 240px; display: grid; gap: 6px; justify-items: center; } .tvh-fort .hz-grid { width: 100%; } .tvh-fort.out { opacity: .5; }
+.tvh-fort { flex: 1; max-width: 240px; display: grid; gap: 6px; justify-items: center; } .tvh-fort .hz-grid { width: 100%; } .tvh-fort.out { opacity: .5; } .tvh-fort.on .hz-chip { box-shadow: 0 0 0 3px #ffc933; }
 .tvh-pts { font-family: var(--f-display); font-size: 22px; }
 .tvh-ready { display: grid; grid-template-columns: repeat(auto-fit, minmax(0, 1fr)); gap: 12px; }
 .tvh-r { border: 2px dashed var(--pen); border-radius: 16px; padding: 12px; display: grid; gap: 8px; justify-items: center; }
@@ -670,6 +670,44 @@ button.hz-chip { cursor: pointer; }
 .hz-opt i { position: absolute; inset-block: 0; inset-inline-start: 0; transition: width .4s ease; }
 .hz-opt span, .hz-opt small { position: relative; } .hz-opt small { color: var(--muted); }
 .hz-opt[aria-pressed="true"] { border-color: #1d3fb8; background: #eef3ff; }
+.hz-opt.gone { opacity: .4; text-decoration: line-through; }
+.hz-opt:disabled { cursor: default; }
+.hz-hv { display: inline-flex; align-items: center; gap: 1px; } .hz-hv .hz-ic { width: 16px; height: 16px; }
+/* the shot lands: a burst on the square, shards, and the grid shakes */
+.hz-cell.boom { z-index: 3; }
+.hz-burst { position: absolute; inset: -70%; pointer-events: none; border-radius: 50%; background: radial-gradient(circle, #fffbe6 0 10%, #ffc933 11% 28%, #e5484d 29% 44%, rgba(229,72,77,0) 46%); animation: hzBurst .8s ease-out both; }
+.hz-burst::after { content: ""; position: absolute; left: 46%; top: 46%; width: 8%; height: 8%; border-radius: 50%; background: #1b2a4a; box-shadow: 0 -2.4em #e5484d, 1.7em -1.7em #ffc933, 2.4em 0 #1b2a4a, 1.7em 1.7em #e5484d, 0 2.4em #ffc933, -1.7em 1.7em #1b2a4a, -2.4em 0 #e5484d, -1.7em -1.7em #ffc933; animation: hzShards .8s ease-out both; }
+@keyframes hzBurst { 0% { transform: scale(.1); opacity: 1; } 55% { opacity: 1; } 100% { transform: scale(1.35); opacity: 0; } }
+@keyframes hzShards { 0% { transform: scale(.2); opacity: 1; } 100% { transform: scale(1.7); opacity: 0; } }
+.hz-grid.shake { animation: hzShake .5s .12s; overflow: visible; }
+@keyframes hzShake { 0%, 100% { transform: translate(0); } 20% { transform: translate(-6px, 3px); } 40% { transform: translate(5px, -4px); } 60% { transform: translate(-4px, 2px); } 80% { transform: translate(3px, -1px); } }
+@media (prefers-reduced-motion: reduce) { .hz-burst, .hz-burst::after, .hz-grid.shake { animation-duration: .01s; } }
+/* the ink pen on the squared paper: blue-ink handwriting, sticky notes with tape, a wobbly hand-drawn grid,
+   a fat red marker X and, for the shot, an ink splat that soaks in */
+body[data-theme="hisn"] .hz-qt { font-family: "Aref Ruqaa", var(--f-display); color: #1d3fb8; font-size: 22px; line-height: 1.55; }
+body[data-theme="hisn"] .hz-banner { background: #ffe27a; color: var(--ink); border: 2.5px solid var(--ink); box-shadow: 4px 4px 0 var(--ink); transform: rotate(-1deg); position: relative; margin-top: 6px; }
+body[data-theme="hisn"] .hz-banner::before { content: ""; position: absolute; top: -10px; left: 42%; width: 64px; height: 18px; background: rgba(190, 220, 255, .8); transform: rotate(4deg); }
+body[data-theme="hisn"] .hz-banner b { color: var(--pen); font-size: 28px; }
+body[data-theme="hisn"] .hz-grid { filter: url(#hz-rough); }
+body[data-theme="hisn"] .hz-cell { border-color: #7fa3cf; }
+body[data-theme="hisn"] .hz-dot { width: 26%; height: 26%; background: #1d3fb8; box-shadow: 1.5px 1px 0 rgba(29, 63, 184, .35); }
+body[data-theme="hisn"] .hz-x { inset: 8%; width: 84%; height: 84%; }
+body[data-theme="hisn"] .hz-opt { border-radius: 5px 14px 6px 12px; }
+body[data-theme="hisn"] .hz-opt[aria-pressed="true"] { border-color: #1d3fb8; background: #e7efff; box-shadow: 3px 3px 0 #1d3fb8; }
+body[data-theme="hisn"] .hz-chip.on { background: #ffe27a; color: var(--pen); box-shadow: 2px 2px 0 var(--ink); }
+body[data-theme="hisn"] .hz-chip.on::before { background: var(--pen); } body[data-theme="hisn"] .hz-chip.on b { color: var(--ink); }
+body[data-theme="hisn"] .hz-fire { font-family: var(--f-display); font-weight: 400; font-size: 26px; transform: rotate(-.6deg); box-shadow: 4px 4px 0 var(--ink); background: #c8232c; color: #fff; border: 2.5px solid var(--ink); }
+body[data-theme="hisn"] .hz-fire:disabled { background: #e9b8bb; }
+.tvh-hit { max-width: 900px; width: 60%; }
+.hz-hitcard { text-align: center; background: #fffdf3; border: 2.5px solid var(--ink); box-shadow: 4px 4px 0 #c8232c; transform: rotate(1deg); border-radius: 16px; padding: 10px; display: grid; gap: 2px; }
+.hz-hitcard small { font-size: 13px; color: var(--muted); } .hz-hitcard b { font-family: var(--f-display); font-weight: 400; font-size: 38px; line-height: 1.1; color: #c8232c; }
+.hz-hitcard.miss b, .hz-hitcard.none b, .hz-hitcard.late b { color: #1d3fb8; } .hz-hitcard.blk b { color: #4b5563; }
+.hz-hitcard em { font-style: normal; font-family: var(--f-display); font-size: 26px; color: #1f8a53; }
+.tvh-hit { align-self: center; min-width: 520px; } .tvh-hit .hz-hitcard b { font-size: 64px; } .tvh-hit .hz-hitcard small { font-size: 20px; } .tvh-hit .hz-hitcard em { font-size: 38px; }
+body[data-theme="hisn"] .hz-burst { inset: -80%; border-radius: 0; background: radial-gradient(circle, #1b2a4a 0 6%, transparent 7%), radial-gradient(closest-side, #c8232c 0 32%, rgba(200, 35, 44, .6) 33% 46%, transparent 47%); filter: url(#hz-splat); animation: hzInk 1s ease-out both; }
+body[data-theme="hisn"] .hz-burst::after { background: #c8232c; box-shadow: 0 -2.6em #1b2a4a, 1.8em -1.6em #c8232c, 2.5em .3em #c8232c, 1.5em 1.9em #1b2a4a, -.2em 2.6em #c8232c, -1.9em 1.5em #c8232c, -2.6em -.2em #1b2a4a, -1.6em -1.9em #c8232c; animation: hzDrops .9s ease-out both; }
+@keyframes hzInk { 0% { transform: scale(.15) rotate(-25deg); opacity: 1; } 40% { transform: scale(1.05) rotate(0); opacity: .95; } 100% { transform: scale(.8); opacity: .3; } }
+@keyframes hzDrops { 0% { transform: scale(.2); opacity: 1; } 60% { opacity: 1; } 100% { transform: scale(1.5); opacity: 0; } }
 .hz-faces { display: flex; gap: 2px; flex-wrap: wrap; }
 .hz-order { display: flex; flex-wrap: wrap; gap: 6px 12px; font-size: 13px; }
 .hz-banner { background: var(--pen); color: #fff; border-radius: 14px; padding: 8px 12px; text-align: center; display: grid; gap: 2px; border: 2px solid var(--ink); }
@@ -947,6 +985,21 @@ button.logo { background: none; border: 0; padding: 0; cursor: pointer; }
 button.pl { border: 1px solid var(--line); background: var(--desk-2); width: 100%; }
 .chips.pick .chip { font-size: 14px; padding: 5px 12px; font-weight: 700; border-width: 1.5px; }
 .chips.pick .chip[aria-pressed="true"] { background: var(--sel); border-color: var(--marker); color: var(--marker-deep); }
+/* طريقة اللعب (js/how.js): the goal on a sticky note, the steps as numbered cards, the details folded */
+.how { display: grid; gap: 8px; text-align: start; color: #1b2a4a; }
+.how-goal { background: #ffe27a; border: 2px solid #1b2a4a; border-radius: 12px; padding: 8px 12px; font-weight: 700; font-size: 15px; line-height: 1.5; box-shadow: 3px 3px 0 #1b2a4a; }
+.how-goal span { display: inline-block; font-family: var(--f-display); font-weight: 400; font-size: 17px; background: #1b2a4a; color: #ffe27a; border-radius: 8px; padding: 1px 8px 0; margin-inline-end: 8px; }
+.how-steps { display: grid; gap: 6px; }
+.how-step { display: grid; grid-template-columns: 34px 1fr; gap: 10px; align-items: center; background: #fffdf6; border: 2px solid #1b2a4a; border-radius: 12px; padding: 7px 10px; }
+.how-n { width: 32px; height: 32px; border-radius: 50%; background: #1b2a4a; color: #ffc933; font-family: var(--f-display); font-weight: 400; font-size: 19px; display: grid; place-items: center; padding-top: 3px; }
+.how-step div b { display: block; font-size: 15.5px; line-height: 1.3; }
+.how-step div span { display: block; font-size: 13.5px; line-height: 1.5; color: #4a5470; }
+.how-more { background: #fffdf6; border: 1.5px dashed #9aa6c0; border-radius: 12px; padding: 6px 10px; }
+.how-more summary { cursor: pointer; font-weight: 700; font-size: 14px; }
+.how.tv { gap: 10px; } .how.tv .how-steps { grid-template-columns: 1fr 1fr; gap: 10px; } .how.tv .how-goal { font-size: 23px; padding: 10px 16px; } .how.tv .how-goal span { font-size: 26px; }
+.how.tv .how-step { grid-template-columns: 48px 1fr; padding: 10px 14px; gap: 14px; } .how.tv .how-n { width: 48px; height: 48px; font-size: 28px; }
+.how.tv .how-step div b { font-size: 24px; } .how.tv .how-step div span { font-size: 18px; }
+.gtop .how-q { font-family: var(--f-display); font-size: 22px; padding-top: 3px; }
 .rules { margin: 6px 0 0; padding-inline-start: 20px; display: grid; gap: 4px; font-size: 14.5px; }
 .kl-teams { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
 .kl-team { border: 2px dashed currentColor; border-radius: 14px; padding: 8px; display: grid; gap: 4px; align-content: start; }
@@ -971,7 +1024,7 @@ button.pl { border: 1px solid var(--line); background: var(--desk-2); width: 100
   <div id="profile" hidden></div>
   <div id="game" hidden>
     <div class="gshell">
-      <div class="gtop"><button type="button" class="x" id="quit" aria-label="رجوع لفسحة"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button><span class="gt" id="gTitle"></span><span id="topLeft"></span><span class="row" style="gap:8px"><span class="code" id="roomCode"></span><button type="button" class="x" data-sound aria-label="اكتم الصوت"></button></span></div>
+      <div class="gtop"><button type="button" class="x" id="quit" aria-label="رجوع لفسحة"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button><span class="gt" id="gTitle"></span><span id="topLeft"></span><span class="row" style="gap:8px"><span class="code" id="roomCode"></span><button type="button" class="x how-q" id="howBtn" aria-label="طريقة اللعب">؟</button><button type="button" class="x" data-sound aria-label="اكتم الصوت"></button></span></div>
       <div id="screen"></div>
     </div>
   </div>
@@ -998,6 +1051,7 @@ button.pl { border: 1px solid var(--line); background: var(--desk-2); width: 100
 <script src="js/hisn.js"></script>
 <script src="js/ghash.js"></script>
 <script src="js/kanz.js"></script>
+<script src="js/how.js"></script>
 <script src="js/tv.js"></script>
 <script src="js/shell.js"></script>
 

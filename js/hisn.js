@@ -1,19 +1,18 @@
 "use strict";
 // ================= حرب الكراريس: battleships on the squared exercise-book paper =================
 // Each team hides its fort (a commander, soldiers, heavy guns, a shield, a bomb, a radar) on its grid.
-// Every question goes to all teams at once; each team that answers right gets a shot, fired by all of
-// them together and resolved fastest first. The commander takes two hits; the last fort standing wins.
+// The teams take turns: the question goes to one team, whose majority answers; right, and that team's
+// shooter (a different player each time) fires one shot that lands at once; wrong, and the next team may
+// steal it. The commander takes two hits; the last fort standing wins.
 // A fort never goes into the shared snapshot: the host sends each team its own board, and everyone
 // sees only the marks the shots have left.
 
-const HZ_TEAMS = [{ n: "الأزرق", c: "#1d3fb8" }, { n: "الأحمر", c: "#c8232c" }, { n: "الأخضر", c: "#1f8a53" }, { n: "البنفسجي", c: "#6b3fb8" }, { n: "البرتقالي", c: "#d9730d" }];
+const HZ_TEAMS = [{ n: "الأزرق", c: "#1d3fb8" }, { n: "الأحمر", c: "#c8232c" }, { n: "الأخضر", c: "#1f8a53" }, { n: "البنفسجي", c: "#6b3fb8" }, { n: "البرتقالي", c: "#d9730d" }, { n: "الوردي", c: "#d6457a" }, { n: "السماوي", c: "#0e8fa8" }, { n: "الزيتي", c: "#6f7d1c" }];
 const HZ_ROWS = ["أ", "ب", "ج", "د", "هـ", "و"];
 const HZ_KINDS = ["cmd", "sol", "gun", "shd", "bmb", "rdr"];
 const HZ_NAME = { cmd: "القائد", sol: "جندي", gun: "سلاح ثقيل", shd: "درع", bmb: "قنبلة", rdr: "رادار" };
 const HZ_PTS = { sol: 20, gun: 40, rdr: 30, cmd: 0, shd: 0, bmb: 0 };
 const HZ_SET = { 4: { cmd: 1, sol: 3, gun: 1, shd: 1, bmb: 1, rdr: 0, min: 4 }, 5: { cmd: 1, sol: 4, gun: 2, shd: 1, bmb: 1, rdr: 1, min: 5 }, 6: { cmd: 1, sol: 6, gun: 2, shd: 2, bmb: 2, rdr: 1, min: 7 } };
-// minutes a match usually lasts, from a simulation of thousands of games (hisn_sim.py): [size][teams]
-const HZ_EST = { 4: [0, 0, 7, 9, 12, 14], 5: [0, 0, 9, 13, 16, 19], 6: [0, 0, 12, 19, 23, 27] };
 const hzAutoSize = (nt) => (nt <= 2 ? 6 : nt === 3 ? 5 : 4);
 const hzSize = (S) => (S.size === "auto" ? hzAutoSize(S.nt) : +S.size);
 const hzName = (n, c) => HZ_ROWS[Math.floor(c / n)] + AR((c % n) + 1);
@@ -45,6 +44,7 @@ const HZ_SYMBOLS = `<svg width="0" height="0" style="position:absolute" aria-hid
 <symbol id="hz-gun" viewBox="0 0 40 40"><path d="M11.8 23.6L31 12.4l3.6 6.2-19.2 11.2z" fill="currentColor" stroke="#1b2a4a" stroke-width="1.6" stroke-linejoin="round"/><path d="M29.4 13.3l3.6 6.2" stroke="#ffc933" stroke-width="3"/><path d="M14.6 23.4L30 14.4" stroke="#fff" stroke-width="1.5" stroke-linecap="round" opacity=".55"/><path d="M6 36.6h22" stroke="#1b2a4a" stroke-width="2.2" stroke-linecap="round"/><circle cx="15.5" cy="29" r="7.2" fill="#ffc933" stroke="#1b2a4a" stroke-width="1.6"/><path d="M15.5 22.6v12.8M9.1 29h12.8M11 24.5l9 9M20 24.5l-9 9" stroke="#1b2a4a" stroke-width="1.1" opacity=".7"/><circle cx="15.5" cy="29" r="2.4" fill="currentColor" stroke="#1b2a4a" stroke-width="1.2"/></symbol>
 <symbol id="hz-bmb" viewBox="0 0 40 40"><path d="M27.4 13.6q2.6-6.4 7.6-6" fill="none" stroke="#8a5a2b" stroke-width="2.2" stroke-linecap="round"/><path d="M35.2 3.6l1.1 2.7 2.8.6-2.4 1.6.3 2.9-2.2-1.9-2.6 1.2 1-2.7-1.9-2.1 2.9.1z" fill="#ffc933" stroke="#c8232c" stroke-width="1" stroke-linejoin="round"/><rect x="23.4" y="11.6" width="6.4" height="5.4" rx="1.2" transform="rotate(38 26.6 14.3)" fill="#1b2a4a"/><circle cx="18.6" cy="24.4" r="11.6" fill="currentColor" stroke="#1b2a4a" stroke-width="1.6"/><path d="M11.4 21.4q1.8-4.6 6.6-5.6" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" opacity=".7"/><circle cx="11.8" cy="25.6" r="1.2" fill="#fff" opacity=".5"/><path d="M8.6 30.2q10 5 20 0" fill="none" stroke="#ffc933" stroke-width="2.2" stroke-linecap="round"/></symbol>
 <symbol id="hz-rdr" viewBox="0 0 40 40"><path d="M14 37.4l2.2-4.6h7.6l2.2 4.6z" fill="currentColor" stroke="#1b2a4a" stroke-width="1.5" stroke-linejoin="round"/><path d="M9 38h22" stroke="#1b2a4a" stroke-width="2" stroke-linecap="round"/><circle cx="20" cy="18.4" r="15" fill="currentColor" stroke="#1b2a4a" stroke-width="1.6"/><circle cx="20" cy="18.4" r="11.4" fill="#1b2a4a"/><circle cx="20" cy="18.4" r="7.6" fill="none" stroke="#7fe0a6" stroke-width=".9" opacity=".55"/><circle cx="20" cy="18.4" r="3.8" fill="none" stroke="#7fe0a6" stroke-width=".9" opacity=".55"/><path d="M8.6 18.4h22.8M20 7v22.8" stroke="#7fe0a6" stroke-width=".7" opacity=".4"/><path d="M20 18.4L28.2 10.5A11.4 11.4 0 0 1 31.3 17.2z" fill="#ffc933" opacity=".9"/><path d="M20 18.4L28.2 10.5" stroke="#ffc933" stroke-width="1.6" stroke-linecap="round"/><circle cx="25.4" cy="22.4" r="1.7" fill="#ff5a6e" stroke="#fff" stroke-width=".6"/><circle cx="14.6" cy="13.8" r="1.2" fill="#7fe0a6"/><path d="M9.6 11.6q2.6-4.6 7.4-5.8" stroke="#fff" stroke-width="1.6" fill="none" stroke-linecap="round" opacity=".6"/></symbol>
+<filter id="hz-rough"><feTurbulence type="fractalNoise" baseFrequency=".035" numOctaves="2" seed="3"/><feDisplacementMap in="SourceGraphic" scale="2.4"/></filter><filter id="hz-splat"><feTurbulence type="fractalNoise" baseFrequency=".09" numOctaves="3" seed="8"/><feDisplacementMap in="SourceGraphic" scale="24"/></filter>
 <symbol id="hz-hit" viewBox="0 0 40 40"><path d="M7 8L33 32M33 7L8 33" stroke="#c8232c" stroke-width="5" stroke-linecap="round"/></symbol>
 </svg>`;
 document.body.insertAdjacentHTML("afterbegin", HZ_SYMBOLS);
@@ -53,8 +53,8 @@ const hzStack = (st) => (st.length > 1 ? `<span class="hz-stk n${st.length}">${s
 const hzChip = (t, extra = "") => `<span class="hz-chip ${extra}" style="--pen:${HZ_TEAMS[t].c}">${HZ_TEAMS[t].n}</span>`;
 
 ROOM_GAMES.hisn = {
-  name: "حرب الكراريس", theme: "hisn", min: 2, need: "يحتاج لاعب في فريقين على الأقل", who: "٢ إلى ٥ فرق · أسئلة وتصويب",
-  rules: ["الفرق تخبي حصونها في شبكة مربعات: قائد وجنود وسلاح ثقيل ودرع وقنبلة ورادار. وتقدرون تحطون لين ٣ قطع في المربع.", "السؤال يطلع لكل الفرق مرة وحدة، وكل فريق يصوّت، وجواب الأغلبية هو جوابه.", "كل فريق يجاوب صح ياخذ ضربة على حصن يختاره، والأسرع يضرب أول.", "القائد يحتاج إصابتين، وإذا طاح طاح الحصن.", "الدرع يصد أول ضربة عليه وعلى اللي جنبه. القنبلة تنفجر على اللي ضربها. والرادار إذا انضرب يكشف اللي حوله ثواني.", "اللي يصيب سلاح ثقيل ياخذ ضربة ثقيلة: ٣ مربعات مرة وحدة.", "آخر حصن يبقى يفوز. وإذا خلص الوقت، الأكثر نقاط."],
+  name: "حرب الكراريس", theme: "hisn", min: 2, need: "يحتاج لاعب في فريقين على الأقل", who: "٢ إلى ٨ فرق · أسئلة وتصويب",
+  rules: ["كل فريق يخبي حصنه في شبكة مربعات: قائد وجنود وسلاح ثقيل ودرع وقنبلة ورادار.", "الفرق تلعب بالدور: السؤال لفريق واحد، والفريق كله يصوّت، وجواب الأغلبية هو جوابه.", "صح؟ رامي الفريق يضرب حصن خصم، وكل مرة رامي غير. غلط؟ السؤال يروح للفريق اللي بعده يسرقه.", "الضربة تنفجر على طول: فاضي، أو إصابة، أو انصدّت بالدرع.", "القائد يحتاج إصابتين، وإذا طاح طاح الحصن. القنبلة تنفجر على اللي ضربها، والرادار يكشف اللي حوله ثواني.", "اللي يصيب سلاح ثقيل ياخذ ضربة ثقيلة: ٣ مربعات مرة وحدة.", "آخر حصن يبقى يفوز. وإذا خلص الوقت، الأكثر نقاط."],
   setup(S) {
     Object.assign(S, { nt: 2, size: "auto", qtime: 15, mins: 15, picks: ["السعودية", "الخليج والعرب", "جغرافيا", "علوم", "كورة", "ألغاز", "عامة", "أكل", "الأنبياء", "الصحابة"] });
     H.ht ||= {};
@@ -66,8 +66,9 @@ ROOM_GAMES.hisn = {
     S.hteams = {}; H.players.forEach((p) => (S.hteams[p.id] = Math.min(H.ht[p.id] ?? 0, (S.nt || 2) - 1)));
     S.left = H.deadline ? Math.max(0, H.deadline - now()) : 0;
     S.matchLeft = H.matchEnd ? Math.max(0, H.matchEnd - now()) : 0;
+    S.freeLeft = H.anyAt ? Math.max(0, H.anyAt - now()) : 0;
   },
-  key: (S) => `${S.sid || ""}:${S.phase}:${S.qi || 0}`,
+  key: (S) => `${S.sid || ""}:${S.phase}:${S.qi || 0}:${S.asking ?? ""}:${S.steal ? 1 : 0}`,
   on(m) {
     const S = H.S, Z = H.hz, t = H.ht[m.id];
     if (!Z || !m.id) return;
@@ -83,24 +84,22 @@ ROOM_GAMES.hisn = {
       if (S.teams.every((x) => S.ready[x])) { hClear(); hLater(hzBegin, 900); }
       return;
     }
-    if (m.t === "hzvote" && S.phase === "q" && Number.isInteger(m.k) && m.k >= 0 && m.k < S.q.o.length) {
+    if (m.t === "hzvote" && S.phase === "q" && t === S.asking && Number.isInteger(m.k) && m.k >= 0 && m.k < S.q.o.length && m.k !== S.removed) {
       Z.votes[m.id] = { k: m.k, at: now() - Z.qStart };
       hzTally(); hostSendSoon();
       if (hzVoters().every((id) => Z.votes[id])) H.deadline = Math.min(H.deadline, now() + 600);
       return;
     }
-    if (m.t === "hzfire" && S.phase === "aim") {
-      const slot = S.order.find((o) => o.t === t);
-      if (!slot || Z.aims[t]) return;
-      const f = +m.f, c = +m.c, heavy = !!m.heavy && (S.heavy[t] || 0) > 0;
-      if (!S.teams.includes(f) || f === t || !S.live[f] || !Number.isInteger(c) || c < 0 || c >= S.n * S.n || !hzCanShoot(S, f, c)) return;
-      Z.aims[t] = { f, c, heavy, by: m.id };
-      S.aimed = Object.keys(Z.aims).map(Number); hostSendSoon();
-      if (S.order.every((o) => Z.aims[o.t])) H.deadline = Math.min(H.deadline, now() + 400);
-    }
+    if (S.phase !== "aim" || !S.shooter || t !== S.shooter.t) return;
+    const f = +m.f, c = +m.c, heavy = !!m.heavy && (S.heavy[t] || 0) > 0;
+    if (!S.teams.includes(f) || f === t || !S.live[f] || !Number.isInteger(c) || c < 0 || c >= S.n * S.n || !hzCanShoot(S, f, c)) return;
+    // the shooter fires; if they're slow (or gone), anyone in their team may after a while
+    if (m.t === "hzpick" && m.id === S.shooter.id) return hzMembers(t).forEach((id) => id !== m.id && hzTell(id, { t: "hzpick", sid: S.sid, f, c, heavy }));
+    if (m.t === "hzfire" && (m.id === S.shooter.id || now() >= H.anyAt)) hzFire(t, f, c, heavy, m.id);
   },
   direct(m) {
-    if (m.t === "hzme") { KL.my.hz = m; const v = ROOM_GAMES.hisn.views[KL.S && KL.S.phase]; if (v && KL.S.game === "hisn") v(KL.S, false); }
+    if (m.t === "hzme") { KL.my.hz = m; if (KL.S && KL.S.phase === "res" && now() < (KL.my.boomUntil || 0)) return; const v = ROOM_GAMES.hisn.views[KL.S && KL.S.phase]; if (v && KL.S.game === "hisn") v(KL.S, false); }
+    if (m.t === "hzpick") { if (KL.S && m.sid === KL.S.sid) { KL.my.pick = m; if (KL.S.phase === "aim") hzvAim(KL.S, false); } return; }
     if (m.t === "hzradar") { KL.my.radar = { ...m, until: now() + 6000 }; const v = ROOM_GAMES.hisn.views[KL.S && KL.S.phase]; if (v && KL.S.game === "hisn") v(KL.S, false); }
   },
   lobbyPlayers(S) {
@@ -110,10 +109,10 @@ ROOM_GAMES.hisn = {
   lobby(S) {
     const chips = (attr, list, cur, lab) => `<div class="chips pick">${list.map((v) => `<button type="button" class="chip" data-${attr}="${v}" aria-pressed="${String(cur) === String(v)}">${lab(v)}</button>`).join("")}</div>`;
     const h = (t) => `<p class="muted" style="font-weight:700;color:var(--soft)">${t}</p>`;
-    const auto = hzAutoSize(S.nt), est = (n) => HZ_EST[n][S.nt];
-    return `${h("كم فريق؟")}${chips("hnt", [2, 3, 4, 5], S.nt, (v) => AR(v))}
-      ${h("حجم الشبكة")}${chips("hsz", ["auto", 4, 5, 6], S.size, (v) => (v === "auto" ? `تلقائي (${AR(auto)}×${AR(auto)})` : `${AR(v)}×${AR(v)} · ≈${AR(est(v))} د`))}
-      <p class="muted">المدة المتوقعة مع ${AR(S.nt)} فرق: حوالي ${AR(est(hzSize(S)))} دقيقة.</p>
+    const auto = hzAutoSize(S.nt);
+    return `${h("كم فريق؟")}${chips("hnt", [2, 3, 4, 5, 6, 7, 8], S.nt, (v) => AR(v))}
+      ${h("حجم الشبكة")}${chips("hsz", ["auto", 4, 5, 6], S.size, (v) => (v === "auto" ? `تلقائي (${AR(auto)}×${AR(auto)})` : `${AR(v)}×${AR(v)}`))}
+      <p class="muted">الفرق تلعب بالدور، فكل ما زادت الفرق طال الدور. «حد الوقت» يضبط طول اللعبة.</p>
       ${h("حد الوقت")}${chips("hmin", [10, 15, 20, 0], S.mins, (v) => (v ? `${AR(v)} دقيقة` : "لين يبقى حصن"))}
       ${h("وقت الإجابة")}${chips("hqt", [10, 15, 20], S.qtime, (v) => `${AR(v)} ثانية`)}
       ${h("فئات الأسئلة")}<div class="chips pick">${QCATS.filter((c) => c !== "الأغلبية").map((c) => `<button type="button" class="chip" data-hcat="${c}" aria-pressed="${S.picks.includes(c)}">${c}</button>`).join("")}</div>`;
@@ -131,7 +130,7 @@ ROOM_GAMES.hisn = {
     if (!(H.usedQ instanceof Set)) H.usedQ = new Set();
     if (S.phase === "place") hEvery(() => { if (now() >= H.deadline) hzBegin(); }, 500);
     else if (S.phase === "q") hEvery(() => { if (now() >= H.deadline) hzAfterQ(); }, 200);
-    else if (S.phase === "aim") hEvery(() => { if (now() >= H.deadline) hzResolve(); }, 200);
+    else if (S.phase === "aim") hEvery(() => { if (now() >= H.deadline) hzLate(); }, 200);
     else if (S.phase === "res") hLater(hzNext, 3000);
     H.players.forEach((p) => hzTellOne(p.id));
   },
@@ -148,16 +147,16 @@ function hzTellOne(id, by) {
   hzTell(id, { t: "hzme", sid: S.sid, team: t, cells: Z.boards[t], broken: Z.broken[t], by: by || "" });
 }
 const hzTellTeam = (t, by) => hzMembers(t).forEach((id) => hzTellOne(id, by));
-const hzVoters = () => H.players.map((p) => p.id).filter((id) => H.S.teams.includes(H.ht[id]));
+const hzVoters = () => hzMembers(H.S.asking);
 
 function hzStart() {
   hClear();
   const S = H.S, n = hzSize(S);
   const teams = [...new Set(H.players.map((p) => H.ht[p.id] ?? 0))].filter((t) => t < S.nt).sort();
-  H.hz = { boards: Array.from({ length: S.nt }, () => Array.from({ length: n * n }, () => [])), broken: Array.from({ length: S.nt }, () => []), cmdHits: Array(S.nt).fill(0), taken: Array.from({ length: S.nt }, () => []), votes: {}, aims: {}, qStart: 0, hits: Array(S.nt).fill(0), booms: Array(S.nt).fill(0) };
+  H.hz = { boards: Array.from({ length: S.nt }, () => Array.from({ length: n * n }, () => [])), broken: Array.from({ length: S.nt }, () => []), cmdHits: Array(S.nt).fill(0), taken: Array.from({ length: S.nt }, () => []), votes: {}, aims: {}, qStart: 0, hits: Array(S.nt).fill(0), booms: Array(S.nt).fill(0), rot: Array(S.nt).fill(0) };
   H.usedQ instanceof Set || (H.usedQ = new Set());
   Object.assign(S, { sid: Math.random().toString(36).slice(2, 8), phase: "place", n, teams, qi: 0, ready: Array(S.nt).fill(false), live: Array.from({ length: S.nt }, (_, t) => teams.includes(t)),
-    pts: Array(S.nt).fill(0), heavy: Array(S.nt).fill(0), fog: Array.from({ length: S.nt }, () => Array(n * n).fill(null)), q: null, tally: null, order: [], aimed: [], feed: [], boards: null });
+    pts: Array(S.nt).fill(0), heavy: Array(S.nt).fill(0), fog: Array.from({ length: S.nt }, () => Array(n * n).fill(null)), q: null, tally: null, feed: [], boards: null, turn: teams[0], asking: -1, steal: false, removed: -1, prev: null, shooter: null, shot: null });
   H.deadline = now() + 75000; H.matchEnd = 0;
   hostSend();
   H.players.forEach((p) => hzTellOne(p.id));
@@ -179,65 +178,81 @@ function hzBegin() {
   });
   S.teams.forEach((t) => hzTellTeam(t));
   H.matchEnd = S.mins ? now() + S.mins * 60000 : 0;
-  hzAsk();
+  S.turn = pickOne(S.teams);
+  hzAsk(S.turn, false);
 }
-function hzAsk() {
+// the next team still standing after t (t itself when it's the only one)
+function hzNextTeam(t) { const S = H.S, live = S.teams.filter((x) => S.live[x]); if (!live.length) return t; const i = S.teams.indexOf(t); for (let k = 1; k <= S.teams.length; k++) { const x = S.teams[(i + k) % S.teams.length]; if (S.live[x]) return x; } return t; }
+// a question for one team; a steal is the same question, minus the answer the other team got wrong
+function hzAsk(t, steal) {
   hClear();
   const S = H.S, Z = H.hz;
-  S.qi++;
-  const d = drawQuestion(pickOne(S.picks.length ? S.picks : ["عامة"]), H.usedQ);
-  Z.q = d; Z.votes = {}; Z.aims = {}; Z.qStart = now();
-  S.q = { q: d.q, o: d.o, cat: d.cat }; S.tally = Array.from({ length: S.nt }, () => d.o.map(() => 0)); S.voted = [];
-  S.phase = "q"; S.order = []; S.aimed = []; S.feed = []; S.answer = "";
-  H.deadline = now() + S.qtime * 1000;
+  if (!steal) {
+    S.qi++;
+    const d = drawQuestion(pickOne(S.picks.length ? S.picks : ["عامة"]), H.usedQ);
+    Z.q = d; S.q = { q: d.q, o: d.o, cat: d.cat }; S.removed = -1; S.prev = null;
+  }
+  Z.votes = {}; Z.qStart = now();
+  Object.assign(S, { phase: "q", asking: t, steal: !!steal, voted: [], feed: [], answer: "", shooter: null, shot: null });
+  S.tally = S.q.o.map(() => 0);
+  S.qT = (steal ? Math.max(8, S.qtime - 5) : S.qtime) * 1000;
+  H.deadline = now() + S.qT; H.anyAt = 0;
   hostSend();
   hEvery(() => { if (now() >= H.deadline) hzAfterQ(); }, 200);
 }
 function hzTally() {
   const S = H.S, Z = H.hz;
-  S.tally = Array.from({ length: S.nt }, () => S.q.o.map(() => 0));
-  Object.entries(Z.votes).forEach(([id, v]) => { const t = H.ht[id]; if (S.tally[t]) S.tally[t][v.k]++; });
+  S.tally = S.q.o.map(() => 0);
+  Object.values(Z.votes).forEach((v) => S.tally[v.k]++);
   S.voted = Object.keys(Z.votes);
 }
 function hzAfterQ() {
   hClear();
-  const S = H.S, Z = H.hz, right = Z.q.a;
-  // each team's answer is its majority; its time is the first vote for that answer
-  const res = S.teams.map((t) => {
-    const ids = hzMembers(t).filter((id) => Z.votes[id]);
-    if (!ids.length) return { t, k: -1, at: Infinity };
-    const tally = S.q.o.map((_, k) => ids.filter((id) => Z.votes[id].k === k).length), k = argmax(tally);
-    return { t, k, at: Math.min(...ids.filter((id) => Z.votes[id].k === k).map((id) => Z.votes[id].at)) };
-  });
-  res.forEach((r) => { if (r.k === right) S.pts[r.t] += 10; });
+  const S = H.S, Z = H.hz, right = Z.q.a, t = S.asking;
+  const k = Object.keys(Z.votes).length ? argmax(S.tally) : -1;
+  if (k === right) { S.pts[t] += 10; S.answer = S.q.o[right]; return hzAim(t); }
+  const nx = hzNextTeam(t);
+  if (!S.steal && nx !== t) { S.prev = { t, k }; S.removed = k; return hzAsk(nx, true); }
   S.answer = S.q.o[right];
-  S.answers = res.map((r) => ({ t: r.t, k: r.k, ok: r.k === right, at: r.at === Infinity ? null : Math.round(r.at / 100) / 10 }));
-  // a shot for every right answer; teams already out fire «ضربات دعم»
-  S.order = res.filter((r) => r.k === right && S.teams.some((f) => f !== r.t && S.live[f])).sort((x, y) => x.at - y.at).map((r) => ({ t: r.t, support: !S.live[r.t] }));
-  if (!S.order.length) { S.phase = "res"; S.feed = [{ m: "none" }]; hostSend(); return hLater(hzNext, 4500); }
-  S.phase = "aim"; S.aimed = [];
-  H.deadline = now() + 20000;
+  S.phase = "res"; S.feed = [{ m: "none" }]; S.shot = null;
   hostSend();
-  hEvery(() => { if (now() >= H.deadline) hzResolve(); }, 200);
+  hLater(hzNext, 3500);
+}
+// the shooter is the next player of that team in turn
+function hzAim(t) {
+  const S = H.S, Z = H.hz, mem = H.players.filter((p) => H.ht[p.id] === t);
+  if (!mem.length) { S.phase = "res"; S.feed = [{ m: "late", by: t }]; hostSend(); return hLater(hzNext, 3000); }
+  const p = mem[Z.rot[t]++ % mem.length];
+  S.shooter = { id: p.id, name: p.name, t };
+  S.phase = "aim";
+  H.anyAt = now() + 15000; H.deadline = now() + 30000;
+  hostSend();
+  hEvery(() => { if (now() >= H.deadline) hzLate(); }, 200);
+}
+// the shot lands the moment it's fired
+function hzFire(t, f, c, heavy, by) {
+  hClear();
+  const S = H.S;
+  S.feed = [];
+  const cells = heavy ? hzLine(S.n, c) : [c];
+  if (heavy) S.heavy[t]--;
+  cells.forEach((x, i) => hzShoot(t, f, x, heavy && i > 0));
+  const p = H.players.find((x) => x.id === by);
+  S.shot = { by: t, f, cells, who: p ? p.name : "", heavy };
+  S.phase = "res"; H.deadline = 0; H.anyAt = 0;
+  hostSend();
+  S.teams.forEach((x) => hzTellTeam(x));
+  hLater(hzNext, S.feed.some((e) => e.m === "rdr" || e.rdr) ? 6500 : 4200);
+}
+function hzLate() {
+  hClear();
+  const S = H.S;
+  S.phase = "res"; S.feed = [{ m: "late", by: S.shooter ? S.shooter.t : S.asking }]; S.shot = null; H.deadline = 0; H.anyAt = 0;
+  hostSend();
+  hLater(hzNext, 3000);
 }
 // can this square still be shot? empty of marks, a blocked square (the shield took that one), or a wounded commander
 function hzCanShoot(S, f, c) { const m = S.fog[f][c]; return !m || m.m === "blk" || m.m === "wnd"; }
-function hzResolve() {
-  hClear();
-  const S = H.S, Z = H.hz;
-  S.feed = [];
-  S.order.forEach((o) => {
-    const a = Z.aims[o.t];
-    if (!a) { S.feed.push({ by: o.t, m: "late" }); return; }
-    const cells = a.heavy ? hzLine(S.n, a.c) : [a.c];
-    if (a.heavy) S.heavy[o.t]--;
-    cells.forEach((c, i) => hzShoot(o.t, a.f, c, a.heavy && i > 0));
-  });
-  S.phase = "res"; H.deadline = 0;
-  hostSend();
-  S.teams.forEach((t) => hzTellTeam(t));
-  hLater(hzNext, S.feed.some((e) => e.m === "rdr") ? 7000 : 5500);
-}
 const hzLine = (n, c) => { const r = Math.floor(c / n), q = Math.min(n - 2, Math.max(1, c % n)); return [q - 1, q, q + 1].map((x) => r * n + x); };
 function hzShoot(by, f, c, extra) {
   const S = H.S, Z = H.hz, b = Z.boards[f], ev = { by, f, c, heavy: !!extra };
@@ -275,7 +290,8 @@ function hzNext() {
   if (S.phase !== "res") return;
   const alive = S.teams.filter((t) => S.live[t]);
   if (alive.length <= 1 || (H.matchEnd && now() >= H.matchEnd) || S.qi >= 60) return hzEnd();
-  hzAsk();
+  S.turn = hzNextTeam(S.turn);
+  hzAsk(S.turn, false);
 }
 function hzEnd() {
   hClear();
@@ -317,20 +333,23 @@ function hzGrid(S, o) {
       if (o.guard && o.guard.has(c)) cls += " guard";
       if (o.pick && o.pick(c)) cls += " can";
       if (o.sel === c || (o.line && o.line.includes(c))) cls += " aim";
+      if (o.boom && o.boom.includes(c)) { cls += " boom"; inner += '<span class="hz-burst"></span>'; }
       h += `<button type="button" class="${cls}" data-hc="${c}" aria-label="${hzName(n, c)}" ${o.pick ? "" : 'tabindex="-1"'}>${inner}</button>`;
     }
   }
-  return `<div class="hz-grid ${o.small ? "small" : ""}" style="--pen:${pen};grid-template-columns:16px repeat(${n}, minmax(0, 1fr))">${h}</div>`;
+  return `<div class="hz-grid ${o.small ? "small" : ""} ${o.boom ? "shake" : ""}" style="--pen:${pen};grid-template-columns:16px repeat(${n}, minmax(0, 1fr))">${h}</div>`;
 }
 const hzGuard = (n, cells, broken = []) => { const g = new Set(); cells.forEach((st, s) => { if (st.includes("shd") && !broken.includes(s)) [s, ...hzN4(n, s)].forEach((x) => g.add(x)); }); return g; };
-const hzScores = (S) => `<div class="hz-teams">${S.teams.map((t) => `<span class="hz-chip ${S.live[t] ? "" : "out"}" style="--pen:${HZ_TEAMS[t].c}">${HZ_TEAMS[t].n} <b>${AR(S.pts[t])}</b>${S.heavy[t] ? ` <small>💥${AR(S.heavy[t])}</small>` : ""}</span>`).join("")}</div>`;
+const hzScores = (S) => `<div class="hz-teams">${S.teams.map((t) => `<span class="hz-chip ${S.live[t] ? "" : "out"}" style="--pen:${HZ_TEAMS[t].c}">${HZ_TEAMS[t].n} <b>${AR(S.pts[t])}</b>${S.heavy[t] ? ` <small class="hz-hv">${hzIc("gun")}${AR(S.heavy[t])}</small>` : ""}</span>`).join("")}</div>`;
 const hzClock = (S) => (S.mins && S.phase !== "place" ? `<span class="hz-clock" id="hzClock"></span>` : "");
 function hzTick(S) {
   klEvery(() => {
     const s = KL.S; if (!s || s.game !== "hisn") return;
     const el = $("hzClock"); if (el && s.mins) { const ms = leftOf(s.matchLeft), sec = Math.ceil(ms / 1000); el.textContent = `${AR(Math.floor(sec / 60))}:${AR(String(sec % 60).padStart(2, "0"))}`; }
     const t = $("hzLeft"); if (t) t.textContent = AR(Math.ceil(leftOf(s.left) / 1000));
-    const bar = $("hzBar"); if (bar && s.phase === "q") bar.style.transform = `scaleX(${leftOf(s.left) / (s.qtime * 1000)})`;
+    const bar = $("hzBar"); if (bar && s.phase === "q") bar.style.transform = `scaleX(${leftOf(s.left) / (s.qT || s.qtime * 1000)})`;
+    const fr = $("hzFree"); if (fr) fr.textContent = AR(Math.ceil(leftOf(s.freeLeft) / 1000));
+    if (s.phase === "aim" && !KL.my.freed && s.shooter && leftOf(s.freeLeft) <= 0) { KL.my.freed = true; hzvAim(s, false); }
   }, 250);
 }
 
@@ -350,7 +369,7 @@ function hzvPlace(S, fresh) {
     ${mates.length ? `<div class="hz-mates">${mates.map((p) => face(p, 26)).join("")}<span>${mates.map((p) => esc(p.name)).join(" و")} معك. أي واحد منكم يحرك القطع، والباقين يشوفونها تتحرك.</span></div>` : ""}
     ${hzGrid(S, { team: t, cells, broken: me2.broken, guard: hzGuard(n, cells), pick: ready ? null : () => true })}
     <div class="hz-tray">${HZ_KINDS.filter((k) => HZ_SET[n][k]).map((k) => `<button type="button" class="hz-piece" data-hk="${k}" aria-pressed="${sel === k}" ${left[k] > 0 && !ready ? "" : "disabled"} style="--pen:${HZ_TEAMS[t].c}">${hzIc(k)}<span>${HZ_NAME[k]}</span><b>${AR(left[k])}</b></button>`).join("")}</div>
-    <p class="hz-pen">${ready ? "جاهزين! ننتظر باقي الفرق…" : sel ? `اضغط مربع تحط فيه ${HZ_NAME[sel]}` : v.done ? (v.enough ? "كل القطع انحطت ✓" : `لازم القطع تكون في ${AR(HZ_SET[n].min)} مربعات على الأقل`) : "اختر قطعة وحطها، واضغط على مربع ترجّع آخر قطعة فيه. لين ٣ قطع في المربع."}</p>
+    <p class="hz-pen">${ready ? "جاهزين! ننتظر باقي الفرق…" : sel ? `اضغط مربع تحط فيه ${HZ_NAME[sel]}` : v.done ? (v.enough ? "كل القطع انحطت" : `لازم القطع تكون في ${AR(HZ_SET[n].min)} مربعات على الأقل`) : "اختر قطعة وحطها، واضغط على مربع ترجّع آخر قطعة فيه. لين ٣ قطع في المربع."}</p>
     <p class="muted" style="text-align:center">المخطط: المربعات اللي يحميها الدرع. الفرق الجاهزة: ${AR(S.teams.filter((x) => S.ready[x]).length)} من ${AR(S.teams.length)}</p>
     <div class="hz-row2">${ready ? '<button type="button" class="btn btn-ghost" id="hzUnready">نبي نعدّل</button>' : `<button type="button" class="btn btn-ghost" id="hzRand">وزّع عشوائي</button><button type="button" class="btn btn-marker" id="hzReady" ${v.ready ? "" : "disabled"}>جاهزين</button>`}</div>
     ${isHost() ? '<button type="button" class="btn btn-ghost" id="hzGo">ابدأ الحين (والباقي يتوزع عشوائي)</button>' : ""}`);
@@ -369,90 +388,117 @@ function hzvPlace(S, fresh) {
   if ($("hzGo")) $("hzGo").onclick = () => hzBegin();
 }
 
+// whose turn it is, said the same way on every phone
+const hzTurnBanner = (S, t) => {
+  const a = S.asking, mine = t === a, who = `الفريق ${HZ_TEAMS[a].n}`;
+  const head = S.steal ? (mine ? "فرصة سرقة لكم!" : `فرصة سرقة لـ${who}`) : mine ? "دوركم!" : `دور ${who}`;
+  const sub = S.steal && S.prev ? `${HZ_TEAMS[S.prev.t].n} ${S.prev.k >= 0 ? "غلط" : "ما جاوب"}، والسؤال انتقل.` : mine ? "صوّتوا مع بعض. صح؟ رامي فريقكم يضرب." : "إذا غلطوا، ممكن السؤال يجيكم.";
+  return `<div class="hz-banner" style="--pen:${HZ_TEAMS[a].c}"><b>${head}</b><span>${sub}</span></div>`;
+};
 function hzvQ(S, fresh) {
   hzAsk4Me();
-  const me2 = hzMine(), t = me2 ? me2.team : -1, q = S.q;
-  if (fresh) { clearKL(); KL.my.hv = undefined; beep(520, 0.06); hzTick(S); }
-  setTop(`سؤال ${AR(S.qi)}`);
-  const mine = t >= 0 ? S.tally[t] : null, total = mine ? Math.max(1, mine.reduce((x, y) => x + y, 0)) : 1;
-  const mates = S.players.filter((p) => hzTeamOf(S, p.id) === t);
+  const me2 = hzMine(), t = me2 ? me2.team : -1, q = S.q, mine = t === S.asking;
+  if (fresh) { clearKL(); KL.my.hv = undefined; hzTick(S); if (mine) { beep(880, 0.1); buzz([60, 40, 60]); } else beep(520, 0.06); }
+  setTop(S.steal ? "فرصة سرقة" : `سؤال ${AR(S.qi)}`);
+  const tally = mine ? S.tally : null, total = tally ? Math.max(1, tally.reduce((x, y) => x + y, 0)) : 1;
+  const mates = S.players.filter((p) => hzTeamOf(S, p.id) === S.asking);
   show(`
     <div class="hz-row">${hzScores(S)}${hzClock(S)}</div>
+    ${hzTurnBanner(S, t)}
     <div class="hz-q">
       <span class="hz-kind">${esc(q.cat)}</span>
       <div class="hz-qt">${esc(q.q)}</div>
-      <div class="hz-timer"><i id="hzBar" style="transform:scaleX(${leftOf(S.left) / (S.qtime * 1000)})"></i></div>
-      ${q.o.map((o, k) => `<button type="button" class="hz-opt" data-o="${k}" aria-pressed="${KL.my.hv === k}" ${t < 0 ? "disabled" : ""}><i style="width:${mine ? Math.round((mine[k] / total) * 100) : 0}%;background:${t >= 0 ? HZ_TEAMS[t].c : "#888"}22"></i><span>${esc(o)}</span><small>${mine && mine[k] ? AR(mine[k]) : ""}</small></button>`).join("")}
+      <div class="hz-timer"><i id="hzBar" style="transform:scaleX(${leftOf(S.left) / (S.qT || S.qtime * 1000)})"></i></div>
+      ${q.o.map((o, k) => `<button type="button" class="hz-opt ${k === S.removed ? "gone" : ""}" data-o="${k}" aria-pressed="${KL.my.hv === k}" ${mine && k !== S.removed ? "" : "disabled"}><i style="width:${tally ? Math.round((tally[k] / total) * 100) : 0}%;background:${HZ_TEAMS[S.asking].c}22"></i><span>${esc(o)}</span><small>${tally && tally[k] ? AR(tally[k]) : ""}</small></button>`).join("")}
     </div>
-    ${t >= 0 ? `<div class="hz-row"><span class="muted">${S.live[t] ? "كل الفرق تجاوب الحين. صح؟ ضربة لكم، والأسرع يضرب أول." : "حصنكم طاح، بس الجواب الصح يعطيكم ضربة دعم."}</span><span class="hz-faces">${mates.map((p) => `<span style="opacity:${S.voted.includes(p.id) ? 1 : 0.35}">${face(p, 24)}</span>`).join("")}</span></div>` : '<p class="muted" style="text-align:center">تتفرج على هذي الجولة</p>'}`);
+    <div class="hz-row"><span class="muted">${mine ? "جواب الأغلبية هو جواب الفريق." : "تتفرجون الحين."}</span><span class="hz-faces">${mates.map((p) => `<span style="opacity:${S.voted.includes(p.id) ? 1 : 0.35}">${face(p, 24)}</span>`).join("")}</span></div>`);
   screen.querySelectorAll(".hz-opt:not([disabled])").forEach((b) => (b.onclick = () => { KL.my.hv = +b.dataset.o; beep(660, 0.05); act({ t: "hzvote", id: PID, k: KL.my.hv }); screen.querySelectorAll(".hz-opt").forEach((x) => x.setAttribute("aria-pressed", String(x === b))); }));
 }
 
 function hzvAim(S, fresh) {
   hzAsk4Me();
-  const me2 = hzMine(), t = me2 ? me2.team : -1;
-  const slot = S.order.find((o) => o.t === t), done = S.aimed.includes(t);
-  if (fresh) { clearKL(); KL.my.aim = null; KL.my.heavy = false; hzTick(S); if (slot) { beep(880, 0.1); buzz([60, 40, 60]); } else beep(520, 0.06); }
-  setTop("الضربات");
-  const order = `<div class="hz-order">${S.answers.filter((a) => a.ok).sort((x, y) => (x.at ?? 99) - (y.at ?? 99)).map((a, k) => `<span>${AR(k + 1)}. ${hzChip(a.t)} <small dir="ltr">${a.at != null ? a.at.toFixed(1) + "s" : ""}</small></span>`).join("")}</div>`;
-  if (!slot) {
-    show(`${hzScores(S)}<div class="hz-h">الجواب: ${esc(S.answer)}</div>${order}
-      <p class="hz-pen">${t >= 0 ? "ما جاوبتوا صح هالمرة… الفرق تصوّب عليكم الحين 😬" : "الفرق تصوّب…"}</p>
-      ${t >= 0 && me2.cells ? hzGrid(S, { team: t, cells: me2.cells, fog: S.fog[t], broken: me2.broken, small: true }) : ""}
-      <p class="muted" style="text-align:center">باقي <span id="hzLeft">${AR(Math.ceil(leftOf(S.left) / 1000))}</span> ث</p>`);
+  const me2 = hzMine(), t = me2 ? me2.team : -1, sh = S.shooter;
+  if (!sh) return;
+  const mine = t === sh.t, iShoot = sh.id === PID, can = iShoot || (mine && leftOf(S.freeLeft) <= 0);
+  if (fresh) { clearKL(); KL.my.aim = null; KL.my.heavy = false; KL.my.pick = null; KL.my.freed = false; KL.my.fired = false; hzTick(S); if (iShoot) { beep(880, 0.1); buzz([60, 40, 60]); } else beep(520, 0.06); }
+  setTop("التصويب");
+  const who = `<b style="color:${HZ_TEAMS[sh.t].c}">${esc(sh.name)}</b>`;
+  const head = `<div class="hz-banner" style="--pen:${HZ_TEAMS[sh.t].c}"><b>${iShoot ? "أنت الرامي!" : mine ? `الرامي: ${esc(sh.name)}` : `الفريق ${HZ_TEAMS[sh.t].n} جاوب صح`}</b><span>الجواب: ${esc(S.answer)}</span></div>`;
+  if (!mine) {
+    show(`${hzScores(S)}${head}
+      <p class="hz-pen" style="text-align:center">${who} يصوّب الحين… ${t >= 0 && S.live[t] ? "ممكن الضربة تجي عليكم!" : ""}</p>
+      ${t >= 0 && me2.cells ? hzGrid(S, { team: t, cells: me2.cells, fog: S.fog[t], broken: me2.broken, small: true }) : ""}`);
     return;
   }
   const foes = S.teams.filter((f) => f !== t && S.live[f]);
+  if (!can) {
+    const pk = KL.my.pick, f = pk && foes.includes(pk.f) ? pk.f : foes[0];
+    show(`${hzScores(S)}${head}
+      <p class="hz-pen" style="text-align:center">${who} يختار المربع. قولوا له رأيكم!</p>
+      <div class="hz-teams">${foes.map((x) => `<span class="hz-chip ${x === f ? "on" : ""}" style="--pen:${HZ_TEAMS[x].c}">${HZ_TEAMS[x].n}</span>`).join("")}</div>
+      ${hzGrid(S, { team: f, fog: S.fog[f], sel: pk && pk.f === f ? pk.c : null, line: pk && pk.f === f && pk.heavy ? hzLine(S.n, pk.c) : null })}
+      <p class="muted" style="text-align:center">إذا ما ضرب، تقدرون تضربون بداله بعد <span id="hzFree">${AR(Math.ceil(leftOf(S.freeLeft) / 1000))}</span> ث</p>`);
+    return;
+  }
   let f = KL.my.aim ? KL.my.aim.f : foes[0];
   if (!foes.includes(f)) f = foes[0];
   const sel = KL.my.aim && KL.my.aim.f === f ? KL.my.aim.c : null;
   const heavy = KL.my.heavy && S.heavy[t] > 0;
   const line = heavy && sel != null ? hzLine(S.n, sel) : null;
   show(`
-    ${hzScores(S)}
-    <div class="hz-banner" style="--pen:${HZ_TEAMS[t].c}"><b>${slot.support ? "ضربة دعم!" : "دوركم تضربون!"}</b><span>الجواب: ${esc(S.answer)} · ترتيبكم ${AR(S.order.indexOf(slot) + 1)} · باقي <span id="hzLeft">${AR(Math.ceil(leftOf(S.left) / 1000))}</span> ث</span></div>
-    ${done ? '<p class="hz-pen" style="text-align:center">انطلقت القذيفة! ننتظر الباقين…</p>' : `
+    ${hzScores(S)}${head}
+    ${iShoot ? "" : `<p class="hz-pen" style="text-align:center">${who} ما ضرب، تقدر تضرب بداله.</p>`}
     <div class="hz-teams">${foes.map((x) => `<button type="button" class="hz-chip ${x === f ? "on" : ""}" style="--pen:${HZ_TEAMS[x].c}" data-hf="${x}">${HZ_TEAMS[x].n}</button>`).join("")}</div>
     ${hzGrid(S, { team: f, fog: S.fog[f], pick: (c) => hzCanShoot(S, f, c), sel, line })}
-    ${S.heavy[t] > 0 ? `<button type="button" class="btn btn-ghost" id="hzHeavy" aria-pressed="${heavy}">${heavy ? "✓ ضربة ثقيلة: ٣ مربعات في صف" : `ضربة ثقيلة (عندكم ${AR(S.heavy[t])})`}</button>` : ""}
-    <button type="button" class="btn btn-marker hz-fire" id="hzFire" ${sel == null ? "disabled" : ""}>${sel == null ? "اختاروا مربع" : `اضرب ${hzName(S.n, sel)} 💥`}</button>`}`);
-  if (done) return;
+    ${S.heavy[t] > 0 ? `<button type="button" class="btn btn-ghost" id="hzHeavy" aria-pressed="${heavy}">${heavy ? "ضربة ثقيلة: ٣ مربعات في صف" : `ضربة ثقيلة (عندكم ${AR(S.heavy[t])})`}</button>` : ""}
+    <button type="button" class="btn btn-marker hz-fire" id="hzFire" ${sel == null || KL.my.fired ? "disabled" : ""}>${sel == null ? "اختار مربع" : `اضرب ${hzName(S.n, sel)}`}</button>`);
+  const pick = () => { if (KL.my.aim && KL.my.aim.c != null) act({ t: "hzpick", id: PID, f: KL.my.aim.f, c: KL.my.aim.c, heavy: KL.my.heavy && S.heavy[t] > 0 }); };
   screen.querySelectorAll("[data-hf]").forEach((b) => (b.onclick = () => { KL.my.aim = { f: +b.dataset.hf, c: null }; beep(700, 0.04); hzvAim(KL.S, false); }));
-  screen.querySelectorAll(".hz-grid .can").forEach((b) => (b.onclick = () => { KL.my.aim = { f, c: +b.dataset.hc }; beep(760, 0.04); hzvAim(KL.S, false); }));
-  if ($("hzHeavy")) $("hzHeavy").onclick = () => { KL.my.heavy = !KL.my.heavy; beep(600, 0.04); hzvAim(KL.S, false); };
-  if ($("hzFire")) $("hzFire").onclick = () => { if (sel == null) return; $("hzFire").disabled = true; beep(988, 0.08); buzz(40); act({ t: "hzfire", id: PID, f, c: sel, heavy }); };
+  screen.querySelectorAll(".hz-grid .can").forEach((b) => (b.onclick = () => { KL.my.aim = { f, c: +b.dataset.hc }; beep(760, 0.04); pick(); hzvAim(KL.S, false); }));
+  if ($("hzHeavy")) $("hzHeavy").onclick = () => { KL.my.heavy = !KL.my.heavy; beep(600, 0.04); pick(); hzvAim(KL.S, false); };
+  if ($("hzFire")) $("hzFire").onclick = () => { if (sel == null) return; KL.my.fired = true; $("hzFire").disabled = true; beep(988, 0.08); buzz(40); act({ t: "hzfire", id: PID, f, c: sel, heavy }); };
 }
 
+// the result in one look, big: what the shot did and the points
+function hzHitCard(S) {
+  const e = S.feed.find((x) => x.m !== "dup") || S.feed[0] || {}, pts = S.feed.reduce((a, x) => a + (x.pts || 0), 0), sh = S.shot;
+  const what = { miss: "فاضي!", blk: "انصدّت بالدرع", hit: e.items ? (e.items.length > 1 ? "إصابة! كومة" : `إصابة! ${HZ_NAME[e.items[0]]}`) : "إصابة!", wnd: "جرحوا القائد!", dead: "طاح القائد!", none: "محد جاوب صح", late: "ما لحقوا يضربون", dup: "المربع انضرب قبل" }[e.m] || "";
+  const sub = sh ? `${esc(sh.who)} ضرب حصن ${HZ_TEAMS[sh.f].n} · ${sh.cells.map((c) => hzName(S.n, c)).join(" ")}` : e.m === "none" ? `الجواب: ${esc(S.answer)}` : "";
+  return `<div class="hz-hitcard ${e.m || ""}"><small>${sub}</small><b>${what}</b>${pts ? `<em>+${AR(pts)}</em>` : ""}</div>`;
+}
 // one line of «وش صار؟»; t is the team reading it (-1 for the big screen)
 function hzFeedLine(S, e, t) {
-  if (e.m === "none") return `<div class="hz-ev">محد جاوب صح هالمرة 🤷</div>`;
+  if (e.m === "none") return `<div class="hz-ev">محد جاوب صح هالمرة. الجواب: ${esc(S.answer)}</div>`;
   if (e.m === "late") return `<div class="hz-ev">${hzChip(e.by)} ما لحقوا يضربون</div>`;
   const to = `${hzChip(e.by)} ← ${hzChip(e.f)} <b class="hz-sq">${hzName(S.n, e.c)}</b>`;
   const what = { miss: "فاضي", blk: `${hzIc("shd")}انصدّت بالدرع`, dup: "المربع انضرب قبلهم", hit: e.items ? e.items.map(hzIc).join("") + (e.items.length > 1 ? "كومة!" : `${HZ_NAME[e.items[0]]}!`) : "إصابة", wnd: `${(e.items || ["cmd"]).map(hzIc).join("")}جرحوا القائد!`, dead: `${(e.items || ["cmd"]).map(hzIc).join("")}طاح القائد!` }[e.m];
-  return `<div class="hz-ev ${e.m === "dead" ? "dead" : e.bmb ? "boom" : ""}">${to} <span class="hz-what">${what}</span>${e.pts ? `<b class="p">+${AR(e.pts)}</b>` : ""}${e.bmb ? `<span class="muted hz-full">💥 قنبلة! انفجرت عليهم${e.note ? ` وانكشف مربع ${e.note} في حصنهم` : ""}.</span>` : ""}${e.rdr ? `<span class="muted hz-full">📡 رادار! ${e.by === t ? "شوفوا اللي حوله بسرعة…" : "شافوا اللي حوله ثواني."}</span>` : ""}</div>`;
+  return `<div class="hz-ev ${e.m === "dead" ? "dead" : e.bmb ? "boom" : ""}">${to} <span class="hz-what">${what}</span>${e.pts ? `<b class="p">+${AR(e.pts)}</b>` : ""}${e.bmb ? `<span class="muted hz-full">قنبلة! انفجرت عليهم${e.note ? ` وانكشف مربع ${e.note} في حصنهم` : ""}.</span>` : ""}${e.rdr ? `<span class="muted hz-full">رادار! ${e.by === t ? "شوفوا اللي حوله بسرعة…" : "شافوا اللي حوله ثواني."}</span>` : ""}</div>`;
 }
 
 function hzvRes(S, fresh) {
   hzAsk4Me();
-  const me2 = hzMine(), t = me2 ? me2.team : -1;
+  const me2 = hzMine(), t = me2 ? me2.team : -1, shot = S.shot;
   if (fresh) {
-    clearKL(); hzTick(S);
-    const big = S.feed.some((e) => e.m === "dead"), hitMe = S.feed.some((e) => e.f === t && (e.m === "hit" || e.m === "wnd" || e.m === "dead"));
-    if (big) { beep(523, 0.1); setTimeout(() => beep(392, 0.1), 140); setTimeout(() => beep(262, 0.3), 280); buzz([80, 50, 80]); }
-    else if (S.feed.some((e) => e.m === "hit" || e.m === "wnd")) { beep(200, 0.18, "sawtooth", 0.08); buzz(hitMe ? [60, 30, 60] : 40); }
-    else beep(440, 0.08);
+    clearKL(); hzTick(S); KL.my.boomUntil = now() + 1100;
+    const big = S.feed.some((e) => e.m === "dead"), hit = S.feed.some((e) => e.m === "hit" || e.m === "wnd"), hitMe = shot && shot.f === t && (big || hit);
+    if (shot) { beep(110, 0.35, "sawtooth", 0.14); setTimeout(() => beep(70, 0.4, "square", 0.1), 60); }
+    if (big) { setTimeout(() => beep(523, 0.1), 300); setTimeout(() => beep(392, 0.1), 440); setTimeout(() => beep(262, 0.3), 580); buzz([120, 50, 120]); }
+    else if (hit) buzz(hitMe ? [90, 40, 90] : 60);
     if (KL.my.radar) klLater(() => { const s = KL.S; if (s && s.phase === "res") hzvRes(s, false); }, Math.max(0, KL.my.radar.until - now()) + 50);
   }
   setTop("وش صار؟");
   const rad = KL.my.radar && KL.my.radar.until > now() && me2 && me2.team >= 0 ? KL.my.radar : null;
   const fell = S.feed.filter((e) => e.m === "dead").map((e) => e.f);
+  const target = shot ? hzGrid(S, { team: shot.f, cells: shot.f === t && me2 ? me2.cells : null, fog: S.fog[shot.f], broken: shot.f === t && me2 ? me2.broken : null, boom: fresh ? shot.cells : null }) : "";
   show(`
     <div class="hz-row">${hzScores(S)}${hzClock(S)}</div>
     ${fell.length ? `<div class="hz-stamp">سقط حصن ${fell.map((x) => HZ_TEAMS[x].n).join(" و")}!</div>` : ""}
-    <div class="hz-feed">${S.feed.map((e) => hzFeedLine(S, e, t)).join("")}</div>
-    ${rad ? `<div class="hz-radar"><b>📡 رادار ${HZ_TEAMS[rad.f].n}</b> احفظوا اللي حوله!</div>${hzGrid(S, { team: rad.f, fog: S.fog[rad.f], radar: rad.cells, small: true })}` : ""}
-    ${t >= 0 && me2.cells ? `<p class="muted">حصنكم:</p>${hzGrid(S, { team: t, cells: me2.cells, fog: S.fog[t], broken: me2.broken, small: true })}` : ""}
-    ${t >= 0 && !S.live[t] ? '<p class="hz-pen" style="text-align:center">حصنكم طاح، بس كملوا تجاوبون: كل جواب صح ضربة دعم!</p>' : ""}`);
+    ${hzHitCard(S)}
+    ${S.feed.some((e) => e.bmb || e.rdr || e.heavy) || S.feed.length > 1 ? `<div class="hz-feed">${S.feed.map((e) => hzFeedLine(S, e, t)).join("")}</div>` : ""}
+    ${target}
+    ${rad ? `<div class="hz-radar"><b>رادار ${HZ_TEAMS[rad.f].n}</b> احفظوا اللي حوله!</div>${hzGrid(S, { team: rad.f, fog: S.fog[rad.f], radar: rad.cells, small: true })}` : ""}
+    ${t >= 0 && me2.cells && (!shot || shot.f !== t) ? `<p class="muted">حصنكم:</p>${hzGrid(S, { team: t, cells: me2.cells, fog: S.fog[t], broken: me2.broken, small: true })}` : ""}
+    ${t >= 0 && !S.live[t] ? '<p class="hz-pen" style="text-align:center">حصنكم طاح. تابعوا الباقين!</p>' : ""}`);
 }
 
 function hzvEnd(S, fresh) {
@@ -478,29 +524,29 @@ function hzvEnd(S, fresh) {
 // ---------------- the big screen (tv.js): every fort as the others see it, and the question ----------------
 // Only what's public: hits and misses on each fort (S.fog); the hidden pieces stay with each team until the end.
 ROOM_GAMES.hisn.tvTeams = (S) => Array.from({ length: S.nt || 2 }, (_, t) => ({ n: `الفريق ${HZ_TEAMS[t].n}`, c: HZ_TEAMS[t].c, ps: S.players.filter((p) => hzTeamOf(S, p.id) === t) }));
-const hzTvForts = (S, reveal) => `<div class="tvh-forts">${S.teams.map((x) => `<div class="tvh-fort ${S.live[x] ? "" : "out"}">${hzChip(x, S.live[x] ? "" : "out")}<b class="tvh-pts">${AR(S.pts[x])}${S.heavy[x] ? ` 💥${AR(S.heavy[x])}` : ""}</b>${hzGrid(S, { team: x, cells: reveal ? S.boards[x] : null, fog: S.fog[x], small: true })}</div>`).join("")}</div>`;
-const hzTvTop = (S, mid) => `<div class="tvh-top">${mid}${S.mins && S.matchLeft > 0 && S.phase !== "end" ? `<span class="tvh-clock">⏱ ${tvClock(S.matchLeft)}</span>` : ""}</div>`;
+const hzTvForts = (S, reveal, boom, on) => `<div class="tvh-forts">${S.teams.map((x) => `<div class="tvh-fort ${S.live[x] ? "" : "out"} ${x === on ? "on" : ""}">${hzChip(x, S.live[x] ? "" : "out")}<b class="tvh-pts">${AR(S.pts[x])}${S.heavy[x] ? ` <small class="hz-hv">${hzIc("gun")}${AR(S.heavy[x])}</small>` : ""}</b>${hzGrid(S, { team: x, cells: reveal ? S.boards[x] : null, fog: S.fog[x], small: true, boom: boom && boom.f === x ? boom.cells : null })}</div>`).join("")}</div>`;
+const hzTvTop = (S, mid) => `<div class="tvh-top">${mid}${S.mins && S.matchLeft > 0 && S.phase !== "end" ? `<span class="tvh-clock">${tvClock(S.matchLeft)}</span>` : ""}</div>`;
 ROOM_GAMES.hisn.tv = {
   place: (S) => `<div class="tvh">${hzTvTop(S, `<div class="hz-h">الفرق تخبي حصونها في الكراريس…</div><span class="tvh-clock">${tvSecs(S.left)}</span>`)}
-    <div class="tvh-ready">${S.teams.map((x) => `<div class="tvh-r" style="--pen:${HZ_TEAMS[x].c}">${hzChip(x)}<b>${S.ready[x] ? "جاهزين ✓" : "يخبّون…"}</b><div class="hz-faces">${S.players.filter((p) => hzTeamOf(S, p.id) === x).map((p) => face(p, 30)).join("")}</div></div>`).join("")}</div>
+    <div class="tvh-ready">${S.teams.map((x) => `<div class="tvh-r" style="--pen:${HZ_TEAMS[x].c}">${hzChip(x)}<b>${S.ready[x] ? "جاهزين" : "يخبّون…"}</b><div class="hz-faces">${S.players.filter((p) => hzTeamOf(S, p.id) === x).map((p) => face(p, 30)).join("")}</div></div>`).join("")}</div>
     <p class="tvh-hint">كل فريق يحط قائده وجنوده وسلاحه في شبكة ${AR(S.n)}×${AR(S.n)} من جواله. محد يشوف حصن غيره.</p></div>`,
   q(S) {
-    const q = S.q;
-    return `<div class="tvh">${hzTvTop(S, `<span class="hz-kind">${esc(q.cat)} · سؤال ${AR(S.qi)}</span>`)}
-      <div class="hz-q tvh-q"><div class="row" style="justify-content:space-between;align-items:center"><div class="hz-qt">${esc(q.q)}</div>${tvSecs(S.left)}</div>${tvBar(S.left, S.qtime * 1000)}
-        <div class="tvh-opts">${q.o.map((o) => `<div class="hz-opt"><span>${esc(o)}</span></div>`).join("")}</div></div>
-      ${hzTvForts(S)}</div>`;
+    const q = S.q, a = S.asking;
+    return `<div class="tvh">${hzTvTop(S, `<div class="hz-h" style="color:${HZ_TEAMS[a].c}">${S.steal ? "فرصة سرقة لـ" : "دور "}الفريق ${HZ_TEAMS[a].n}</div><span class="hz-kind">${esc(q.cat)} · سؤال ${AR(S.qi)}</span>`)}
+      <div class="hz-q tvh-q"><div class="row" style="justify-content:space-between;align-items:center"><div class="hz-qt">${esc(q.q)}</div>${tvSecs(S.left)}</div>${tvBar(S.left, S.qT || S.qtime * 1000)}
+        <div class="tvh-opts">${q.o.map((o, k) => `<div class="hz-opt ${k === S.removed ? "gone" : ""}"><span>${esc(o)}</span></div>`).join("")}</div></div>
+      ${hzTvForts(S, false, null, a)}</div>`;
   },
   aim(S) {
-    const order = S.answers.filter((a) => a.ok).sort((x, y) => (x.at ?? 99) - (y.at ?? 99));
-    return `<div class="tvh">${hzTvTop(S, `<div class="hz-h">الجواب: ${esc(S.answer)}</div><span class="tvh-clock">${tvSecs(S.left)}</span>`)}
-      <div class="tvh-order">${order.length ? `<span>ترتيب الضرب:</span>${order.map((a, k) => `<span>${AR(k + 1)}. ${hzChip(a.t)} ${S.aimed.includes(a.t) ? "🎯" : "…"}</span>`).join("")}` : "<span>محد جاوب صح هالمرة 🤷</span>"}</div>
-      ${hzTvForts(S)}</div>`;
+    const sh = S.shooter || {};
+    return `<div class="tvh">${hzTvTop(S, `<div class="hz-h">صح! الجواب: ${esc(S.answer)}</div>`)}
+      <div class="tvh-order"><span>الرامي: <b style="color:${HZ_TEAMS[sh.t ?? 0].c}">${esc(sh.name || "")}</b> من الفريق ${HZ_TEAMS[sh.t ?? 0].n} يصوّب…</span></div>
+      ${hzTvForts(S, false, null, sh.t)}</div>`;
   },
-  res(S) {
-    const fell = S.feed.filter((e) => e.m === "dead").map((e) => e.f);
-    return `<div class="tvh">${hzTvTop(S, fell.length ? `<div class="hz-stamp">سقط حصن ${fell.map((x) => HZ_TEAMS[x].n).join(" و")}!</div>` : `<div class="hz-h">وش صار؟</div>`)}
-      <div class="hz-feed tvh-feed">${S.feed.map((e) => hzFeedLine(S, e, -1)).join("")}</div>${hzTvForts(S)}</div>`;
+  res(S, fresh) {
+    const fell = S.feed.filter((e) => e.m === "dead").map((e) => e.f), shot = S.shot;
+    return `<div class="tvh">${hzTvTop(S, fell.length ? `<div class="hz-stamp">سقط حصن ${fell.map((x) => HZ_TEAMS[x].n).join(" و")}!</div>` : `<div class="hz-h">${shot ? `${esc(shot.who)} ضرب حصن ${HZ_TEAMS[shot.f].n}` : "وش صار؟"}</div>`)}
+      <div class="tvh-hit">${hzHitCard(S)}</div>${hzTvForts(S, false, fresh ? shot : null, shot ? shot.f : -1)}</div>`;
   },
   end(S) {
     const w = S.won, aw = S.awards || {};
