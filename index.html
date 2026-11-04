@@ -1014,7 +1014,8 @@ button.pl { border: 1px solid var(--line); background: var(--desk-2); width: 100
 /* ---- سوق المدينة in فسحة's «الفسحة» look: cream, navy, yellow and red, Lalezar titles, chunky navy borders.
    The game's own colour is #b07a2e; the Madinah market drawing stays as the board itself. ---- */
 .gart.market { background: #b07a2e; overflow: hidden; } .gart.market svg { position: absolute; inset: 0; width: 100%; height: 100%; }
-.sq-gico { display: inline-block; width: 26px; height: 26px; vertical-align: -6px; margin-inline-end: 6px; } .sq-gico svg { width: 100%; height: 100%; display: block; }
+body[data-theme="souq"] #gTitle { white-space: nowrap; }
+.sq-gico { display: inline-block; width: 22px; height: 22px; vertical-align: -6px; margin-inline-end: 6px; } .sq-gico svg { width: 100%; height: 100%; display: block; }
 body[data-theme="souq"] {
   --desk: #fff6dc; --desk-2: #fffdf6; --desk-3: #f3e7c3; --line: #1b2a4a; --chalk: #1b2a4a; --muted: #4a5677; --soft: #3c4a6b;
   --marker: #1b2a4a; --marker-deep: #0d162b; --marker-ink: #ffc933; --paper: #fffdf6; --ink: #1b2a4a; --ok: #1f8a53; --gain: #1f8a53; --sel: #ffc933;
@@ -1105,7 +1106,7 @@ body[data-theme="souq"] .gtop .gt { color: var(--sq-navy); }
 .sq-rip { transform-box: fill-box; transform-origin: center; animation: sqRipple 2.6s ease-out infinite; }
 .sq-sg.hl rect:first-child { animation: sqGlow 1s ease-in-out infinite alternate; } @keyframes sqGlow { to { stroke: #ffc933; } }
 .sq-hud { position: absolute; z-index: 4; background: #fffdf6; color: #1b2a4a; border: 3px solid #1b2a4a; border-radius: 20px; padding: 14px 16px; box-shadow: 0 6px 0 #1b2a4a; display: grid; gap: 10px; }
-.sq-hud.tl { top: 18px; left: 18px; width: 330px; } .sq-hud.tr { top: 18px; right: 18px; width: 380px; gap: 8px; } .sq-hud.bl { bottom: 22px; left: 18px; width: 400px; }
+.sq-hud.tl { top: 18px; left: 18px; width: 380px; } .sq-hd b { white-space: nowrap; } .sq-hud.tr { top: 18px; right: 18px; width: 380px; gap: 8px; } .sq-hud.bl { bottom: 22px; left: 18px; width: 400px; }
 .sq-hd { display: flex; justify-content: space-between; align-items: center; gap: 10px; } .sq-hd b { font-family: "Lalezar", var(--f-display); font-weight: 400; font-size: 34px; color: #1b2a4a; line-height: 1; display: flex; align-items: center; gap: 8px; } .sq-hd b svg { width: 38px; height: 38px; } .sq-hd small { font-size: 16px; font-weight: 700; color: #4a5677; }
 .sq-phs { display: flex; gap: 6px; } .sq-phs span { font-size: 15px; font-weight: 700; padding: 1px 12px; border-radius: 99px; border: 2.5px solid #1b2a4a; color: #4a5677; } .sq-phs span.on { background: #ffc933; color: #1b2a4a; }
 .sq-bait { display: flex; align-items: center; gap: 8px; background: #fff6dc; border: 2px dashed #1b2a4a; border-radius: 12px; padding: 6px 10px; font-weight: 700; font-size: 15px; } .sq-bait b { margin-inline-start: auto; font-family: "Lalezar", var(--f-display); font-weight: 400; font-size: 26px; color: #b07a2e; }
