@@ -10,6 +10,7 @@
     { id: "hisn", line: "لعبة السفن على ورق الكراسة: كل فريق يخبي قائده وجنوده، وكل جواب صح قذيفة على حصن الخصم. آخر حصن يصمد يفوز.", tags: ["٢ إلى ٥ فرق", "حتى ٣٠ لاعب", "تصويب"], art: "squared" },
     { id: "ghash", line: "اختبار جماعي وفي كل فصل غشاش معه ورقة الغش. يعرف الجواب ويبيكم تغلطون. كل ٣ أسئلة تفتيش: مين الغشاش؟", tags: ["٤ إلى ٣٠ لاعب", "فصل أو أكثر", "شك وأسئلة"], art: "cork" },
     { id: "kanz", line: "مطاردة كنز في المكان نفسه: فكّوا الشفرة، دوّروا البطاقة، امسحوها، وتنفتح الشفرة اللي بعدها. والخريطة على التلفزيون.", tags: ["٢ إلى ٤ فرق", "استراحة · مخيم · مدرسة · بيت", "حركة وشفرات"], art: "treasure" },
+    { id: "souq", line: "سوق المدينة القديم على التلفزيون: جاوبوا وامشوا، اشتروا الدكاكين وأجّروها، واختاروا الحلال في الصفقات المغرية. الفائز مالًا وأجرًا.", tags: ["٢ إلى ٤ دُور", "حتى ٣٠ لاعب", "تجارة وأسئلة"], art: "market" },
     { id: "foldit", line: "لعبة الدفتر القديمة: نقطة حبر في نصفك، تنطوي الورقة، وتنطبع على جنود خصمك.", tags: ["لاعبين", "والباقي يتفرجون", "مهارة"], art: "desk", solo: FOLD_IT },
   ];
   function art(g) {
@@ -61,6 +62,7 @@
         <g transform="rotate(8 170 118)"><rect x="128" y="104" width="78" height="26" rx="3" fill="none" stroke="#c8232c" stroke-width="2.5"/><text x="167" y="123" text-anchor="middle" font-family="Aref Ruqaa, Lalezar, serif" font-weight="700" font-size="15" fill="#c8232c">تفتيش!</text></g>
       </svg></div>`;
     }
+    if (g.art === "market") return typeof sqCardArt === "function" ? sqCardArt() : '<div class="gart market"></div>';
     if (g.art === "stage") {
       // the school stage: velvet curtains, the spotlight, and a nickname sticker peeling off whoever is under it
       const av = avatar({ c: 3, k: 7, r: -2 }, 58).replace("<svg ", '<svg x="81" y="58" ');
