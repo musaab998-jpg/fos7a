@@ -7,6 +7,7 @@
     { id: "khat", line: "إكس أو على السبورة: كل مربع سؤال، وفريقك يصوّت على الجواب، والغلط يفتح فرصة سرقة.", tags: ["فريقين", "حتى ٣٠ لاعب", "أسئلة"], art: "chalk" },
     { id: "trabee", line: "حوش المدرسة بلاط: اختاروا بلاطة، جاوبوا صح ولوّنوها هي واللي حولها بطباشيركم. والغلط يروح للفريق الثاني.", tags: ["٢ إلى ٤ فرق", "حتى ٣٠ لاعب", "أسئلة"], art: "yard" },
     { id: "alqab", line: "كل واحد يتخبى ورا لقب سري، والأسئلة تفضحه. أسرع جواب صح يتهم: مين صاحب «ملك الأعذار»؟", tags: ["٤ إلى ٢٠ لاعب", "فردي أو ثنائيات", "تخمين"], art: "stage" },
+    { id: "mazad", line: "كل فريق دار تجارية، وكل سؤال صفقة معروفة شروطها. زايدوا على رأس المال: مفتوح وتنازلي وسري. صح؟ يرجع رأس مالكم ومعه ربح مثله. غلط؟ يروح.", tags: ["٢ إلى ٤ دُور", "حتى ٣٠ لاعب", "مزايدة وأسئلة"], art: "auction" },
     { id: "hisn", line: "لعبة السفن على ورق الكراسة: كل فريق يخبي قائده وجنوده، وكل جواب صح قذيفة على حصن الخصم. آخر حصن يصمد يفوز.", tags: ["٢ إلى ٥ فرق", "حتى ٣٠ لاعب", "تصويب"], art: "squared" },
     { id: "ghash", line: "اختبار جماعي وفي كل فصل غشاش معه ورقة الغش. يعرف الجواب ويبيكم تغلطون. كل ٣ أسئلة تفتيش: مين الغشاش؟", tags: ["٤ إلى ٣٠ لاعب", "فصل أو أكثر", "شك وأسئلة"], art: "cork" },
     { id: "kanz", line: "مطاردة كنز في المكان نفسه: فكّوا الشفرة، دوّروا البطاقة، امسحوها، وتنفتح الشفرة اللي بعدها. والخريطة على التلفزيون.", tags: ["٢ إلى ٤ فرق", "استراحة · مخيم · مدرسة · بيت", "حركة وشفرات"], art: "treasure" },
@@ -27,6 +28,20 @@
       return `<div class="gart squared"><svg viewBox="0 0 220 150" width="250" height="170" aria-hidden="true"><rect x="${ox - 4}" y="${oy - 4}" width="${cell * 5 + 8}" height="${cell * 5 + 8}" rx="4" fill="#fff" stroke="#1d3fb8" stroke-width="2.5"/>${g2}
         <g transform="rotate(-8 200 40)"><rect x="170" y="22" width="50" height="22" rx="5" fill="#fff" stroke="#c8232c" stroke-width="2"/><text x="195" y="38" text-anchor="middle" font-family="Aref Ruqaa, Lalezar, serif" font-weight="700" font-size="13" fill="#c8232c">إصابة!</text></g>
         <path d="M14 120q14-30 34-42" stroke="#1b2a4a" stroke-width="2" stroke-dasharray="4 4" fill="none"/><circle cx="14" cy="122" r="5" fill="#1b2a4a"/>
+      </svg></div>`;
+    }
+    if (g.art === "auction") {
+      // the trading hall: a lot card with its seal, the amber price, a gavel and two house paddles
+      const pad = (x, y, c, r) => `<g transform="rotate(${r} ${x} ${y + 20})"><rect x="${x - 2}" y="${y + 10}" width="4" height="22" rx="2" fill="#8a5a2b"/><ellipse cx="${x}" cy="${y}" rx="13" ry="12.5" fill="#f7efe0" stroke="#d4a64a" stroke-width="2"/><ellipse cx="${x}" cy="${y}" rx="9" ry="8.5" fill="${c}"/></g>`;
+      return `<div class="gart auction"><svg viewBox="0 0 220 150" width="250" height="170" aria-hidden="true">
+        <g transform="rotate(-5 62 76)"><rect x="24" y="22" width="76" height="104" rx="5" fill="#f7efe0" stroke="#d4a64a" stroke-width="3"/><rect x="29" y="27" width="66" height="94" rx="3" fill="none" stroke="#1a120c" stroke-opacity=".25"/>
+          <text x="62" y="42" text-anchor="middle" font-family="IBM Plex Sans Arabic, sans-serif" font-size="9" font-weight="700" fill="#7d6a4c">الصفقة</text><text x="62" y="62" text-anchor="middle" font-family="Lalezar, sans-serif" font-size="22" fill="#b42a20">٣</text>
+          <circle cx="62" cy="84" r="14" fill="#12302a" stroke="#d4a64a" stroke-width="2"/><path d="M53 89h18l-3 4h-12zM62 75v14M62 75l6 9h-6" fill="none" stroke="#f3d58a" stroke-width="1.8" stroke-linejoin="round"/>
+          <text x="62" y="114" text-anchor="middle" font-family="IBM Plex Sans Arabic, sans-serif" font-size="11" fill="#c48a12">★★<tspan fill-opacity=".25">★</tspan></text>
+          <g transform="translate(94 118)"><circle r="13" fill="#b42a20" stroke="#6e130e" stroke-width="2"/><text y="5" text-anchor="middle" font-family="Lalezar, sans-serif" font-size="12" fill="#f3d9a8">عُقد</text></g></g>
+        <rect x="122" y="28" width="88" height="40" rx="7" fill="#07110e" stroke="#d4a64a" stroke-width="2"/><text x="166" y="58" text-anchor="middle" font-family="Lalezar, sans-serif" font-size="27" fill="#ffb547">٦٠٠</text>
+        ${pad(138, 96, "#1f4fa8", -12)}${pad(194, 100, "#a8321f", 10)}
+        <g transform="rotate(-30 166 104)"><rect x="150" y="96" width="32" height="13" rx="3" fill="#8a5a2b" stroke="#4a2a10" stroke-width="1.5"/><rect x="164" y="108" width="5" height="30" rx="2" fill="#a8672f" stroke="#4a2a10" stroke-width="1.2"/></g>
       </svg></div>`;
     }
     if (g.art === "treasure") {
@@ -158,7 +173,7 @@
         <div class="faq">
           <details><summary>لازم أحمّل تطبيق؟</summary><p>لا. تدخلون من متصفح الجوال بالرمز، واللي يبي التطبيق يقدر ينزله.</p></details>
           <details><summary>نحتاج تلفزيون أو بروجكتر؟</summary><p>لا. كل شي يطلع في جوال كل لاعب: الأسئلة والتصويت والنتائج. بس إذا عندكم واحد، افتحوا فسحة من متصفح التلفزيون أو الآيباد أو اللابتوب الموصول بالبروجكتر، اكتبوا رمز الغرفة واضغطوا «اعرضها على شاشة كبيرة». تطلع اللعبة كبيرة للكل، والشاشة ما تنحسب لاعب.</p></details>
-          <details><summary>كم لاعب؟</summary><p>لين ٣٠ في الغرفة. «خط ثلاثة» يتقسمون فيها فريقين، و«ترابيع» لين أربع فرق، و«انكشف!» لين ٢٠ لاعب، و«حرب الكراريس» لين ٥ فرق، و«مين الغشاش؟» لين ٣٠ لاعب، و«الكنز» لين ٤ فرق، و«اطوِها!» يلعبها اثنين والباقي يتفرجون.</p></details>
+          <details><summary>كم لاعب؟</summary><p>لين ٣٠ في الغرفة. «خط ثلاثة» يتقسمون فيها فريقين، و«ترابيع» لين أربع فرق، و«انكشف!» لين ٢٠ لاعب، و«حرب الكراريس» لين ٥ فرق، و«مزاد الأسئلة» لين ٤ دُور، و«مين الغشاش؟» لين ٣٠ لاعب، و«الكنز» لين ٤ فرق، و«اطوِها!» يلعبها اثنين والباقي يتفرجون.</p></details>
           <details><summary>نقدر نغيّر اللعبة بدون ما نطلع؟</summary><p>إيه. المضيف يختار اللعبة من شاشة «وينكم!»، والكل يبقى في نفس الغرفة.</p></details>
           <details><summary>كم تكلف؟</summary><p>المضيف يسجل دخوله بحساب قوقل، وكل لعبة لها جلسة مجانية على حسابه. بعدها يفتح كل الألعاب بكود، تاخذه من حسابنا في انستقرام <a href="https://instagram.com/fos7a.games" target="_blank" rel="noopener">@fos7a.games</a>. واللي يدخلون الغرفة يلعبون مجاناً دائماً وبدون حساب.</p></details>
           <details><summary>وش تحفظون عني؟</summary><p>اسمك وشخصيتك في جوالك بس، واللعب يمر بين جوالات الغرفة ويروح. إذا كنت مضيف، نحفظ إيميل حساب قوقل والألعاب اللي لعبت جلستها المجانية وتذكرتك. التفاصيل في <a href="privacy.html">صفحة الخصوصية</a>.</p></details>
