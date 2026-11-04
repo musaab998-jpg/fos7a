@@ -46,8 +46,10 @@ function renderTV(S, fresh) {
   if (S.phase === "closed") return tvMsg("المضيف قفل الغرفة", "شكراً على اللعب!", false);
   // a game drawing on a canvas (اطوِها!) keeps its page until the view itself changes
   if (!fresh && g.tvKeep && S.phase !== "lobby" && $("tv").dataset.view === KL.view) return;
+  // a game with its own «وينكم!» (an explainer playing) keeps it running and only updates who's in
+  if (!fresh && S.phase === "lobby" && g.tvLobbyUpdate && $("tv").dataset.view === KL.view && $("tv").querySelector("[data-keep]")) return g.tvLobbyUpdate(S);
   $("tv").dataset.view = KL.view;
-  const f = S.phase === "lobby" ? tvLobby : (g.tv && g.tv[S.phase]) || tvPlain;
+  const f = S.phase === "lobby" ? g.tvLobby || tvLobby : (g.tv && g.tv[S.phase]) || tvPlain;
   let body = "", after = null;
   try { body = f(S, fresh); } catch (e) { body = tvPlain(S); }
   if (body && typeof body === "object") ({ html: body, after } = body);
