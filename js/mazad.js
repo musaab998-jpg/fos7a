@@ -58,11 +58,10 @@ const MZ_ICON = {
   chat: '<svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16v11H9l-5 4z"/></svg>',
   crown: '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3 8l4 4 5-7 5 7 4-4-2 11H5z"/></svg>',
 };
-(() => {
-  const st = (cx, r) => { let d = ""; for (let k = 0; k < 16; k++) { const a = (Math.PI / 8) * k - Math.PI / 2, rr = k % 2 ? r * 0.72 : r; d += `${k ? "L" : "M"}${(cx + rr * Math.cos(a)).toFixed(2)} ${(10 + rr * Math.sin(a)).toFixed(2)}`; } return d + "Z"; };
-  const s = `<svg xmlns="http://www.w3.org/2000/svg" width="40" height="20" viewBox="0 0 40 20"><rect width="40" height="20" fill="#0b2a2e"/><rect width="40" height="2" fill="#d4a64a"/><rect y="18" width="40" height="2" fill="#d4a64a"/><path d="${st(10, 7)}" fill="#2a9d8f" stroke="#d4a64a" stroke-width=".8"/><circle cx="10" cy="10" r="2.2" fill="#f3e7cf"/><path d="M26 10l4 -4l4 4l-4 4z" fill="none" stroke="#d4a64a" stroke-width="1"/><path d="M20 10h2M38 10h2" stroke="#d4a64a" stroke-width="1"/></svg>`;
-  document.documentElement.style.setProperty("--mz-band", `url("data:image/svg+xml,${encodeURIComponent(s)}")`);
-})();
+// فسحة's art for this game: the card on the home page and the square icon for the room header
+const MZ_CARD = "<svg viewBox=\"0 0 300 200\" preserveAspectRatio=\"xMidYMid meet\" role=\"img\" aria-label=\"مزاد الأسئلة\"><defs><pattern id=\"c-mazad\" width=\"9\" height=\"9\" patternUnits=\"userSpaceOnUse\" patternTransform=\"rotate(30)\"><circle cx=\"4.5\" cy=\"4.5\" r=\"1.6\" fill=\"#000\" opacity=\".16\"/></pattern></defs><rect width=\"300\" height=\"200\" fill=\"#12302a\"/><rect width=\"300\" height=\"200\" fill=\"url(#c-mazad)\"/><circle cx=\"150\" cy=\"100\" r=\"86\" fill=\"#fff6dc\" opacity=\".1\"/><g transform=\"translate(88 38) scale(1.24)\"><g transform=\"rotate(-35 50 46)\"><rect x=\"24\" y=\"20\" width=\"52\" height=\"22\" rx=\"5\" fill=\"#fff6dc\"/><rect x=\"24\" y=\"20\" width=\"9\" height=\"22\" rx=\"3\" fill=\"#ffc933\"/><rect x=\"67\" y=\"20\" width=\"9\" height=\"22\" rx=\"3\" fill=\"#ffc933\"/><rect x=\"45\" y=\"42\" width=\"10\" height=\"46\" rx=\"4\" fill=\"#fff6dc\"/></g><rect x=\"14\" y=\"80\" width=\"46\" height=\"10\" rx=\"3\" fill=\"#ffc933\"/></g><g transform=\"translate(244 30) rotate(8)\"><rect x=\"-42\" y=\"-16\" width=\"84\" height=\"32\" rx=\"16\" fill=\"#ffc933\" stroke=\"#1b2a4a\" stroke-width=\"3\"/><text y=\"7\" text-anchor=\"middle\" font-family=\"Lalezar, sans-serif\" font-size=\"18\" fill=\"#1b2a4a\">جديد</text></g></svg>";
+const MZ_GICON = "<svg viewBox=\"0 0 100 100\" aria-hidden=\"true\"><rect width=\"100\" height=\"100\" rx=\"24\" fill=\"#12302a\"/><g transform=\"translate(16 16) scale(.68)\"><g transform=\"rotate(-35 50 46)\"><rect x=\"24\" y=\"20\" width=\"52\" height=\"22\" rx=\"5\" fill=\"#fff6dc\"/><rect x=\"24\" y=\"20\" width=\"9\" height=\"22\" rx=\"3\" fill=\"#ffc933\"/><rect x=\"67\" y=\"20\" width=\"9\" height=\"22\" rx=\"3\" fill=\"#ffc933\"/><rect x=\"45\" y=\"42\" width=\"10\" height=\"46\" rx=\"4\" fill=\"#fff6dc\"/></g><rect x=\"14\" y=\"80\" width=\"46\" height=\"10\" rx=\"3\" fill=\"#ffc933\"/></g></svg>";
+const mzTitle = () => { $("gTitle").innerHTML = `<span class="mz-gico">${MZ_GICON}</span>مزاد الأسئلة`; };
 const MZ_SEAL = '<svg class="mz-seal" viewBox="0 0 100 100" aria-hidden="true"><path d="M50 6 C62 4 70 12 80 14 C92 18 94 30 95 42 C97 55 92 64 88 74 C82 86 70 94 56 95 C42 97 30 92 20 86 C10 78 5 66 6 52 C6 38 8 26 18 17 C27 9 38 7 50 6Z" fill="#9b1f18"/><circle cx="50" cy="50" r="31" fill="#b42a20" stroke="#6e130e" stroke-width="3"/><text x="50" y="62" text-anchor="middle" font-family="Lalezar, sans-serif" font-size="34" fill="#f3d9a8">عُقد</text></svg>';
 const MZ_PAD = (c) => `<svg class="mz-paddle" viewBox="0 0 30 44" aria-hidden="true"><rect x="13" y="22" width="4" height="20" rx="2" fill="#8a5a2b"/><ellipse cx="15" cy="14" rx="13" ry="12.5" fill="#f7efe0" stroke="#d4a64a" stroke-width="2"/><ellipse cx="15" cy="14" rx="9" ry="8.5" fill="${c}"/></svg>`;
 
@@ -384,6 +383,7 @@ function mzvPlay(S, fresh) {
     else beep(560, 0.05);
   }
   if (["show", "bid"].includes(S.phase)) mzAsk4Me();
+  mzTitle();
   setTop(MZ_PH[mzPhIdx(S.phase)] ? MZ_PH[mzPhIdx(S.phase)][1] : "");
   const y = screen.scrollTop;
   if (!S.teams.includes(t)) { show(`<div class="mz-card"><b>دخلت بعد البداية</b><p class="mz-muted">تقدر تتفرج، وتلعب معهم المزاد الجاي.</p></div>`); return; }
@@ -491,7 +491,7 @@ function mzBind(S, t) {
 function mzvEnd(S, fresh) {
   const t = mzTeamOf(S, PID), A = S.awards || {};
   if (fresh) { clearKL(); if (S.rank[0] === t) { beep(523, 0.1); setTimeout(() => beep(659, 0.1), 120); setTimeout(() => beep(784, 0.25), 240); } else beep(262, 0.4, "triangle", 0.12); }
-  setTop("النهاية");
+  setTop("النهاية"); mzTitle();
   const net = (x) => S.cash[x] - S.loan[x], pos = S.rank.indexOf(t) + 1;
   show(`${S.teams.includes(t) ? mzHead(S, t) : ""}<div class="mz-body">
     ${pos ? `<div class="mz-res"><div class="big">${pos === 1 ? "أنتم الأغنى!" : `المركز ${AR(pos)}`}</div><span class="mz-led">${mzN(net(t))}<small>دينار</small></span>${S.loan[t] ? `<span class="mz-muted">بعد ردّ القرض الحسن ${mzN(S.loan[t])} بلا زيادة</span>` : ""}</div>` : ""}
@@ -569,8 +569,7 @@ function mztBoard(S) {
 }
 function mztHead(S) {
   const pi = mzPhIdx(S.phase);
-  return `<div class="mz-band t"></div><div class="mz-band b"></div>
-    <div class="mz-th"><div class="mz-logo">${MZ_ICON.gavel}<div><b>مزاد الأسئلة</b><small>${S.phase === "end" ? "انتهى المزاد" : `الصفقة ${AR(S.k + 1)} من ${AR(S.lots.length)}`}</small></div></div>
+  return `<div class="mz-th"><div class="mz-logo">${MZ_GICON}<div><b>مزاد الأسئلة</b><small>${S.phase === "end" ? "انتهى المزاد" : `الصفقة ${AR(S.k + 1)} من ${AR(S.lots.length)}`}</small></div></div>
       <div class="mz-lots">${S.lots.map((L, k) => `<i class="${k < S.k || S.phase === "end" ? "done" : k === S.k ? "now" : ""} ${L.gold ? "g" : ""}">${AR(k + 1)}</i>`).join("")}</div>
       <div class="mz-phs">${S.phase === "end" ? "" : MZ_PH.map(([, n], i) => `<span class="${i === pi ? "on" : ""}">${n}</span>`).join("")}</div></div>`;
 }

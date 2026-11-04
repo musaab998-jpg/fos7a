@@ -30,20 +30,7 @@
         <path d="M14 120q14-30 34-42" stroke="#1b2a4a" stroke-width="2" stroke-dasharray="4 4" fill="none"/><circle cx="14" cy="122" r="5" fill="#1b2a4a"/>
       </svg></div>`;
     }
-    if (g.art === "auction") {
-      // the trading hall: a lot card with its seal, the amber price, a gavel and two house paddles
-      const pad = (x, y, c, r) => `<g transform="rotate(${r} ${x} ${y + 20})"><rect x="${x - 2}" y="${y + 10}" width="4" height="22" rx="2" fill="#8a5a2b"/><ellipse cx="${x}" cy="${y}" rx="13" ry="12.5" fill="#f7efe0" stroke="#d4a64a" stroke-width="2"/><ellipse cx="${x}" cy="${y}" rx="9" ry="8.5" fill="${c}"/></g>`;
-      return `<div class="gart auction"><svg viewBox="0 0 220 150" width="250" height="170" aria-hidden="true">
-        <g transform="rotate(-5 62 76)"><rect x="24" y="22" width="76" height="104" rx="5" fill="#f7efe0" stroke="#d4a64a" stroke-width="3"/><rect x="29" y="27" width="66" height="94" rx="3" fill="none" stroke="#1a120c" stroke-opacity=".25"/>
-          <text x="62" y="42" text-anchor="middle" font-family="IBM Plex Sans Arabic, sans-serif" font-size="9" font-weight="700" fill="#7d6a4c">الصفقة</text><text x="62" y="62" text-anchor="middle" font-family="Lalezar, sans-serif" font-size="22" fill="#b42a20">٣</text>
-          <circle cx="62" cy="84" r="14" fill="#12302a" stroke="#d4a64a" stroke-width="2"/><path d="M53 89h18l-3 4h-12zM62 75v14M62 75l6 9h-6" fill="none" stroke="#f3d58a" stroke-width="1.8" stroke-linejoin="round"/>
-          <text x="62" y="114" text-anchor="middle" font-family="IBM Plex Sans Arabic, sans-serif" font-size="11" fill="#c48a12">★★<tspan fill-opacity=".25">★</tspan></text>
-          <g transform="translate(94 118)"><circle r="13" fill="#b42a20" stroke="#6e130e" stroke-width="2"/><text y="5" text-anchor="middle" font-family="Lalezar, sans-serif" font-size="12" fill="#f3d9a8">عُقد</text></g></g>
-        <rect x="122" y="28" width="88" height="40" rx="7" fill="#07110e" stroke="#d4a64a" stroke-width="2"/><text x="166" y="58" text-anchor="middle" font-family="Lalezar, sans-serif" font-size="27" fill="#ffb547">٦٠٠</text>
-        ${pad(138, 96, "#1f4fa8", -12)}${pad(194, 100, "#a8321f", 10)}
-        <g transform="rotate(-30 166 104)"><rect x="150" y="96" width="32" height="13" rx="3" fill="#8a5a2b" stroke="#4a2a10" stroke-width="1.5"/><rect x="164" y="108" width="5" height="30" rx="2" fill="#a8672f" stroke="#4a2a10" stroke-width="1.2"/></g>
-      </svg></div>`;
-    }
+    if (g.art === "auction") return `<div class="gart auction">${MZ_CARD}</div>`; // فسحة's card art for مزاد الأسئلة: a gavel on the game's green
     if (g.art === "treasure") {
       // the card itself is an old treasure map: an island, a dotted route past team flags, the X with the chest, a compass and a scanned code card
       const palm = (x, y, s) => `<g transform="translate(${x} ${y}) scale(${s})"><path d="M0 0 q2 -14 -2 -26" stroke="#7a4f22" stroke-width="3" fill="none" stroke-linecap="round"/><g fill="#3f8a3a"><path d="M-2 -26 q-12 -6 -20 2 q10 -2 20 -2z"/><path d="M-2 -26 q12 -8 20 0 q-10 -3 -20 0z"/><path d="M-2 -26 q-4 -12 -14 -14 q8 6 14 14z"/><path d="M-2 -26 q6 -12 16 -12 q-9 5 -16 12z"/></g></g>`;
