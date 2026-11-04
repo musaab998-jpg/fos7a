@@ -352,12 +352,12 @@ function sqTown(S, hl) {
 // where a house's trader stands on a street cell (four spots so they never overlap)
 function sqTraderXY(t, pos) { const [x, y] = SQ_STREET[pos], off = [[0.32, 0.32], [0.68, 0.32], [0.68, 0.68], [0.32, 0.68]][t % 4]; return sqP(x + off[0], y + off[1]); }
 
-// the card on the home page: a corner of the market with two houses' flags and their traders
-function sqCardArt() {
-  const S = { own: { 1: { id: 0 }, 3: { id: 0 }, 6: { id: 1, ext: 1 }, 19: { id: 2 } }, waqf: { 13: 1 } };
-  const tr = [[0, 2], [1, 8]].map(([t, pos]) => { const [x, y] = sqTraderXY(t, pos); return `<g transform="translate(${x} ${y}) scale(1.3)">${sqPerson(sqHouse(t).hx, { t })}</g>`; }).join("");
-  return `<div class="gart market"><svg viewBox="330 170 940 520" width="100%" height="100%" preserveAspectRatio="xMidYMid slice" style="direction:ltr" aria-hidden="true">${sqTown(S, -1)}${tr}</svg></div>`;
-}
+// the game's card art and icon in فسحة's «الفسحة» identity (colour #b07a2e, an arch and a palm)
+const SQ_CARD = "<svg viewBox=\"0 0 300 200\" role=\"img\" aria-label=\"سوق المدينة\"><defs><pattern id=\"c-souq\" width=\"9\" height=\"9\" patternUnits=\"userSpaceOnUse\" patternTransform=\"rotate(30)\"><circle cx=\"4.5\" cy=\"4.5\" r=\"1.6\" fill=\"#000\" opacity=\".16\"/></pattern></defs><rect width=\"300\" height=\"200\" fill=\"#b07a2e\"/><rect width=\"300\" height=\"200\" fill=\"url(#c-souq)\"/><circle cx=\"150\" cy=\"100\" r=\"86\" fill=\"#fff6dc\" opacity=\".1\"/><g transform=\"translate(88 38) scale(1.24)\"><rect x=\"10\" y=\"34\" width=\"50\" height=\"54\" fill=\"#fff6dc\"/><path d=\"M10 34h50\" stroke=\"#ffc933\" stroke-width=\"5\"/><path d=\"M24 88V64a11 11 0 0 1 22 0v24z\" fill=\"#b07a2e\"/><path d=\"M76 88q-3-24 3-42\" stroke=\"#fff6dc\" stroke-width=\"5\" fill=\"none\" stroke-linecap=\"round\"/><path d=\"M79 46q-16-7-26 3q13-3 26 0zM79 46q16-7 24 4q-12-4-24-1zM79 46q-6-14-20-15q10 5 19 15zM79 46q6-14 20-14q-10 5-19 14z\" fill=\"#ffc933\"/></g><g transform=\"translate(244 30) rotate(8)\"><rect x=\"-42\" y=\"-16\" width=\"84\" height=\"32\" rx=\"16\" fill=\"#ffc933\" stroke=\"#1b2a4a\" stroke-width=\"3\"/><text y=\"7\" text-anchor=\"middle\" font-family=\"Lalezar, sans-serif\" font-size=\"18\" fill=\"#1b2a4a\">قريبًا</text></g></svg>";
+const SQ_ICON = "<svg viewBox=\"0 0 100 100\" aria-hidden=\"true\"><rect width=\"100\" height=\"100\" rx=\"24\" fill=\"#b07a2e\"/><g transform=\"translate(16 16) scale(.68)\"><rect x=\"10\" y=\"34\" width=\"50\" height=\"54\" fill=\"#fff6dc\"/><path d=\"M10 34h50\" stroke=\"#ffc933\" stroke-width=\"5\"/><path d=\"M24 88V64a11 11 0 0 1 22 0v24z\" fill=\"#b07a2e\"/><path d=\"M76 88q-3-24 3-42\" stroke=\"#fff6dc\" stroke-width=\"5\" fill=\"none\" stroke-linecap=\"round\"/><path d=\"M79 46q-16-7-26 3q13-3 26 0zM79 46q16-7 24 4q-12-4-24-1zM79 46q-6-14-20-15q10 5 19 15zM79 46q6-14 20-14q-10 5-19 14z\" fill=\"#ffc933\"/></g></svg>";
+// the room's title bar carries the icon (room.js writes the name as text on every snapshot)
+function sqHead() { const el = $("gTitle"); if (el && !el.querySelector(".sq-gico")) el.innerHTML = `<span class="sq-gico">${SQ_ICON}</span>${ROOM_GAMES.souq.name}`; }
+function sqCardArt() { return `<div class="gart market">${SQ_CARD}</div>`; }
 
 // ================= the room =================
 ROOM_GAMES.souq = {
@@ -784,7 +784,7 @@ function sqTop(S, t) {
   if (t < 0 || !S.cos || !S.cos[t] || !S.teams.includes(t)) return `<div class="sq-top"><div class="sq-r1"><div class="sq-nm"><b>سوق المدينة</b><small>تتفرج على السوق</small></div></div></div>`;
   const c = S.cos[t], mates = S.players.filter((p) => sqTeamOf(S, p.id) === t);
   const myTurn = S.turn === t && ["walk", "act"].includes(S.phase), iTrade = S.trader && S.trader.id === PID;
-  return `<div class="sq-top" style="--hx:${sqHouse(t).hx}"><div class="sq-r1">${sqEmblem(t, 40)}<div class="sq-nm"><b>${sqHouse(t).n}</b><small>${mates.map((p) => esc(p.name)).join("، ")}</small></div><div class="sq-purse"><div><small>المال</small><b>${sqN(c.cash)}</b></div><div class="a"><small>${SQX.ajr}</small><b>${AR(c.ajr)}</b></div></div></div>
+  return `<div class="sq-top" style="--hx:${sqHouse(t).hx}"><div class="sq-r1">${sqEmblem(t, 40)}<div class="sq-nm"><b>${sqHouse(t).n}</b><span class="sq-faces">${mates.map((p) => face(p, 24)).join("")}</span></div><div class="sq-purse"><div><small>المال</small><b>${sqN(c.cash)}</b></div><div class="a"><small>${SQX.ajr}</small><b>${AR(c.ajr)}</b></div></div></div>
     ${myTurn && S.trader ? `<div class="sq-role">${iTrade ? "دوركم، وأنت التاجر هذه المرة: القرار لك" : `دوركم، والتاجر هذه المرة: ${esc(S.trader.name)}`}</div>` : ""}</div>`;
 }
 // the market as a ring of 20 tiles on the phone, with every house's trader
@@ -809,6 +809,7 @@ function sqTick() {
   }, 250);
 }
 function sqvQ(S, fresh) {
+  sqHead();
   const t = sqMy(S), q = S.q, mine = S.teams.includes(t);
   if (fresh) { clearKL(); KL.my.v = undefined; sqTick(); beep(880, 0.08); buzz(40); }
   setTop(`الجولة ${AR(S.round)}`);
@@ -825,6 +826,7 @@ function sqvQ(S, fresh) {
   screen.querySelectorAll(".sq-opt:not([disabled])").forEach((b) => (b.onclick = () => { KL.my.v = +b.dataset.o; beep(660, 0.05); act({ t: "sqvote", id: PID, k: KL.my.v }); screen.querySelectorAll(".sq-opt").forEach((x) => x.setAttribute("aria-pressed", String(x === b))); }));
 }
 function sqvAns(S, fresh) {
+  sqHead();
   const t = sqMy(S), mine = S.teams.includes(t), ok = mine && S.ok[t];
   if (fresh) { clearKL(); if (mine) { if (ok) { beep(660, 0.08); setTimeout(() => beep(880, 0.12), 120); } else beep(220, 0.2, "triangle"); } }
   setTop("الإجابة");
@@ -844,6 +846,7 @@ function sqActCard(S, A) {
 }
 const sqResCard = (A) => { const r = A.res; return `${r.stamp ? `<span class="sq-stamp ${r.stamp}">${r.stampText}</span>` : ""}${r.chose ? `<div class="sq-chose">«${r.chose}»</div>` : ""}<div class="sq-res"><div class="big ${r.cls}">${r.big}</div>${r.line ? `<span>${r.line}</span>` : ""}</div>${r.rule ? `<div class="sq-rulecard"><span class="tag ${r.rule.tagCls || "ok"}">${r.rule.tag}</span>${r.rule.body}</div>` : ""}`; };
 function sqvPlay(S, fresh) {
+  sqHead();
   const t = sqMy(S), mine = S.teams.includes(t), turn = S.turn, myTurn = mine && t === turn;
   const iTrade = S.trader && S.trader.id === PID, can = myTurn && (iTrade || leftOf(S.freeLeft) <= 0);
   if (fresh) {
@@ -888,6 +891,7 @@ function sqvPlay(S, fresh) {
   if ($("sqYes")) $("sqYes").onclick = () => { KL.my.sent = true; beep(880, 0.06); act({ t: "sqpart", id: PID, yes: true }); sqvPlay(KL.S, false); };
 }
 function sqvEnd(S, fresh) {
+  sqHead();
   const t = sqMy(S), pos = S.rank.indexOf(t) + 1;
   if (fresh) { clearKL(); if (pos === 1) { beep(523, 0.1); setTimeout(() => beep(659, 0.1), 120); setTimeout(() => beep(784, 0.25), 240); } else beep(262, 0.4, "triangle", 0.12); }
   setTop("انتهى يوم السوق");
@@ -938,7 +942,7 @@ function sqTvPlay(S, fresh) {
   const html = `<div class="sq-tv">
     <svg class="sq-map" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice" style="direction:ltr" aria-hidden="true">${sqTown(S, hl)}</svg>
     <svg class="sq-map" id="sqPpl" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice" style="direction:ltr;pointer-events:none" aria-hidden="true">${pawns}</svg>
-    <div class="sq-hud tl"><div class="sq-hd"><b>سوق المدينة</b><small>الجولة ${AR(Math.max(1, S.round))} من ${AR(S.rounds)}</small></div><div class="sq-phs">${PH.map(([, n], i) => `<span class="${i === pi ? "on" : ""}">${n}</span>`).join("")}</div><div class="sq-bait">${sqIc("bait", "sq-bic")}<span>${SQX.baitHud}</span><b>${sqN(S.bait)}</b></div></div>
+    <div class="sq-hud tl"><div class="sq-hd"><b>${SQ_ICON}سوق المدينة</b><small>الجولة ${AR(Math.max(1, S.round))} من ${AR(S.rounds)}</small></div><div class="sq-phs">${PH.map(([, n], i) => `<span class="${i === pi ? "on" : ""}">${n}</span>`).join("")}</div><div class="sq-bait">${sqIc("bait", "sq-bic")}<span>${SQX.baitHud}</span><b>${sqN(S.bait)}</b></div></div>
     <div class="sq-hud tr">${sqTvHouses(S)}</div>
     <div class="sq-hud bl sq-log"><h4>ما يجري في السوق</h4>${(S.log || []).map((x) => `<div>${x}</div>`).join("")}</div>
     <div class="sq-evwrap">${sqTvCard(S)}</div></div>`;
@@ -957,7 +961,7 @@ ROOM_GAMES.souq.tv = {
   end(S) {
     const rank = S.rank, mostAjr = S.teams.slice().sort((a, b) => S.cos[b].ajr - S.cos[a].ajr)[0], richest = S.teams.slice().sort((a, b) => sqWealth(S, b) - sqWealth(S, a))[0];
     return `<div class="sq-tv sq-end"><div class="sq-endin">
-      <div class="sq-endk">انتهى يوم السوق</div><div class="sq-endt">${sqHouse(rank[0]).n}: ${SQX.winTitle}</div>
+      <div class="sq-endk">${SQ_ICON}انتهى يوم السوق</div><div class="sq-endt">${sqHouse(rank[0]).n}: ${SQX.winTitle}</div>
       <div class="sq-endrows">${rank.map((t, i) => `<div class="sq-endrow ${i ? "" : "top"}" style="animation-delay:${0.3 + i * 0.25}s"><span class="n">${AR(i + 1)}</span>${sqEmblem(t, 70)}<b>${sqHouse(t).n}</b><span>الثروة<b>${sqN(sqWealth(S, t))}</b></span><span class="a">${SQX.ajr}<b>${AR(S.cos[t].ajr)}</b></span><span class="s">المجموع<b>${sqN(sqScore(S, t))}</b></span></div>`).join("")}</div>
       <div class="sq-endf">${SQX.winFormula}</div>
       <div class="sq-endaw">${[["أكثر الدُّور أجرًا", sqHouse(mostAjr).n], ["أكثرها مالًا", sqHouse(richest).n], ["الأوقاف", `${AR(Object.keys(S.waqf).length)} دكان`]].map(([a, b]) => `<div><small>${a}</small><b>${b}</b></div>`).join("")}</div>
