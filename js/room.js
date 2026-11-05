@@ -24,7 +24,7 @@ const hEvery = (fn, ms) => (H.timers ||= []).push(setInterval(fn, ms));
 const face = (p, s) => avatar(p.av || me.av, s);
 const hostOnly = (html, wait = "بانتظار المضيف…") => (isHost() ? html : `<p class="muted" style="text-align:center">${wait}</p>`);
 const shuffled = (a) => a.map((x) => [Math.random(), x]).sort((p, q) => p[0] - q[0]).map((p) => p[1]);
-const THEME_COLOR = { khallast: "#fbf8ef", khat: "#22402f", fold: "#151c2d", trabee: "#e6e0d4", alqab: "#3a0610", hisn: "#fbfdff", ghash: "#6b4426", kanz: "#0d2630" };
+const THEME_COLOR = { khallast: "#fbf8ef", khat: "#22402f", fold: "#151c2d", trabee: "#e6e0d4", alqab: "#3a0610", hisn: "#fbfdff", ghash: "#6b4426", kanz: "#0d2630", mazad: "#0d1f1a", manfael: "#fff6dc", souq: "#fff6dc" };
 
 function leaveRoom(tell = true) {
   clearKL(); hClear(); clearInterval(KL.alive); yardQuiet(0.5); KL.rang = false; keepAwake(false); hostBanner(false);
@@ -199,7 +199,7 @@ function apply(S) {
   $("roomCode").textContent = S.code || "";
   $("gTitle").textContent = g.name;
   current = S.game;
-  const theme = S.phase === "lobby" ? "khallast" : g.theme;
+  const theme = S.phase === "lobby" && !(isScreen() && g.tvLobby) ? "khallast" : g.theme;
   if (document.body.dataset.theme !== theme) { document.body.dataset.theme = theme; try { window.Fos7aApp?.setTheme(THEME_COLOR[theme]); } catch (e) {} }
   if (isScreen()) { const k = S.game + ":" + (g.key ? g.key(S) : S.phase + ":" + S.round), fresh = k !== KL.view; KL.view = k; renderTV(S, fresh); if (fresh) yardMoment(S, prev); return; }
   if (!isHost() && prev && !S.players.some((p) => p.id === PID)) KL.net.send({ t: "join", p: { id: PID, name: me.name, av: me.av } });
@@ -207,7 +207,7 @@ function apply(S) {
   if (viewKey !== KL.view) { KL.view = viewKey; renderPhase(S, true); yardMoment(S, prev); } else renderPhase(S, false);
 }
 // recess in «وينكم!», the bell when a game starts, and a cheer at the end
-const END_PHASE = { khallast: "cert", khat: "end", foldit: "over", trabee: "end", alqab: "end", hisn: "end", ghash: "end", kanz: "end" };
+const END_PHASE = { khallast: "cert", khat: "end", foldit: "over", trabee: "end", alqab: "end", hisn: "end", ghash: "end", kanz: "end", mazad: "end", manfael: "end", souq: "end" };
 function yardMoment(S, prev) {
   if (S.phase === "lobby") {
     if (!KL.rang) { KL.rang = true; recess(); setTimeout(() => { if (KL.S && KL.S.phase === "lobby") yardAmbient(); }, 3800); }
