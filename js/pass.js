@@ -141,3 +141,56 @@ function openPass(game, then) {
   };
   draw();
 }
+
+// ================= حسابي: the round button in the header =================
+// Your character for everyone; for hosts also the Google account, the ticket, signing out and deleting the account.
+// Deleting runs fos7a_delete_me on the server: it removes this account's rows in fos7a and the sign-in itself.
+async function deleteAccount() {
+  if (NET.local || !USER) return false;
+  try {
+    const { error } = await authClient().rpc("fos7a_delete_me");
+    if (error) return false;
+  } catch (e) { return false; }
+  try { await authClient().auth.signOut({ scope: "local" }); } catch (e) {}
+  try { localStorage.removeItem(AUTH_KEY); } catch (e) {}
+  USER = null; ME = { played: [], until: null, admin: false }; saveMe();
+  return true;
+}
+function openAccount() {
+  const card = $("modalCard");
+  const back = () => { $("modal").hidden = true; if (!$("hub").hidden) renderHub(); };
+  const draw = (step = "", msg = "") => {
+    const host = USER ? `
+      <div class="acc-box"><b>حساب المضيف</b><span dir="ltr">${esc(USER.email || "")}</span>
+        <button type="button" class="passline" id="accPass">${ICON.ticket}<span>${passActive() ? `تذكرتك فعالة لين ${passDay()}` : "عندك كود؟ فعّله هنا"}</span></button>
+        ${ME.admin ? `<a href="q9m4t.html">الأكواد</a>` : ""}</div>
+      ${step === "del" ? `<div class="acc-del" role="alertdialog" aria-labelledby="delH"><b id="delH">متأكد تبي تحذف حسابك؟</b>
+        <p>نحذف إيميلك وحسابك، والألعاب اللي لعبت جلستها المجانية، وتذكرتك إذا عندك. ما نقدر نرجعها بعدين.</p>
+        <div class="acc-row"><button type="button" class="pbtn danger" id="delYes">إيه، احذفه</button><button type="button" class="pbtn alt" id="delNo">لا، رجوع</button></div>
+        <p class="passmsg" role="status">${msg}</p></div>`
+      : `<div class="acc-row"><button type="button" class="pbtn alt" id="accOut">تسجيل خروج</button><button type="button" class="pbtn alt danger-t" id="accDel">احذف حسابي</button></div>`}`
+      : step === "gone" ? `<p class="acc-ok" role="status">انحذف حسابك. تقدر تلعب كلاعب بدون حساب، أو تسجل من جديد متى ما بغيت.</p>`
+      : NET.local ? "" : `<p>إذا بتفتح غرفة، سجّل دخولك مرة وحدة بحساب قوقل. اللي يدخلون الغرف ما يحتاجون حساب.</p>
+      <button type="button" class="pbtn gbtn" id="accIn">${GOOGLE}<span>ادخل بحساب قوقل</span></button><p class="passmsg" id="accMsg" role="status"></p>`;
+    card.innerHTML = `<h3>حسابك</h3>
+      <div class="acc-me">${avatar(me.av, 64)}<div><b>${me.name ? esc(me.name) : "بدون اسم"}</b><button type="button" class="passnote" id="accEdit">${me.name ? "عدّل شخصيتك" : "سوّ شخصيتك"}</button></div>
+        <button type="button" class="sndbtn" data-sound aria-pressed="${soundOn}" aria-label="${soundOn ? "اكتم الصوت" : "شغّل الصوت"}">${speakerIcon(soundOn)}</button></div>
+      ${host}
+      <button type="button" class="pbtn alt" id="accClose">رجوع</button>`;
+    $("modal").hidden = false;
+    $("accClose").onclick = back;
+    $("accEdit").onclick = () => { $("modal").hidden = true; openProfile(() => { renderHub(); view("hub"); }); };
+    card.querySelector("[data-sound]").onclick = () => setSound(!soundOn);
+    if ($("accPass")) $("accPass").onclick = () => openPass(null);
+    if ($("accOut")) $("accOut").onclick = async () => { await signOut(); back(); };
+    if ($("accDel")) $("accDel").onclick = () => { draw("del"); $("delNo").focus(); };
+    if ($("delNo")) $("delNo").onclick = () => draw();
+    if ($("delYes")) $("delYes").onclick = async () => {
+      $("delYes").disabled = $("delNo").disabled = true; card.querySelector(".acc-del .passmsg").textContent = "نحذف…";
+      if (await deleteAccount()) { draw("gone"); if (!$("hub").hidden) renderHub(); }
+      else draw("del", "ما قدرنا نحذفه الحين. تأكد من النت وجرّب، أو راسلنا في انستقرام @" + INSTA + ".");
+    };
+    if ($("accIn")) $("accIn").onclick = async () => { $("accIn").disabled = true; $("accMsg").textContent = "نفتح قوقل…"; if (!(await signIn(null))) { $("accIn").disabled = false; $("accMsg").textContent = "ما قدرنا نفتح قوقل، تأكد من النت وجرّب."; } };
+  };
+  draw();
+}
