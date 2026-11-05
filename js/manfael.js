@@ -13,7 +13,7 @@ ROOM_GAMES.manfael = (() => {
   const CATS = ["عامة", "السعودية", "الخليج والعرب", "جغرافيا", "أكل", "حيوانات", "علوم", "كورة", "زمن الطيبين", "ألغاز"];
   const RIDDLES = ["ألغاز", "عامة", "علوم", "حيوانات", "أكل"];
   const CODE_CHARS = "ACEFHKMNPRTXY34679";
-  const Q_WAIT = 15000, ACC_LOCK = 120000, INV_T = 60000, ACC_T = 60000, CLUE_T = 40000;
+  const Q_WAIT = 15000, ACC_LOCK = 120000, LEAD_T = 4 * 60000, INV_T = 60000, ACC_T = 60000, CLUE_T = 40000;
   const R = (n) => Math.floor(Math.random() * n);
   const T = (t) => MF_TEAMS[t] || MF_TEAMS[0];
   // the phone only buzzes once someone has touched it (browsers refuse before that, and say so in the console)
@@ -69,10 +69,20 @@ ROOM_GAMES.manfael = (() => {
     if (t === undefined || !S.teams.includes(t)) return tell(id, { t: "mfme", sid: S.sid, team: -1 });
     const rd = z.riddle[t];
     tell(id, { t: "mfme", sid: S.sid, team: t, heard: z.heard[t].map(testimony), marks: z.marks[t], riddle: rd ? { i: rd.i, q: rd.q, o: rd.o, cat: rd.cat } : null,
-      hints: Object.fromEntries(z.hints[t].map((i) => [i, H.mfSpots[i]])), qWait: Math.max(0, (z.qWait[t] || 0) - now()), ...extra });
+      hints: Object.fromEntries(z.hints[t].map((i) => [i, H.mfSpots[i]])), qWait: Math.max(0, (z.qWait[t] || 0) - now()),
+      props: Object.entries(z.props[t] || {}).map(([pid, x]) => ({ id: pid, name: (H.players.find((p) => p.id === pid) || {}).name || "؟", s: x.s, at: x.at })), ...extra });
   }
   const tellTeam = (t, extra) => members(t).forEach((id) => tellOne(id, extra));
   const tellAll = () => H.players.forEach((p) => tellOne(p.id));
+  // each team has a leader (قائد) who alone hands in the accusation; it turns every round on the couch,
+  // and every few minutes or after an accusation in the house. The others can propose to the leader.
+  function pickLeader(t) {
+    const S = H.S, z = Z(), mem = members(t), tm = S.tm[t];
+    if (!mem.length) { tm.leader = ""; tm.leaderName = ""; return; }
+    const id = mem[z.rot[t]++ % mem.length], p = H.players.find((x) => x.id === id);
+    tm.leader = id; tm.leaderName = p ? p.name : ""; z.props[t] = {}; z.leadAt[t] = now();
+  }
+  const leaderOk = (t) => { const tm = H.S.tm[t]; if (!members(t).includes(tm.leader)) pickLeader(t); };
   function hear(t, i) {
     const S = H.S, z = Z(), tm = S.tm[t];
     if (tm.seen.includes(i)) return false;
@@ -89,13 +99,14 @@ ROOM_GAMES.manfael = (() => {
     H.mfCase.played = true; save();
     const teams = [...new Set(H.players.filter((p) => H.mft[p.id] !== undefined).map((p) => H.mft[p.id]))].filter((t) => t < S.nt).sort();
     const per = (v) => Object.fromEntries(teams.map((t) => [t, typeof v === "function" ? v() : v]));
-    H.mf = { K, heard: per(() => []), marks: per(() => ({})), votes: per(() => ({})), acc: {}, riddle: {}, hints: per(() => []), qWait: {}, lock: {}, vq: [], vi: 0 };
+    H.mf = { K, heard: per(() => []), marks: per(() => ({})), votes: per(() => ({})), acc: {}, riddle: {}, hints: per(() => []), qWait: {}, lock: {}, vq: [], vi: 0, rot: per(0), props: per(() => ({})), leadAt: {} };
     H.usedQ instanceof Set || (H.usedQ = new Set());
     H.deadline = 0; H.mfT0 = 0;
     publicCase(S);
     Object.assign(S, { sid: Math.random().toString(36).slice(2, 8), phase: isHouse(S) ? "print" : "intro", round: 0, teams, q: null, ans: -1, visits: [], eligible: [], verdict: null, vk: 0, narr: "", feed: [], pop: null, winner: [], reveal: null, roles: {},
       tm: per(() => ({ tickets: 1, jail: 0, seen: [], loc: -1, loc0: -1, sent: false, acked: true, accDone: true, wrong: 0, gain: 0, right: false, fast: false, final: -1, tally: [0, 0, 0, 0], voted: [], picks: [], fresh: 0, lock: 0, hints: 0 })) });
     if (isHouse(S)) teams.forEach((t) => (S.tm[t].tickets = 0));
+    teams.forEach(pickLeader);
     hostSend(); tellAll();
     if (!isHouse(S)) hLater(ask, 6500);
   }
@@ -105,6 +116,7 @@ ROOM_GAMES.manfael = (() => {
     hClear();
     const S = H.S, z = Z();
     S.round++;
+    if (S.round > 1) S.teams.forEach(pickLeader); else S.teams.forEach(leaderOk);
     const d = drawQuestion(pickOne(CATS.filter((c) => QBANK[c])), H.usedQ);
     z.q = d; z.qStart = now();
     S.teams.forEach((t) => { z.votes[t] = {}; Object.assign(S.tm[t], { tally: [0, 0, 0, 0], voted: [], right: false, fast: false, gain: 0, final: -1, picks: [], sent: false, fresh: 0, acked: true, accDone: true }); });
@@ -168,6 +180,7 @@ ROOM_GAMES.manfael = (() => {
     S.eligible = S.teams.filter((t) => S.tm[t].seen.includes(A.SPY) && !S.tm[t].jail);
     if (!S.eligible.length) return endRound();
     z.acc = {};
+    S.eligible.forEach(leaderOk);
     S.teams.forEach((t) => (S.tm[t].accDone = !S.eligible.includes(t)));
     S.phase = "acc"; S.narr = "الفرق اللي سمعت المُخبِر تقدر تتّهم الحين";
     H.deadline = now() + ACC_T;
@@ -229,6 +242,7 @@ ROOM_GAMES.manfael = (() => {
     S.teams.forEach((t) => {
       if (z.lock[t] && z.lock[t] <= now()) { z.lock[t] = 0; dirty = true; tellTeam(t); }
       if (z.qWait[t] && z.qWait[t] <= now()) { z.qWait[t] = 0; tellTeam(t); }
+      if (!S.verdict && (now() - (z.leadAt[t] || 0) > LEAD_T || !members(t).includes(S.tm[t].leader))) { pickLeader(t); feed(`القائد الجديد للفريق ${T(t).n}: ${S.tm[t].leaderName}`, t); dirty = true; tellTeam(t); }
     });
     if (dirty || now() - (H.lastSend || 0) > 10000) hostSendSoon();
   }
@@ -269,7 +283,7 @@ ROOM_GAMES.manfael = (() => {
       S.verdict.ok = ok;
       if (!ok) { z.lock[t] = now() + ACC_LOCK; S.tm[t].wrong++; feed(`${T(t).n} اتّهم غلط وانوقف دقيقتين`, t); }
       hostSend(); tellTeam(t);
-      hLater(() => { if (ok) return finish([t]); S.verdict = null; S.narr = ""; hostSend(); }, 3200);
+      hLater(() => { if (ok) return finish([t]); S.verdict = null; S.narr = ""; pickLeader(t); feed(`القائد الجديد للفريق ${T(t).n}: ${S.tm[t].leaderName}`, t); hostSend(); tellTeam(t); }, 3200);
     }, 2800);
   }
   function stopGame() { const S = H.S; if (S.phase === "end") return; finish([]); }
@@ -283,6 +297,7 @@ ROOM_GAMES.manfael = (() => {
     const t = me2.team, tm = S.tm[t], st = stagesOf(S), c = stageOf(S, tm.seen);
     const right = isHouse(S) ? `<span class="mf-clock" id="mfClock">${clock(elapsed(S))}</span>` : `<span class="mf-tix" aria-label="${AR(tm.tickets)} ${tkWord(tm.tickets)}">${A.tickets(tm.tickets)}${tm.tickets ? "" : '<small>بدون تذاكر</small>'}</span>`;
     return `<div class="mf-top" style="--c:${T(t).c}"><div class="mf-r1">${chip(t)}${tm.jail ? '<span class="mf-tag red">موقوفين</span>' : ""}${right}</div>
+      ${tm.leader ? `<div class="mf-lead">${tm.leader === PID ? "أنت قائد الفريق: الاتهام بيدك" : `القائد: <b>${esc(tm.leaderName)}</b>`}</div>` : ""}
       <div class="mf-dots" style="grid-template-columns:repeat(${st.length},1fr)">${st.map((n, i) => `<span class="${i === c ? "on" : i < c ? "done" : ""}">${AR(i + 1)} ${n}</span>`).join("")}</div></div>`;
   }
   const tabs = (S, me2) => { const tab = KL.my.mftab || "round", unread = me2.heard.length > (KL.my.mfRead || 0); return `<div class="mf-tabs" role="tablist"><button type="button" role="tab" data-mt="round" aria-selected="${tab === "round"}">${isHouse(S) ? "التحقيق" : "الجولة"}</button><button type="button" role="tab" data-mt="book" aria-selected="${tab === "book"}">دفتر التحقيق${unread && tab !== "book" ? '<i class="mf-dot"></i>' : ""}</button></div>`; };
@@ -360,7 +375,11 @@ ROOM_GAMES.manfael = (() => {
       return `${now1(fr.length > 1 ? "شهادات جديدة! لكم بس" : "شهادة جديدة! لكم بس")}${fr.map((h) => witness(S, me2, h, true)).join("")}${!tm.acked ? '<button type="button" class="btn btn-marker" id="mfAck">حطّوها في الدفتر</button>' : '<p class="muted" style="text-align:center">ننتظر باقي الفرق…</p>'}`;
     }
     if (P === "acc") {
-      if (S.eligible.includes(t) && !tm.accDone) return `${now1("سمعتوا المُخبِر! عرفتوا اللص؟")}<div class="mf-row"><span class="muted">باقي</span><b class="mf-secs" id="mfLeft">${AR(Math.ceil(leftOf(S.left) / 1000))}</b></div>${timer(S)}<button type="button" class="btn btn-marker mf-red" id="mfAccuse">أعلنوا اللص</button><button type="button" class="btn btn-ghost" id="mfNoAcc">مو بعد، نكمل التحقيق</button><p class="muted">الاتهام الغلط يوقفكم جولتين بدون تذاكر.</p>`;
+      if (S.eligible.includes(t) && !tm.accDone) {
+        const clockRow = `<div class="mf-row"><span class="muted">باقي</span><b class="mf-secs" id="mfLeft">${AR(Math.ceil(leftOf(S.left) / 1000))}</b></div>${timer(S)}`;
+        if (tm.leader === PID) return `${now1("سمعتوا المُخبِر! أنت القائد: تعلن اللص ولا تكملون التحقيق؟")}${clockRow}${propsList(S, me2)}<button type="button" class="btn btn-marker mf-red" id="mfAccuse">أعلن اللص</button><button type="button" class="btn btn-ghost" id="mfNoAcc">مو بعد، نكمل التحقيق</button><p class="muted">الاتهام الغلط يوقفكم جولتين بدون تذاكر.</p>`;
+        return `${now1(`سمعتوا المُخبِر! القائد <b>${esc(tm.leaderName)}</b> يقرر الحين.`)}${clockRow}${myProp(S, me2)}<button type="button" class="btn btn-marker" id="mfAccuse">اقترح على القائد</button>`;
+      }
       return now1(S.eligible.includes(t) ? "سلّمتوا قراركم. تابعوا التلفزيون…" : "الفرق اللي سمعت المُخبِر تقدر تتّهم الحين…");
     }
     if (P === "verdict" && S.verdict) return verdictCard(S, t);
@@ -418,21 +437,29 @@ ROOM_GAMES.manfael = (() => {
       ${heard.length ? heard.slice().reverse().map((h) => witness(S, me2, h, false)).join("") : `<div class="mf-card muted">ما سمعتوا أحد للحين. ${isHouse(S) ? "كل بطاقة تمسحونها" : "كل تذكرة"} تفتح لكم شاهد.</div>`}`;
   }
   // the accusation: who, and where they hide. A sheet over the screen so a snapshot doesn't close it
+  // what the team proposed, on the leader's phone; and what I proposed, on mine
+  function propsList(S, me2) {
+    const ps = me2.props || [];
+    return ps.length ? `<div class="mf-card"><span class="mf-lab">اقتراحات الفريق</span>${ps.map((p) => `<div class="mf-prop">${A.sFace(S.sus[p.s], 30)}<span><b>${esc(S.sus[p.s].name)}</b>، في ${pn(S, p.at)}</span><small>${esc(p.name)}</small></div>`).join("")}</div>` : "";
+  }
+  function myProp(S, me2) { const p = (me2.props || []).find((x) => x.id === PID); return p ? `<p class="muted">اقتراحك وصل للقائد: <b>${esc(S.sus[p.s].name)}، في ${pn(S, p.at)}</b></p>` : ""; }
   function accuseSheet(S) {
     const A2 = (KL.my.mfAcc = KL.my.mfAcc || {});
     let el = $("mfSheet"); if (!el) { el = document.createElement("div"); el.id = "mfSheet"; el.className = "mf-sheet"; document.body.appendChild(el); }
     const draw = () => {
       const s = KL.S, me2 = mine(); if (!s || !me2) return el.remove();
-      const marks = me2.marks || {};
-      el.innerHTML = `<div class="mf-sheet-in"><div class="mf-h">مين اللص؟</div>
+      const marks = me2.marks || {}, lead = s.tm[me2.team].leader === PID, ps = me2.props || [];
+      el.innerHTML = `<div class="mf-sheet-in"><div class="mf-h">${lead ? "مين اللص؟" : "اقتراحك للقائد: مين اللص؟"}</div>
+        ${lead && ps.length ? `<div class="chips pick">${ps.map((p, k) => `<button type="button" class="chip" data-prop="${k}">${esc(p.name)}: ${esc(s.sus[p.s].name)}، ${pn(s, p.at)}</button>`).join("")}</div>` : ""}
         <div class="mf-lineup">${s.sus.map((x) => `<button type="button" class="mf-sus" data-pick="${x.id}" data-st="${A2.s === x.id ? "pick" : marks[x.id] === "out" ? "out" : ""}">${A.sFace(x, 54)}<span>${esc(x.name)}</span>${A.XMARK}</button>`).join("")}</div>
         <div class="mf-h sm">وين يختبي؟</div><div class="chips pick">${A.WITNESS.map((i) => `<button type="button" class="chip" data-at="${i}" aria-pressed="${A2.at === i}">${pn(s, i)}</button>`).join("")}</div>
         <p class="muted">${isHouse(s) ? "الاتهام الغلط يوقفكم دقيقتين: لا مسح ولا اتهام." : "الاتهام الغلط يوقفكم جولتين بدون تذاكر."}</p>
-        <button type="button" class="btn btn-marker mf-red" id="mfSend" ${A2.s === undefined || A2.at === undefined ? "disabled" : ""}>سلّموا الاتهام</button><button type="button" class="btn btn-ghost" id="mfClose">رجوع</button></div>`;
+        <button type="button" class="btn btn-marker ${lead ? "mf-red" : ""}" id="mfSend" ${A2.s === undefined || A2.at === undefined ? "disabled" : ""}>${lead ? "سلّم الاتهام" : "أرسل اقتراحك للقائد"}</button><button type="button" class="btn btn-ghost" id="mfClose">رجوع</button></div>`;
       el.querySelectorAll("[data-pick]").forEach((b) => (b.onclick = () => { A2.s = +b.dataset.pick; beep(700, 0.04); draw(); }));
       el.querySelectorAll("[data-at]").forEach((b) => (b.onclick = () => { A2.at = +b.dataset.at; beep(700, 0.04); draw(); }));
+      el.querySelectorAll("[data-prop]").forEach((b) => (b.onclick = () => { const p = ps[+b.dataset.prop]; A2.s = p.s; A2.at = p.at; beep(700, 0.04); draw(); }));
       $("mfClose").onclick = () => el.remove();
-      $("mfSend").onclick = () => { beep(880, 0.08); vib(60); act({ t: "mfacc", id: PID, s: A2.s, at: A2.at }); KL.my.mfAcc = null; el.remove(); };
+      $("mfSend").onclick = () => { beep(880, 0.08); vib(60); act({ t: lead ? "mfacc" : "mfprop", id: PID, s: A2.s, at: A2.at }); KL.my.mfAcc = null; el.remove(); };
     };
     draw();
   }
@@ -451,7 +478,7 @@ ROOM_GAMES.manfael = (() => {
     if (me2.found !== undefined && KL.my.mfFound !== me2.found) { KL.my.mfFound = me2.found; KL.my.mfShow = me2.found; }
     if (KL.my.mfShow !== undefined && KL.my.mfShow !== null) { const w = me2.heard.find((x) => x.at === KL.my.mfShow); if (w) h += `${now1("مسحتوا البطاقة! هالشهادة لكم بس.")}${witness(S, me2, w, true)}<button type="button" class="btn btn-ghost" data-mt="book" id="mfSeen">حطّوها في الدفتر</button>`; }
     if (locked) h += `${now1("اتهامكم كان غلط: موقوفين، لا مسح ولا اتهام.")}<div class="mf-row"><span class="muted">باقي</span><b class="mf-secs sm" id="mfLock">${clock(tm.lock - (now() - KL.gotAt))}</b></div>`;
-    if (tm.seen.includes(A.SPY) && !locked) h += `<button type="button" class="btn btn-marker mf-red" id="mfAccuse">سمعتوا المُخبِر: أعلنوا اللص</button>`;
+    if (tm.seen.includes(A.SPY) && !locked) h += tm.leader === PID ? `${propsList(S, me2)}<button type="button" class="btn btn-marker mf-red" id="mfAccuse">سمعتوا المُخبِر: أعلن اللص (أنت القائد)</button>` : `${myProp(S, me2)}<button type="button" class="btn btn-marker" id="mfAccuse">سمعتوا المُخبِر: اقترح على القائد ${esc(tm.leaderName)}</button>`;
     const msg = KL.my.mfMsg && KL.my.mfMsg.until > now() ? KL.my.mfMsg : null;
     if (msg && msg.bad) h += `<p class="mf-bad">${{ wrong: "الكود غلط، تأكدوا منه", locked: "موقوفين، ما تقدرون تمسحون الحين", dup: `بطاقة ${pn(S, msg.at)} مسحتوها قبل`, early: `${A.whoOf(msg.at, S.mode)} مقفول: ${msg.why}. رجّعوا البطاقة مكانها وارجعوا لها بعدين.` }[msg.bad] || ""}</p>`;
     if (msg && msg.missed) h += `<p class="mf-bad">غلط! الجواب الصح: ${esc(msg.missed)}</p>`;
@@ -606,7 +633,7 @@ ROOM_GAMES.manfael = (() => {
   const PH = [["q", "السؤال"], ["inv", "التحقيق"], ["acc", "الاتهام"]];
   const phIdx = (P) => (P === "q" || P === "reveal" ? 0 : P === "inv" || P === "go" || P === "clue" ? 1 : P === "acc" || P === "verdict" ? 2 : -1);
   function tvTeamsList(S) {
-    return `<div class="mft-teams">${S.teams.map((t) => { const tm = S.tm[t], st = stagesOf(S); return `<div class="mft-team ${S.verdict && S.verdict.t === t ? "hot" : ""}" style="--c:${T(t).c}">${A.lantern(T(t).c)}<div><b>${T(t).n}</b><small>${AR(nW(tm.seen))} شهادات، المرحلة ${AR(stageOf(S, tm.seen) + 1)}: ${st[stageOf(S, tm.seen)]}${tm.jail ? "، موقوفين" : ""}${tm.lock > 0 ? "، موقوفين" : ""}</small></div><span class="mft-st">${tvStatus(S, t)}${isHouse(S) ? "" : `<span class="mft-tk">${A.tickets(tm.tickets)}</span>`}</span></div>`; }).join("")}</div>`;
+    return `<div class="mft-teams">${S.teams.map((t) => { const tm = S.tm[t], st = stagesOf(S); return `<div class="mft-team ${S.verdict && S.verdict.t === t ? "hot" : ""}" style="--c:${T(t).c}">${A.lantern(T(t).c)}<div><b>${T(t).n}</b><small>${AR(nW(tm.seen))} شهادات، المرحلة ${AR(stageOf(S, tm.seen) + 1)}: ${st[stageOf(S, tm.seen)]}${tm.jail ? "، موقوفين" : ""}${tm.lock > 0 ? "، موقوفين" : ""}</small>${tm.leader ? `<span class="mft-lead">${face(who(tm.leader), 24)}القائد: ${esc(tm.leaderName)}</span>` : ""}</div><span class="mft-st">${tvStatus(S, t)}${isHouse(S) ? "" : `<span class="mft-tk">${A.tickets(tm.tickets)}</span>`}</span></div>`; }).join("")}</div>`;
   }
   function tvStatus(S, t) {
     const tm = S.tm[t], P = S.phase;
@@ -698,7 +725,7 @@ ROOM_GAMES.manfael = (() => {
       "الشهادة توصل لجوالات فريقكم بس. الفرق الثانية تشوف على التلفزيون إنكم رحتم، بدون ما تعرف وش سمعتوا.",
       "على الكنب: كل جولة سؤال للكل. الصح تذكرة، وأسرع فريق صح تذكرتين، والموقوف بدون. كل تذكرة تفتح مكان.",
       "في البيت: الشهود بطاقات مخبّاة في الغرف. المحققين يحلّون لغز يكشف مكان البطاقة، والراكضين يمسحونها.",
-      "بعد المُخبِر تقدرون تتّهمون: اللص ومكانه. أول فريق يصيب يفوز، والغلط يوقفكم جولتين (أو دقيقتين في البيت).",
+      "بعد المُخبِر قائد الفريق يتّهم: اللص ومكانه، والباقين يقترحون عليه. القائد يتغير كل جولة (وفي البيت كل ٤ دقائق أو بعد كل اتهام). أول فريق يصيب يفوز، والغلط يوقفكم جولتين (أو دقيقتين في البيت).",
     ],
     setup(S) {
       const sv = load();
@@ -754,14 +781,15 @@ ROOM_GAMES.manfael = (() => {
       }
       if (m.t === "mfack" && S.phase === "clue") { tm.acked = true; hostSendSoon(); if (S.teams.every((x) => S.tm[x].acked)) { hClear(); hLater(accPhase, 800); } return; }
       const okAcc = Number.isInteger(m.s) && m.s >= 0 && m.s < 12 && A.WITNESS.includes(m.at);
-      if (m.t === "mfacc" && okAcc && tm.seen.includes(A.SPY)) {
+      if (m.t === "mfprop" && okAcc && tm.seen.includes(A.SPY) && m.id !== tm.leader) { z.props[t][m.id] = { s: m.s, at: m.at }; return tellTeam(t); }
+      if (m.t === "mfacc" && okAcc && tm.seen.includes(A.SPY) && m.id === tm.leader) {
         if (isHouse(S)) { if (S.phase === "play") houseAccuse(t, m.s, m.at); return; }
         if (S.phase !== "acc" || !S.eligible.includes(t) || tm.accDone) return;
         z.acc[t] = { s: m.s, at: m.at }; tm.accDone = true; hostSendSoon();
         if (S.eligible.every((x) => S.tm[x].accDone)) { hClear(); hLater(verdicts, 700); }
         return;
       }
-      if (m.t === "mfnoacc" && S.phase === "acc" && S.eligible.includes(t)) { tm.accDone = true; hostSendSoon(); if (S.eligible.every((x) => S.tm[x].accDone)) { hClear(); hLater(verdicts, 700); } return; }
+      if (m.t === "mfnoacc" && S.phase === "acc" && S.eligible.includes(t) && m.id === tm.leader) { tm.accDone = true; hostSendSoon(); if (S.eligible.every((x) => S.tm[x].accDone)) { hClear(); hLater(verdicts, 700); } return; }
       if (!isHouse(S) || S.phase !== "play") return;
       if (m.t === "mfriddle") return riddle(t, m.i);
       if (m.t === "mfra" && Number.isInteger(m.k)) return riddleAns(t, m.k);
