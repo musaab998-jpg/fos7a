@@ -1740,6 +1740,155 @@ body[data-theme="souq"] .gtop .gt { color: var(--sq-navy); }
 .sq-endf { font-size: 18px; font-weight: 700; color: #4a5677; }
 .sq-endaw { display: flex; gap: 18px; } .sq-endaw div { background: #1b2a4a; color: #fff6dc; border-radius: 16px; padding: 6px 22px; text-align: center; box-shadow: 0 5px 0 #0d162b; } .sq-endaw small { display: block; font-size: 15px; font-weight: 700; } .sq-endaw b { font-family: "Lalezar", var(--f-display); font-weight: 400; font-size: 26px; color: #ffc933; }
 @media (prefers-reduced-motion: reduce) { .sq-pw { transition: none; } .sq-rip, .sq-pw.walk .sq-bod { animation: none; } }
+/* ---- من الشخصية؟ in فسحة's «الفسحة» look: cream, navy, yellow and red, Lalezar titles, chunky navy borders.
+   The game's own colour is the deep green of its emblem (#0f5c4a): hint-card backs, numbers and the TV side. ---- */
+.how-note { margin: 0; font-size: 13px; font-weight: 700; color: #0f5c4a; background: #e3f1ea; border: 2px dashed #0f5c4a; border-radius: 10px; padding: 4px 10px; }
+.ws-gico { display: inline-block; width: 22px; height: 22px; vertical-align: -6px; margin-inline-end: 6px; } .ws-gico svg { width: 100%; height: 100%; display: block; }
+body[data-theme="whois"] #gTitle { white-space: nowrap; }
+body[data-theme="whois"] {
+  --desk: #fff6dc; --desk-2: #fffdf6; --desk-3: #f3e7c3; --line: #1b2a4a; --chalk: #1b2a4a; --muted: #4a5677; --soft: #3c4a6b;
+  --marker: #1b2a4a; --marker-deep: #0d162b; --marker-ink: #ffc933; --paper: #fffdf6; --ink: #1b2a4a; --ok: #1f8a53; --gain: #1f8a53; --sel: #ffc933;
+  --ws-navy: #1b2a4a; --ws-cream: #fff6dc; --ws-sur: #fffdf6; --ws-yel: #ffc933; --ws-red: #e5484d; --ws-green: #0f5c4a; --ws-ok: #1f8a53;
+  --ws-bd: 3px solid #1b2a4a; --ws-sh: 0 5px 0 #1b2a4a;
+  background: #fff6dc; color: #1b2a4a;
+}
+body[data-theme="whois"] .gtop .gt { color: var(--ws-navy); }
+body[data-theme="whois"] .muted { color: #4a5677; }
+body[data-theme="whois"] .btn { border: 3px solid #1b2a4a; }
+body[data-theme="whois"] .btn-marker { background: #1b2a4a; color: #ffc933; box-shadow: 0 5px 0 #0d162b; }
+body[data-theme="whois"] .btn-marker[disabled] { background: #e9e3d6; color: #6b6450; border-color: #b9b29f; box-shadow: 0 4px 0 #b9b29f; }
+body[data-theme="whois"] .btn-ghost { background: #fffdf6; color: #1b2a4a; box-shadow: 0 4px 0 #1b2a4a; }
+body[data-theme="whois"] .btn-ghost[aria-pressed="true"] { background: #fff3c4; }
+body[data-theme="whois"] .btn.sm { width: auto; justify-self: center; padding: 5px 14px; font-size: 14px; box-shadow: 0 3px 0 #1b2a4a; border-width: 2.5px; border-radius: 12px; }
+body[data-theme="whois"] .chips.pick .chip { background: #fffdf6; border: 2.5px solid #1b2a4a; color: #1b2a4a; box-shadow: 0 3px 0 #1b2a4a; }
+body[data-theme="whois"] .chips.pick .chip[aria-pressed="true"] { background: #1b2a4a; color: #ffc933; }
+.ws-review { font-weight: 700; color: #0f5c4a !important; }
+.ws-sg { unicode-bidi: isolate; }
+.ws-emb { display: block; flex: none; }
+.ws-top { background: var(--ws-yel, #ffc933); color: #1b2a4a; border: 3px solid #1b2a4a; border-radius: 18px; box-shadow: 0 5px 0 #1b2a4a; padding: 10px 12px; display: grid; gap: 8px; }
+.ws-r1 { display: flex; align-items: center; gap: 10px; } .ws-r1 .ws-emb { width: 40px; height: 40px; }
+.ws-nm { flex: 1; min-width: 0; } .ws-nm b { display: block; font-family: "Lalezar", var(--f-display); font-weight: 400; font-size: 22px; line-height: 1.1; color: var(--c); }
+.ws-nm small { display: block; font-size: 12px; font-weight: 700; }
+.ws-pts { text-align: center; background: #fffdf6; border: 2px solid #1b2a4a; border-radius: 12px; padding: 2px 10px; min-width: 64px; } .ws-pts small { display: block; font-size: 10px; font-weight: 700; } .ws-pts b { font-family: "Lalezar", var(--f-display); font-weight: 400; font-size: 22px; line-height: 1.1; }
+.ws-dots { display: grid; grid-template-columns: repeat(6, 1fr); gap: 4px; }
+.ws-dots span { font-size: 11px; font-weight: 700; text-align: center; opacity: .45; border-top: 4px solid rgba(27,42,74,.25); padding-top: 2px; }
+.ws-dots span.on { opacity: .9; border-color: #1b2a4a; } .ws-dots span.cur { opacity: 1; color: #0f5c4a; border-color: #0f5c4a; } .ws-dots span.pk { opacity: 1; color: #2d6fa3; border-color: #2d6fa3; }
+.ws-now { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; background: #1b2a4a; color: #fff6dc; border-radius: 12px; padding: 6px 12px; font-weight: 700; font-size: 13.5px; }
+.ws-now b { font-family: "Lalezar", var(--f-display); font-weight: 400; font-size: 22px; color: #ffc933; line-height: 1; }
+.ws-tline { height: 9px; border-radius: 99px; background: #fffdf6; border: 2px solid #1b2a4a; overflow: hidden; } .ws-tline i { display: block; height: 100%; background: #e5484d; transform-origin: right; }
+.ws-news { background: #fffdf6; border: 2px dashed #1b2a4a; border-radius: 12px; padding: 6px 12px; font-weight: 700; font-size: 14px; text-align: center; }
+.ws-hc { background: #fffdf6; border: 3px solid #1b2a4a; border-radius: 18px; padding: 10px 12px; box-shadow: 0 5px 0 #1b2a4a; display: grid; gap: 6px; align-content: start; }
+.ws-hct { display: flex; align-items: center; gap: 8px; }
+.ws-hct i { width: 26px; height: 26px; border-radius: 50%; background: #0f5c4a; color: #fff6dc; font-style: normal; display: grid; place-items: center; font-size: 13px; font-weight: 700; flex: none; }
+.ws-hct span { flex: 1; font-size: 12.5px; font-weight: 700; color: #4a5677; }
+.ws-hct b { width: 34px; height: 34px; border-radius: 9px; background: #fff6dc; border: 2px solid #1b2a4a; color: #0f5c4a; display: grid; place-items: center; flex: none; }
+.ws-i { width: 22px; height: 22px; display: block; }
+.ws-hc p { margin: 0; font-weight: 600; font-size: 16.5px; line-height: 1.65; }
+.ws-hc.cur { background: #fff3c4; box-shadow: 0 0 0 3px #ffc933, 0 5px 0 #1b2a4a; }
+.ws-hc.peek { background: #eef7fd; border-color: #2d6fa3; box-shadow: 0 0 0 3px #9fd0ee, 0 5px 0 #2d6fa3; } .ws-hc.peek .ws-hct span { color: #2d6fa3; }
+.ws-hc.new { animation: wsFlip .7s cubic-bezier(.3,1.3,.5,1) both; }
+.ws-hc.back { background-color: #0f5c4a; background-image: radial-gradient(circle, rgba(0,0,0,.22) 1.6px, transparent 2px); background-size: 14px 14px; color: #fff6dc; place-items: center; align-content: center; }
+.ws-hc.back .n { font-family: "Lalezar", var(--f-display); font-weight: 400; background: #ffc933; color: #1b2a4a; border: 3px solid #1b2a4a; box-shadow: 0 3px 0 #1b2a4a; border-radius: 12px; transform: rotate(-6deg); display: grid; place-items: center; }
+.ws-hc.back small { font-weight: 700; }
+@keyframes wsFlip { from { transform: perspective(900px) rotateY(90deg); opacity: .3; } }
+.ws-more { background: #fffdf6; border: 3px solid #1b2a4a; border-radius: 16px; padding: 8px 12px; box-shadow: 0 3px 0 #1b2a4a; }
+.ws-more summary { cursor: pointer; font-weight: 700; font-size: 14px; }
+.ws-list { display: grid; gap: 4px; }
+.ws-list > div { display: grid; grid-template-columns: 24px 1fr; gap: 8px; font-size: 14px; font-weight: 600; line-height: 1.55; padding: 5px 0; border-bottom: 1.5px dashed #e8d9a8; }
+.ws-list > div:last-child { border-bottom: 0; }
+.ws-list i { width: 22px; height: 22px; border-radius: 50%; background: #f3e7c3; font-style: normal; display: grid; place-items: center; font-size: 11px; font-weight: 700; margin-top: 2px; }
+.ws-list small { color: #0f5c4a; font-weight: 700; }
+.ws-lab { font-weight: 700; font-size: 13px; color: #4a5677; }
+.ws-cands { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.ws-cand { position: relative; text-align: start; border: 3px solid #1b2a4a; background: #fffdf6; color: #1b2a4a; border-radius: 14px; padding: 6px 10px 10px; display: grid; min-height: 54px; align-content: center; font: inherit; }
+.ws-cand b { font-size: 14.5px; line-height: 1.35; } .ws-cand small { font-size: 11.5px; color: #4a5677; font-weight: 600; }
+.ws-cand .vv { position: absolute; bottom: -11px; inset-inline-end: 6px; display: flex; } .ws-cand .vv svg { margin-inline-start: -6px; }
+.ws-cand[aria-pressed="true"] { background: #fff3c4; box-shadow: 0 4px 0 #1b2a4a; }
+.ws-cand.voted { box-shadow: 0 0 0 3px #0f5c4a, 0 4px 0 #1b2a4a; }
+.ws-cand:disabled { opacity: .5; }
+.ws-p { font-family: "Lalezar", var(--f-display); font-weight: 400; font-size: 18px; color: #fff6dc; } .ws-p.bad { color: #e5484d; }
+.btn-marker .ws-p { color: #fff6dc; } #wsBuy small { font-size: 12px; opacity: .8; }
+.ws-help { display: flex; gap: 8px; align-items: center; border: 2px dashed #e5484d; background: #fde0e1; border-radius: 12px; padding: 8px 10px; font-size: 14px; font-weight: 600; }
+.ws-help .ws-i { color: #e5484d; flex: none; } .ws-help.ok { border-color: #1f8a53; background: #dcf1e3; } .ws-help.ok .ws-i { color: #1f8a53; }
+.ws-res { text-align: center; display: grid; gap: 8px; justify-items: center; padding: 16px 12px; background: #fffdf6; border: 3px solid #1b2a4a; border-radius: 18px; box-shadow: 0 5px 0 #1b2a4a; }
+.ws-res .big { font-family: "Lalezar", var(--f-display); font-weight: 400; font-size: 30px; line-height: 1.2; } .ws-res .big.sm { font-size: 22px; }
+.ws-res .pts { font-family: "Lalezar", var(--f-display); font-size: 36px; color: #1f8a53; line-height: 1; }
+.ws-res p { margin: 0; font-size: 14.5px; line-height: 1.6; } .ws-res .ws-emb.big { width: 92px; height: 92px; }
+.ws-cart { font-family: "Lalezar", var(--f-display); font-weight: 400; color: #1b2a4a; background: #ffc933; border: 3px solid #1b2a4a; box-shadow: 0 4px 0 #1b2a4a; border-radius: 999px; padding: 4px 22px 0; font-size: 26px; line-height: 1.3; }
+.ws-trip { font-size: 13px; font-weight: 700; color: #0f5c4a; background: #dff0e6; border: 2px solid #0f5c4a; border-radius: 99px; padding: 2px 12px; }
+.ws-scores { display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; }
+.ws-chip { display: inline-flex; gap: 6px; align-items: center; border: 2.5px solid var(--c); color: var(--c); background: #fffdf6; border-radius: 99px; padding: 2px 12px; font-weight: 700; font-size: 13px; }
+.ws-chip b { color: #1b2a4a; }
+.ws-card { background: #fffdf6; border: 3px solid #1b2a4a; border-radius: 18px; padding: 12px; box-shadow: 0 5px 0 #1b2a4a; display: grid; gap: 10px; }
+.ws-k { font-weight: 700; font-size: 13px; color: #4a5677; } .ws-k b { color: #1f8a53; }
+.ws-q { font-weight: 700; font-size: 17px; line-height: 1.55; }
+.ws-opts { display: grid; gap: 8px; }
+.ws-opt { position: relative; text-align: start; border: 3px solid #1b2a4a; background: #fffdf6; color: #1b2a4a; border-radius: 14px; padding: 9px 12px; font: inherit; font-weight: 700; display: flex; align-items: center; gap: 8px; min-height: 48px; }
+.ws-opt .vv { margin-inline-start: auto; display: flex; } .ws-opt .vv svg { margin-inline-start: -6px; }
+.ws-opt[aria-pressed="true"] { background: #fff3c4; box-shadow: 0 4px 0 #1b2a4a; }
+.ws-opt.ok { background: #dcf1e3; border-color: #1f8a53; } .ws-opt.no { background: #fde0e1; border-color: #e5484d; }
+.ws-opt:disabled { cursor: default; }
+.ws-rank { display: grid; gap: 6px; }
+.ws-rank div { display: grid; grid-template-columns: 26px 1fr auto; gap: 8px; align-items: center; background: #fffdf6; border: 3px solid var(--c); border-radius: 14px; padding: 6px 12px; font-weight: 700; }
+.ws-rank i { font-style: normal; font-family: "Lalezar", var(--f-display); font-size: 20px; color: #4a5677; text-align: center; }
+.ws-rank b { font-family: "Lalezar", var(--f-display); font-weight: 400; font-size: 22px; color: var(--c); } .ws-rank .me { box-shadow: 0 4px 0 var(--c); }
+/* the big screen: 1600×900 */
+.wst { display: grid; grid-template-columns: 380px minmax(0, 1fr); gap: 0; height: 100%; border: 4px solid #1b2a4a; border-radius: 26px; overflow: hidden; box-shadow: 0 8px 0 #1b2a4a; background: #fff6dc; }
+.wst-side { background: #0f5c4a; color: #fff6dc; border-inline-end: 6px solid #1b2a4a; padding: 22px 20px; display: grid; gap: 14px; align-content: start; }
+.wst-ttl { display: flex; align-items: center; gap: 10px; } .wst-ttl .ws-emb { width: 52px; height: 52px; } .wst-ttl b { font-family: "Lalezar", var(--f-display); font-weight: 400; font-size: 40px; color: #ffc933; line-height: 1; }
+.wst-rnd { font-weight: 700; font-size: 19px; }
+.wst-lad { display: grid; gap: 4px; }
+.wst-lad div { display: grid; grid-template-columns: 30px 1fr auto; gap: 10px; align-items: center; font-size: 17px; font-weight: 700; opacity: .55; padding: 2px 8px; border-radius: 10px; }
+.wst-lad i { width: 26px; height: 26px; border-radius: 50%; border: 2px solid currentColor; display: grid; place-items: center; font-style: normal; font-size: 14px; }
+.wst-lad b { font-family: "Lalezar", var(--f-display); font-weight: 400; font-size: 24px; }
+.wst-lad .past { opacity: .3; } .wst-lad .cur { opacity: 1; background: #ffc933; color: #1b2a4a; box-shadow: 0 4px 0 #1b2a4a; } .wst-lad .cur i { background: #1b2a4a; color: #ffc933; border-color: #1b2a4a; }
+.wst-teams { display: grid; gap: 8px; }
+.wst-team { display: grid; grid-template-columns: 14px 1fr auto; gap: 10px; align-items: center; background: rgba(0,0,0,.22); border: 2px solid rgba(255,246,220,.2); border-radius: 14px; padding: 8px 12px; }
+.wst-team > i { width: 14px; height: 40px; border-radius: 6px; background: var(--c); border: 2px solid #fff6dc; }
+.wst-team b { display: block; font-size: 19px; line-height: 1.25; } .wst-team small { display: block; font-size: 15px; opacity: .85; line-height: 1.35; }
+.wst-team > span { font-family: "Lalezar", var(--f-display); font-size: 34px; color: #ffc933; line-height: 1; }
+.wst-team.won { box-shadow: 0 0 0 3px #ffc933; } .wst-team.frz small { color: #ffb3b5; }
+.wst-main { position: relative; display: grid; grid-template-rows: auto minmax(0, 1fr); gap: 18px; padding: 22px 26px 30px; background-color: #fff6dc; background-image: radial-gradient(circle, rgba(27,42,74,.09) 1.6px, transparent 2px); background-size: 26px 26px; min-height: 0; }
+.wst-head { display: grid; grid-template-columns: auto minmax(0, 1fr) 260px; gap: 16px; align-items: center; }
+.wst-head > .ws-emb { width: 84px; height: 84px; }
+.wst-hd b { display: block; font-family: "Lalezar", var(--f-display); font-weight: 400; font-size: 40px; line-height: 1.15; }
+.wst-hd span { display: block; font-size: 21px; font-weight: 700; color: #0f5c4a; }
+.wst-tmr { display: grid; gap: 6px; justify-items: end; } .wst-tmr .v { font-size: 17px; font-weight: 700; color: #4a5677; } .wst-tmr .v b { font-family: "Lalezar", var(--f-display); font-weight: 400; font-size: 34px; color: #0f5c4a; } .wst-tmr .tv-bar { width: 100%; } .wst-tmr .tv-secs { font-size: 26px; }
+.wst-cards { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); grid-template-rows: repeat(2, minmax(0, 1fr)); gap: 18px; min-height: 0; }
+.wst-cards .ws-hc { border-width: 4px; border-radius: 22px; padding: 16px 18px; gap: 12px; box-shadow: 0 7px 0 #1b2a4a; min-height: 0; overflow: hidden; }
+.wst-cards .ws-hct i { width: 38px; height: 38px; font-size: 19px; } .wst-cards .ws-hct span { font-size: 18px; } .wst-cards .ws-hct b { width: 52px; height: 52px; border-radius: 12px; border-width: 3px; } .wst-cards .ws-i { width: 34px; height: 34px; }
+.wst-cards .ws-hc p { font-size: 25px; line-height: 1.55; }
+.wst-cards .ws-hc.cur { box-shadow: 0 0 0 5px #ffc933, 0 7px 0 #1b2a4a; }
+.wst-cards .ws-hc.back { background-size: 22px 22px; } .wst-cards .ws-hc.back .n { width: 96px; height: 96px; font-size: 64px; } .wst-cards .ws-hc.back small { font-size: 20px; margin-top: 10px; }
+.ws-hc.back .n { width: 52px; height: 52px; font-size: 34px; }
+.wst-over { position: absolute; inset: 0; display: grid; place-items: center; background: rgba(27,42,74,.55); z-index: 3; animation: wsFade .3s both; }
+.wst-over.low { align-items: end; padding-bottom: 30px; background: linear-gradient(transparent 25%, rgba(27,42,74,.6)); }
+.wst-oc { background: #fffdf6; border: 4px solid #1b2a4a; border-radius: 28px; box-shadow: 0 9px 0 #1b2a4a; padding: 28px 40px; display: grid; gap: 14px; justify-items: center; text-align: center; max-width: 88%; animation: wsPop .45s cubic-bezier(.2,1.6,.4,1) both; }
+.wst-oc .k { font-size: 21px; font-weight: 700; color: #4a5677; }
+.wst-oc .big { font-family: "Lalezar", var(--f-display); font-weight: 400; font-size: 64px; line-height: 1.1; }
+.wst-oc > span:last-child { font-size: 21px; font-weight: 700; }
+.wst-oc .ws-emb.big { width: 150px; height: 150px; }
+.wst-oc p { margin: 0; font-size: 24px; font-weight: 600; max-width: 860px; line-height: 1.6; }
+.wst-oc .ws-cart { font-size: 60px; padding: 6px 40px 0; border-width: 4px; }
+.wst-oc .ws-trip { font-size: 20px; padding: 4px 18px; }
+.wst-oc .q { font-size: 34px; line-height: 1.5; max-width: 900px; }
+.wst-opts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; width: 900px; max-width: 100%; }
+.wst-opts div { border: 3px solid #1b2a4a; border-radius: 16px; background: #fffdf6; padding: 10px 16px; font-weight: 700; font-size: 25px; display: flex; align-items: center; gap: 10px; box-shadow: 0 4px 0 #1b2a4a; }
+.wst-opts div.ok { background: #dcf1e3; border-color: #1f8a53; }
+.wst-opts .dots { margin-inline-start: auto; display: flex; gap: 5px; } .wst-opts .dots i { width: 22px; height: 22px; border-radius: 50%; background: var(--c); border: 2px solid #1b2a4a; }
+.wst-chips { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; } .wst-chips .ws-chip { font-size: 19px; padding: 4px 16px; border-width: 3px; }
+.wst-qt { display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: center; width: 900px; max-width: 100%; } .wst-qt .tv-secs { font-size: 30px; }
+.wst-end { display: grid; gap: 22px; justify-items: center; align-content: start; padding-top: 6px; }
+.wst-stamp { font-family: "Lalezar", var(--f-display); font-size: 70px; color: #1f8a53; border: 6px solid #1f8a53; border-radius: 16px; padding: 4px 40px 0; transform: rotate(-4deg); background: #fffdf6; box-shadow: 0 7px 0 #1b2a4a; animation: wsPop .5s cubic-bezier(.2,1.6,.4,1) both; }
+.wst-pod { display: flex; gap: 18px; }
+.wst-pod div { background: #fffdf6; border: 4px solid var(--c); border-radius: 20px; padding: 10px 26px; display: grid; justify-items: center; min-width: 190px; box-shadow: 0 6px 0 var(--c); }
+.wst-pod small { font-size: 18px; font-weight: 700; color: #4a5677; } .wst-pod b { font-size: 22px; color: var(--c); } .wst-pod span { font-family: "Lalezar", var(--f-display); font-size: 52px; color: var(--c); line-height: 1.2; }
+.wst-table { display: grid; gap: 6px 20px; width: 1240px; max-width: 100%; background: #fffdf6; border: 3px solid #1b2a4a; border-radius: 20px; padding: 16px 24px; box-shadow: 0 6px 0 #1b2a4a; font-size: 20px; font-weight: 700; align-items: center; }
+.wst-table .h { color: #4a5677; font-size: 17px; } .wst-table b { font-family: "Lalezar", var(--f-display); font-weight: 400; font-size: 24px; }
+.wst-note { margin: 0; font-size: 17px; font-weight: 700; color: #0f5c4a; }
+@keyframes wsFade { from { opacity: 0; } }
+@keyframes wsPop { from { transform: scale(.4); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .ws-hc, .wst-oc, .wst-over, .wst-stamp { animation-duration: .01s !important; } }
 </style>
 
 </head>
@@ -1785,6 +1934,7 @@ body[data-theme="souq"] .gtop .gt { color: var(--sq-navy); }
 <script src="js/manfael-art.js"></script>
 <script src="js/manfael.js"></script>
 <script src="js/souq.js"></script>
+<script src="js/whois.js"></script>
 <script src="js/how.js"></script>
 <script src="js/tv.js"></script>
 <script src="js/shell.js"></script>
