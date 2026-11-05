@@ -462,7 +462,7 @@ function hjvRes(S, fresh) {
   show(`${hjTop(S, "النتيجة")}<div class="hj-body"><div class="hj-res ${r.kind === "none" ? "none" : ""}"><span class="hj-stamp ${r.kind === "none" ? "no" : "ok"}">${r.kind === "none" ? "ولا فريق" : "صح"}</span><b>${big}</b><span>الجواب الصحيح: ${esc(S.q.o[S.answer])}</span></div>
     ${hjOpts(S, { can: false, cls })}${hjScores(S)}
     ${isHost() && S.fin && !H.jump && S.picked < S.limit ? '<button type="button" class="btn btn-ghost" id="hjJump">اقفز للجولة الأخيرة بعد هذا المربع</button>' : ""}</div>`);
-  if ($("hjJump")) $("hjJump").onclick = () => { act({ t: "hjjump", id: PID }); $("hjJump").disabled = true; $("hjJump").textContent = "تمام، بعد هذا المربع"; };
+  if ($("hjJump")) $("hjJump").onclick = (e) => { const b = e.currentTarget; b.disabled = true; b.textContent = "تمام، بعد هذا المربع"; act({ t: "hjjump", id: PID }); };
 }
 function hjvWager(S, fresh) {
   const t = hjMe(S), inT = t >= 0 && S.teams.includes(t), locked = inT && S.wlock[t] !== undefined;
@@ -479,7 +479,8 @@ function hjvWager(S, fresh) {
     ${hjTimer(S)}<button type="button" class="btn btn-marker" id="hjLock">اعتمدوا رهان الفريق</button></div>`);
   const sl = $("hjW");
   if (sl.type === "range") { sl.oninput = () => { $("hjAmt").textContent = AR(+sl.value); }; sl.onchange = () => act({ t: "hjwprop", id: PID, v: +sl.value }); }
-  $("hjLock").onclick = () => { beep(880, 0.08); act({ t: "hjwprop", id: PID, v: +sl.value }); act({ t: "hjwlock", id: PID }); $("hjLock").disabled = true; };
+  // the host's own act() redraws the screen at once, so the button is touched before acting
+  $("hjLock").onclick = (e) => { e.currentTarget.disabled = true; beep(880, 0.08); act({ t: "hjwprop", id: PID, v: +sl.value }); act({ t: "hjwlock", id: PID }); };
 }
 function hjvFq(S, fresh) {
   const t = hjMe(S), inT = t >= 0 && S.teams.includes(t), can = inT && S.flock[t] === undefined;
