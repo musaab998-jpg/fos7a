@@ -169,7 +169,7 @@ ROOM_GAMES.ladder = {
     "آخر اللوح: الخطوات اللي تعدّي ١٠٠ ما تنفع، فاحسبوها زين.",
   ],
   setup(S) {
-    Object.assign(S, { nt: 2, len: 1, chances: 2, aud: 1, qtime: 20 });
+    Object.assign(S, { nt: 2, len: 1, chances: 2, aud: 1, qtime: 20 }, H.ldSet || {}); // «لعبة جديدة» keeps the same teams and settings
     H.lt ||= {};
     H.players.forEach((p) => { if (H.lt[p.id] === undefined) ROOM_GAMES.ladder.joined(p.id); });
   },
@@ -261,6 +261,7 @@ function ldStart() {
   hClear();
   const S = H.S;
   const teams = [...new Set(H.players.map((p) => H.lt[p.id] ?? 0))].filter((t) => t < S.nt).sort();
+  H.ldSet = { nt: S.nt, len: S.len, chances: S.chances, aud: S.aud, qtime: S.qtime };
   H.ld = { votes: {}, steps: {}, ask: {}, eq: {}, a: -1, ea: -1, qStart: 0, queue: [], cid: 0 };
   H.ldUsed ||= [];
   Object.assign(S, { sid: Math.random().toString(36).slice(2, 8), phase: "q", teams, round: 0, pos: Array(S.nt).fill(1), shields: Array(S.nt).fill(S.chances), vals: Array.from({ length: S.nt }, () => []), habits: Array.from({ length: S.nt }, () => []), res: null, steps: null, cur: null, esc: null, won: -1 });
