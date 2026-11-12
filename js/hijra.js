@@ -412,7 +412,7 @@ function hjFresh(S, fresh, loud) { if (fresh) { clearKL(); KL.my.hv = undefined;
 function hjvPick(S, fresh) {
   const t = hjMe(S), mine = t === S.turn;
   hjFresh(S, fresh, mine);
-  setTop(`المربع ${AR(S.picked + 1)} من ${AR(S.limit)}`);
+  setTop(`${AR(S.picked + 1)} من ${AR(S.limit)}`);
   if (!mine) return show(`${hjTop(S, `دور ${hjName(S.turn)}`)}<div class="hj-body"><div class="hj-card hj-wait">${hjEmb(S.turn, 60)}<b>${hjName(S.turn)} يختار مربعًا</b><span>إذا غلطوا في الجواب تنفتح السرقة لكم. خلّوكم جاهزين.</span></div>${hjScores(S)}</div>`);
   const mates = S.players.filter((p) => hjTeamOf(S, p.id) === t);
   let grid = HJ_CATS.map((c) => `<div class="hj-ch">${c.n}</div>`).join("");
