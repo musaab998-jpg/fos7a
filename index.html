@@ -1905,7 +1905,7 @@ body[data-theme="hijra"] .gtop .gt { color: var(--hj-navy); }
 .hj-emb .av { filter: drop-shadow(0 2px 0 var(--hx, #1b2a4a)); }
 .hj-lteam { display: flex; align-items: center; gap: 6px; }
 .hj-chip { display: inline-flex; align-items: center; gap: 4px; border: 2.5px solid #1b2a4a; border-inline-start: 7px solid var(--hx); border-radius: 999px; padding: 1px 10px 1px 4px; font-weight: 700; font-size: 13.5px; background: #fffdf6; }
-.hj-top { background: var(--hj-navy); color: var(--hj-cream); border: var(--hj-bd); border-radius: 18px; box-shadow: 0 5px 0 #0d162b; padding: 10px 12px; display: grid; gap: 6px; }
+.hj-top { grid-template-columns: minmax(0, 1fr); background: var(--hj-navy); color: var(--hj-cream); border: var(--hj-bd); border-radius: 18px; box-shadow: 0 5px 0 #0d162b; padding: 10px 12px; display: grid; gap: 6px; }
 .hj-r1 { display: flex; align-items: center; gap: 10px; }
 .hj-r1 .hj-emb { background: var(--hj-cream); border-radius: 12px; padding: 2px; }
 .hj-nm { flex: 1; min-width: 0; } .hj-nm b { display: block; font-family: "Lalezar", var(--f-display); font-weight: 400; font-size: 22px; line-height: 1.1; color: var(--hj-yel); }
@@ -1962,18 +1962,20 @@ body[data-theme="hijra"] .gtop .gt { color: var(--hj-navy); }
 @keyframes hjFlip { from { transform: perspective(600px) rotateY(90deg) scale(.6); opacity: 0; } }
 @keyframes hjGlow { to { background: #ffc933; } }
 /* لوحة الهجرة on the TV: teams on the side, the board, and the question card over it */
-.hj-tv { position: relative; width: 1512px; height: 100%; justify-self: center; display: grid; grid-template-columns: 330px 1fr; gap: 18px; color: #1b2a4a; }
-.hj-tside { background: #1b2a4a; color: #fff6dc; border: 4px solid #1b2a4a; border-radius: 24px; box-shadow: 0 6px 0 #0d162b; padding: 18px 16px; display: grid; gap: 12px; align-content: start; }
+/* the TV body's single row is held to the stage, so a tall teams column can never push the board off the screen */
+.tv-body:has(> .hj-tv) { grid-template-rows: minmax(0, 1fr); }
+.hj-tv { position: relative; width: 1512px; height: 100%; min-height: 0; justify-self: center; display: grid; grid-template-columns: 330px 1fr; grid-template-rows: minmax(0, 1fr); gap: 18px; color: #1b2a4a; }
+.hj-tside { background: #1b2a4a; color: #fff6dc; border: 4px solid #1b2a4a; border-radius: 24px; box-shadow: 0 6px 0 #0d162b; padding: 14px 14px; display: grid; gap: 9px; align-content: start; min-height: 0; margin-bottom: 6px; }
 .hj-tttl { display: flex; align-items: center; gap: 10px; } .hj-tttl .hj-ico { width: 52px; height: 52px; } .hj-tttl b { font-family: "Lalezar", var(--f-display); font-weight: 400; font-size: 36px; color: #ffc933; line-height: 1; }
 .hj-tmeta { font-size: 18px; font-weight: 700; color: #d9def0; }
-.hj-tteam { display: grid; grid-template-columns: auto 1fr auto; gap: 10px; align-items: center; background: rgba(255,246,220,.08); border: 3px solid transparent; border-radius: 16px; padding: 8px 10px; }
+.hj-tteam { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 8px; align-items: center; background: rgba(255,246,220,.08); border: 3px solid transparent; border-radius: 16px; padding: 6px 8px; }
 .hj-tteam.hot { border-color: #ffc933; background: rgba(255,201,51,.16); }
-.hj-tteam b { font-size: 21px; display: block; line-height: 1.2; } .hj-tteam em { font-style: normal; font-size: 14px; font-weight: 700; background: #ffc933; color: #1b2a4a; border-radius: 99px; padding: 0 10px; }
-.hj-tteam .sc { font-family: "Lalezar", var(--f-display); font-size: 38px; color: #ffc933; }
+.hj-tteam b { font-size: 20px; display: block; line-height: 1.2; } .hj-tteam em { font-style: normal; font-size: 14px; font-weight: 700; background: #ffc933; color: #1b2a4a; border-radius: 99px; padding: 0 10px; }
+.hj-tteam .sc { font-family: "Lalezar", var(--f-display); font-size: 34px; color: #ffc933; }
 .hj-tteam .hj-emb { background: #fff6dc; border-radius: 14px; padding: 2px; }
-.hj-tfaces { display: flex; gap: 2px; margin-top: 4px; flex-wrap: wrap; }
+.hj-tfaces { display: flex; gap: 1px; margin-top: 3px; flex-wrap: wrap; }
 .hj-tnote { font-size: 15px; font-weight: 700; color: #ffc933; margin-top: 6px; }
-.hj-tmain { position: relative; background: #243a6b; border: 4px solid #1b2a4a; border-radius: 24px; box-shadow: 0 6px 0 #1b2a4a; overflow: hidden; }
+.hj-tmain { position: relative; min-height: 0; margin-bottom: 6px; background: #243a6b; border: 4px solid #1b2a4a; border-radius: 24px; box-shadow: 0 6px 0 #1b2a4a; overflow: hidden; }
 .hj-tmain::before { content: ""; position: absolute; inset: 0; background: radial-gradient(circle at 4.5px 4.5px, rgba(0,0,0,.16) 1.6px, transparent 1.7px) 0 0 / 9px 9px; }
 .hj-tboard { position: absolute; inset: 22px 22px 104px; display: grid; grid-template-columns: repeat(6, 1fr); grid-template-rows: 1.25fr repeat(5, 1fr); gap: 12px; }
 .hj-tbh { background: #ffc933; color: #1b2a4a; border: 4px solid #1b2a4a; box-shadow: 0 6px 0 #1b2a4a; border-radius: 16px; display: grid; place-items: center; text-align: center; font-family: "Lalezar", var(--f-display); font-size: 25px; line-height: 1.15; padding: 4px; }
@@ -2001,6 +2003,7 @@ body[data-theme="hijra"] .gtop .gt { color: var(--hj-navy); }
 .hj-tfres .ok { background: #d8f2e0; border-color: #1f8a53; } .hj-tfres .no { background: #fde1e2; border-color: #e5484d; } .hj-tfres .wait { opacity: .55; }
 .hj-tfres .sc { font-family: "Lalezar", var(--f-display); font-size: 36px; }
 .hj-tv.end { grid-template-columns: 1fr; }
+.hj-tend { min-height: 0; margin-bottom: 6px; }
 .hj-tend { background: #1b2a4a; color: #fff6dc; border-radius: 26px; border: 4px solid #1b2a4a; box-shadow: 0 6px 0 #0d162b; padding: 34px 60px; display: grid; gap: 18px; align-content: center; }
 .hj-tendk { display: flex; gap: 12px; align-items: center; font-size: 26px; font-weight: 700; color: #d9def0; } .hj-tendk .hj-ico { width: 54px; height: 54px; }
 .hj-tendt { font-family: "Lalezar", var(--f-display); font-size: 74px; color: #ffc933; line-height: 1.1; }
@@ -2008,6 +2011,17 @@ body[data-theme="hijra"] .gtop .gt { color: var(--hj-navy); }
 .hj-tendr .n { font-family: "Lalezar", var(--f-display); font-size: 40px; color: #e5484d; } .hj-tendr .hj-emb { background: #fff6dc; border-radius: 14px; padding: 2px; }
 .hj-tendr i { display: block; height: 30px; border-radius: 10px; background: var(--hx); border: 3px solid #fff6dc; }
 .hj-tendr .sc { font-family: "Lalezar", var(--f-display); font-size: 44px; color: #ffc933; text-align: end; }
+/* the waiting room on the TV: the door and the code, how to play, and every team in compact rows */
+.hj-tlobby { grid-template-columns: 470px minmax(0, 1fr); gap: 32px; }
+.hj-tlobby .tv-door h1 { font-size: 72px; } .hj-tlobby .tv-bigqr { width: 290px; } .hj-tlobby .tv-code { font-size: 104px; } .hj-tlobby .tv-door p { font-size: 22px; }
+.hj-tlobby .tv-side { gap: 10px; overflow: visible; } .hj-tlobby .tv-side h2 { font-size: 52px; display: flex; align-items: center; gap: 14px; } .hj-tlobby .tv-side h2 .hj-ico { width: 56px; height: 56px; }
+.hj-tlobby .how.tv .how-goal { font-size: 20px; } .hj-tlobby .how.tv .how-step div b { font-size: 21px; } .hj-tlobby .how.tv .how-step div span { font-size: 16px; } .hj-tlobby .how.tv .how-step { padding: 8px 12px; }
+.hj-lteams { display: grid; grid-template-columns: repeat(var(--n), minmax(0, 1fr)); gap: 10px; }
+.hj-lt { border: 3px dashed var(--hx); border-radius: 18px; padding: 6px 8px; display: grid; gap: 4px; align-content: start; min-width: 0; }
+.hj-lt > b { display: flex; align-items: center; gap: 6px; color: var(--hx); font-family: "Lalezar", var(--f-display); font-weight: 400; font-size: 24px; line-height: 1.1; }
+.hj-lps { display: flex; flex-wrap: wrap; gap: 2px 8px; }
+.hj-lps span { display: inline-flex; align-items: center; gap: 3px; font-size: 14px; font-weight: 700; max-width: 100%; min-width: 0; }
+.hj-lps span i { font-style: normal; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 @media (prefers-reduced-motion: reduce) { .hj-res, .hj-stamp, .hj-dbl, .hj-tq, .hj-tendr, .hj-tt.sel { animation: none !important; } }
 /* ---- سلّم القيم lives in «الفسحة» itself: cream, navy ink, the yellow bell, an amber board ground with the card's dots ---- */
 body[data-theme="ladder"] {
