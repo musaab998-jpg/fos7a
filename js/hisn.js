@@ -527,30 +527,30 @@ ROOM_GAMES.hisn.tvTeams = (S) => Array.from({ length: S.nt || 2 }, (_, t) => ({ 
 const hzTvForts = (S, reveal, boom, on) => `<div class="tvh-forts">${S.teams.map((x) => `<div class="tvh-fort ${S.live[x] ? "" : "out"} ${x === on ? "on" : ""}">${hzChip(x, S.live[x] ? "" : "out")}<b class="tvh-pts">${AR(S.pts[x])}${S.heavy[x] ? ` <small class="hz-hv">${hzIc("gun")}${AR(S.heavy[x])}</small>` : ""}</b>${hzGrid(S, { team: x, cells: reveal ? S.boards[x] : null, fog: S.fog[x], small: true, boom: boom && boom.f === x ? boom.cells : null })}</div>`).join("")}</div>`;
 const hzTvTop = (S, mid) => `<div class="tvh-top">${mid}${S.mins && S.matchLeft > 0 && S.phase !== "end" ? `<span class="tvh-clock">${tvClock(S.matchLeft)}</span>` : ""}</div>`;
 ROOM_GAMES.hisn.tv = {
-  place: (S) => `<div class="tvh">${hzTvTop(S, `<div class="hz-h">الفرق تخبي حصونها في الكراريس…</div><span class="tvh-clock">${tvSecs(S.left)}</span>`)}
+  place: (S) => `<div class="tvh" data-fit>${hzTvTop(S, `<div class="hz-h">الفرق تخبي حصونها في الكراريس…</div><span class="tvh-clock">${tvSecs(S.left)}</span>`)}
     <div class="tvh-ready">${S.teams.map((x) => `<div class="tvh-r" style="--pen:${HZ_TEAMS[x].c}">${hzChip(x)}<b>${S.ready[x] ? "جاهزين" : "يخبّون…"}</b><div class="hz-faces">${S.players.filter((p) => hzTeamOf(S, p.id) === x).map((p) => face(p, 30)).join("")}</div></div>`).join("")}</div>
     <p class="tvh-hint">كل فريق يحط قائده وجنوده وسلاحه في شبكة ${AR(S.n)}×${AR(S.n)} من جواله. محد يشوف حصن غيره.</p></div>`,
   q(S) {
     const q = S.q, a = S.asking;
-    return `<div class="tvh">${hzTvTop(S, `<div class="hz-h" style="color:${HZ_TEAMS[a].c}">${S.steal ? "فرصة سرقة لـ" : "دور "}الفريق ${HZ_TEAMS[a].n}</div><span class="hz-kind">${esc(q.cat)} · سؤال ${AR(S.qi)}</span>`)}
+    return `<div class="tvh" data-fit>${hzTvTop(S, `<div class="hz-h" style="color:${HZ_TEAMS[a].c}">${S.steal ? "فرصة سرقة لـ" : "دور "}الفريق ${HZ_TEAMS[a].n}</div><span class="hz-kind">${esc(q.cat)} · سؤال ${AR(S.qi)}</span>`)}
       <div class="hz-q tvh-q"><div class="row" style="justify-content:space-between;align-items:center"><div class="hz-qt">${esc(q.q)}</div>${tvSecs(S.left)}</div>${tvBar(S.left, S.qT || S.qtime * 1000)}
         <div class="tvh-opts">${q.o.map((o, k) => `<div class="hz-opt ${k === S.removed ? "gone" : ""}"><span>${esc(o)}</span></div>`).join("")}</div></div>
       ${hzTvForts(S, false, null, a)}</div>`;
   },
   aim(S) {
     const sh = S.shooter || {};
-    return `<div class="tvh">${hzTvTop(S, `<div class="hz-h">صح! الجواب: ${esc(S.answer)}</div>`)}
+    return `<div class="tvh" data-fit>${hzTvTop(S, `<div class="hz-h">صح! الجواب: ${esc(S.answer)}</div>`)}
       <div class="tvh-order"><span>الرامي: <b style="color:${HZ_TEAMS[sh.t ?? 0].c}">${esc(sh.name || "")}</b> من الفريق ${HZ_TEAMS[sh.t ?? 0].n} يصوّب…</span></div>
       ${hzTvForts(S, false, null, sh.t)}</div>`;
   },
   res(S, fresh) {
     const fell = S.feed.filter((e) => e.m === "dead").map((e) => e.f), shot = S.shot;
-    return `<div class="tvh">${hzTvTop(S, fell.length ? `<div class="hz-stamp">سقط حصن ${fell.map((x) => HZ_TEAMS[x].n).join(" و")}!</div>` : `<div class="hz-h">${shot ? `${esc(shot.who)} ضرب حصن ${HZ_TEAMS[shot.f].n}` : "وش صار؟"}</div>`)}
+    return `<div class="tvh" data-fit>${hzTvTop(S, fell.length ? `<div class="hz-stamp">سقط حصن ${fell.map((x) => HZ_TEAMS[x].n).join(" و")}!</div>` : `<div class="hz-h">${shot ? `${esc(shot.who)} ضرب حصن ${HZ_TEAMS[shot.f].n}` : "وش صار؟"}</div>`)}
       <div class="tvh-hit">${hzHitCard(S)}</div>${hzTvForts(S, false, fresh ? shot : null, shot ? shot.f : -1)}</div>`;
   },
   end(S) {
     const w = S.won, aw = S.awards || {};
-    return `<div class="tvh">${hzTvTop(S, `<div class="hz-h" style="color:${HZ_TEAMS[w].c}">${S.byTime ? `خلص الوقت! فاز ${HZ_TEAMS[w].n} بالنقاط` : `صمد حصن ${HZ_TEAMS[w].n}!`}</div>`)}
+    return `<div class="tvh" data-fit>${hzTvTop(S, `<div class="hz-h" style="color:${HZ_TEAMS[w].c}">${S.byTime ? `خلص الوقت! فاز ${HZ_TEAMS[w].n} بالنقاط` : `صمد حصن ${HZ_TEAMS[w].n}!`}</div>`)}
       <div class="tvh-order">${S.rank.map((x, k) => `<span>${AR(k + 1)}. ${hzChip(x, S.live[x] ? "" : "out")} <b>${AR(S.pts[x])}</b></span>`).join("")}${aw.sniper ? `<span>أشطر قنّاص: <b>${HZ_TEAMS[aw.sniper.t].n}</b></span>` : ""}</div>
       ${hzTvForts(S, true)}</div>`;
   },

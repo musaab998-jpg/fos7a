@@ -61,7 +61,27 @@ function renderTV(S, fresh) {
     <main class="tv-body ${fresh ? "in" : ""}">${body}</main></div>`;
   $("tvMenu").onclick = tvMenu;
   if (after) try { after(); } catch (e) {}
+  tvFitAll();
   tvTick();
+}
+// Anything marked data-fit shrinks (never hides) until it fits its box: the closest [data-fitbox], or the
+// stage's body. For pages that grow with the room: 30 players, a long question, a full board.
+function tvFitAll() { document.querySelectorAll("#tv [data-fit]").forEach(tvFitIn); }
+function tvFitIn(el) {
+  const box = el.parentElement.closest("[data-fitbox]") || el.closest(".tv-body");
+  if (!box) return;
+  el.style.zoom = ""; el.style.width = "";
+  const wide = el.hasAttribute("data-fitw"); // keep using the whole width while shrinking
+  const z0 = parseFloat(getComputedStyle(el).zoom) || 1, min = +(el.dataset.fit || 0.45) * z0;
+  const fits = () => {
+    const b = box.getBoundingClientRect(), r = el.getBoundingClientRect();
+    return box.scrollHeight <= box.clientHeight + 1 && box.scrollWidth <= box.clientWidth + 1 && el.scrollHeight <= el.clientHeight + 2
+      && r.top >= b.top - 1 && r.bottom <= b.bottom + 1 && r.left >= b.left - 1 && r.right <= b.right + 1;
+  };
+  const moving = [...document.querySelectorAll("#tv .tv-body > *")]; // measure without the slide-in
+  moving.forEach((x) => (x.style.animation = "none"));
+  for (let z = z0; !fits() && z > min; ) { z = Math.max(min, z * 0.94); el.style.zoom = z; if (wide) el.style.width = box.clientWidth / z - 2 + "px"; }
+  moving.forEach((x) => (x.style.animation = ""));
 }
 function tvMenu() {
   $("modalCard").innerHTML = `<h3>شاشة العرض</h3><p>هذي الشاشة تعرض اللعبة للكل، واللاعبين يجاوبون من جوالاتهم.</p>
@@ -101,8 +121,8 @@ function tvLobby(S) {
   return `<div class="tv-lobby">
     <section class="tv-door"><h1>وينكم!</h1><div class="tv-bigqr">${qrSvg(joinUrl(S.code))}</div>
       <p>صوّروا الباركود بكاميرا الجوال<br>أو ادخلوا فسحة واكتبوا الرمز</p><div class="tv-code" dir="ltr">${esc(S.code)}</div></section>
-    <section class="tv-side"><h2>${g.name}</h2>${howHTML(S.game, { tv: true })}
-      <h3>اللاعبين (${AR(S.players.length)})</h3>${g.tvTeams ? tvTeams(g.tvTeams(S)) : tvFaces(S.players)}</section></div>`;
+    <section class="tv-side" data-fitbox><h2>${g.name}</h2>${howHTML(S.game, { tv: true })}
+      <h3>اللاعبين (${AR(S.players.length)})</h3><div data-fit=".5">${g.tvTeams ? tvTeams(g.tvTeams(S)) : tvFaces(S.players)}</div></section></div>`;
 }
 // a phase no game has drawn for the TV yet: the game's name, and everyone in the room
 function tvPlain(S) {

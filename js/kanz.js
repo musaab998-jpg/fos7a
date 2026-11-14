@@ -697,7 +697,7 @@ return { VENUES, svg, steps, flags };
 // ---------------- the big screen (tv.js): the venue map and the race ----------------
 ROOM_GAMES.kanz.tvTeams = (S) => Array.from({ length: S.nt || 2 }, (_, t) => ({ n: `الفريق ${KZ_TEAMS[t].n}`, c: KZ_TEAMS[t].c, ps: S.players.filter((p) => kzTeamOf(S, p.id) === t) }));
 ROOM_GAMES.kanz.tv = {
-  print: (S) => `<div class="tv-plain"><div class="kz-big">🗺️</div><h1>الكنز · ${KZ_MAP.VENUES[S.venue].t}</h1><p>المضيف يطبع البطاقات ويخبيها في الأماكن…<br>الفرق: اختاروا مين يحل الشفرات ومين يدوّر.</p>${tvTeams(ROOM_GAMES.kanz.tvTeams(S))}</div>`,
+  print: (S) => `<div class="tv-plain" data-fit><div class="kz-big">🗺️</div><h1>الكنز · ${KZ_MAP.VENUES[S.venue].t}</h1><p>المضيف يطبع البطاقات ويخبيها في الأماكن…<br>الفرق: اختاروا مين يحل الشفرات ومين يدوّر.</p>${tvTeams(ROOM_GAMES.kanz.tvTeams(S))}</div>`,
   play(S) {
     const board = S.teams.slice().sort((a, b) => (S.tm[b].done - S.tm[a].done) || (S.tm[b].at - S.tm[a].at) || (S.tm[a].pen - S.tm[b].pen)).map((t, i) => `<div class="kz-rb" style="--c:${KZ_TEAMS[t].c}"><span class="rk">${AR(i + 1)}</span><div><b>${KZ_TEAMS[t].n}</b><small>${S.tm[t].done ? "🏆 خلّص!" : S.tm[t].at ? `آخر مكان: ${esc(KZ_MAP.VENUES[S.venue].st[S.tm[t].last][0])}` : "في البداية"}${S.tm[t].lock ? " · ⏳" : ""}</small>${kzBeads(S, t)}</div></div>`).join("");
     const feed = (S.feed || []).slice(0, 5).map((f) => `<p>${esc(f.text)}</p>`).join("");

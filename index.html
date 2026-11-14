@@ -213,6 +213,7 @@ p { margin: 0; }
 .tvg .gh-qt { font-size: 24px; } .tvg .gh-qn { align-items: center; } .tvg .tv-secs { font-size: 32px; margin-inline-start: auto; } .tvg .tv-bar { height: 8px; margin-block: 8px; }
 .tvg-opts { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 .tvg-cls { display: grid; grid-template-columns: repeat(auto-fit, minmax(0, 1fr)); gap: 12px; align-items: start; }
+.tvg.many { zoom: 1.05; width: 1440px; } .tvg.many .gh-row { flex-wrap: wrap; } /* four or five classes side by side */
 
 /* خلّصت! on the TV */
 .tvk2 { width: 1100px; zoom: 1.35; justify-self: center; display: grid; gap: 14px; align-content: center; }
@@ -226,13 +227,22 @@ p { margin: 0; }
 .tvk2-ans { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; } .tvk2-ans .ans-text { font-size: 22px; }
 .tvk2-cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(0, 1fr)); gap: 12px; align-items: start; } .tvk2-cols > div { display: grid; gap: 8px; } .tvk2-cols h3 { font-size: 24px; }
 .tvk2-board { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+/* a full room (up to 30 players, 120 answers): answers on one line, more columns; data-fit shrinks the rest */
+.tvk2.dense .tvk2-ans, .tvk2.denser .tvk2-ans { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; } .tvk2.denser .tvk2-ans { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+.tvk2.dense .ans, .tvk2.denser .ans { padding: 4px 8px; gap: 2px; } .tvk2.denser .tvk2-ans .ans-text { font-size: 19px; }
+.tvk2.denser .tvk2-cols > div { display: block; columns: 2; column-gap: 6px; } .tvk2.denser .tvk2-cols h3 { column-span: all; margin-bottom: 4px; }
+.tvk2.denser .tvk2-cols .ans { break-inside: avoid; margin-bottom: 5px; } .tvk2.denser .tvk2-cols .ans-text { font-size: 16px; } .tvk2.denser .stamp { font-size: 12px; padding: 0 4px; }
+.tvk2.dense .tvk2-board, .tvk2.denser .tvk2-board { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; } .tvk2.dense .rank { padding: 3px 10px; }
+.tvk2.dense .tvk2-certs { grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 10px; } .tvk2.dense .tvk2-certs .cert { padding: 10px; gap: 2px; } .tvk2.dense .cert .title { font-size: 19px; }
 .tvk2-certs { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; } .tvk2-certs .cert { display: grid; justify-items: center; gap: 4px; padding: 14px; } .tvk2-certs .title { font-size: 22px; }
 
 /* انكشف! on the TV: the school stage */
 .tva { width: 1000px; zoom: 1.45; justify-self: center; display: grid; gap: 12px; align-content: center; } .tva.narrow { width: 640px; zoom: 1.6; }
 .tva .aq-qt { font-size: 24px; } .tva .tv-secs { font-size: 32px; } .tva .tv-bar { height: 8px; margin-block: 8px; color: #e0b04a; }
 .tva-opts { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-.tva-roll { columns: 2; column-gap: 0; } .tva-roll .aq-r { break-inside: avoid; }
+.aq-roll.tva-roll { display: block; columns: 2; column-gap: 0; } .tva-roll .aq-r { break-inside: avoid; }
+/* the sheet and the accusation box are taller than the phone with 20 players: they keep their height, the page scrolls */
+body[data-theme="alqab"] #screen > * { flex-shrink: 0; }
 
 /* الكنز on the TV: the host's map, filling the stage */
 .tvz-map { width: 1512px; justify-self: center; } .tvz-map .kz-tvbody { grid-template-columns: minmax(0, 1fr) 360px; } .tvz-map #kzMapWrap svg { max-height: 700px; }
@@ -925,7 +935,7 @@ body[data-theme="kanz"] .gtop .gt { color: var(--gold); }
 .kz-cam.on .btn { display: none; } .kz-cam .btn { width: auto; position: relative; }
 .kz-cam p { position: absolute; bottom: 8px; inset-inline: 10px; text-align: center; font-size: 13px; color: #ffd0c8; }
 /* the TV */
-.kz-tv { background: #05141a; border-radius: 16px; overflow: hidden; }
+.kz-tv { background: #05141a; border-radius: 16px; overflow: hidden; } #screen > .kz-tv { flex-shrink: 0; } /* the host's map keeps its height; the page scrolls */
 .kz-tv:fullscreen { border-radius: 0; display: grid; grid-template-rows: auto 1fr; }
 .kz-tvbar { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 8px 14px; background: #0d2630; }
 .kz-tvbar b { font-family: var(--f-display); font-weight: 400; font-size: 22px; color: var(--gold); } .kz-tvbar span { font-family: var(--f-display); font-size: 22px; font-variant-numeric: tabular-nums; }
